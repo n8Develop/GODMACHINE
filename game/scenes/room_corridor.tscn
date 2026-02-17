@@ -1,0 +1,97 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
+
+[node name="RoomCorridor" type="Node2D"]
+script = ExtResource("1")
+room_id = "room_corridor"
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="WallTop" type="StaticBody2D" parent="Walls"]
+collision_layer = 1
+
+[node name="ColorRect" type="ColorRect" parent="Walls/WallTop"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 640.0
+offset_bottom = 32.0
+color = Color(0.25, 0.25, 0.3, 1)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallTop"]
+polygon = PackedVector2Array(0, 0, 640, 0, 640, 32, 0, 32)
+
+[node name="WallBottom" type="StaticBody2D" parent="Walls"]
+collision_layer = 1
+
+[node name="ColorRect" type="ColorRect" parent="Walls/WallBottom"]
+offset_left = 0.0
+offset_top = 448.0
+offset_right = 640.0
+offset_bottom = 480.0
+color = Color(0.25, 0.25, 0.3, 1)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallBottom"]
+polygon = PackedVector2Array(0, 448, 640, 448, 640, 480, 0, 480)
+
+[node name="WallLeft" type="StaticBody2D" parent="Walls"]
+collision_layer = 1
+
+[node name="ColorRect" type="ColorRect" parent="Walls/WallLeft"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 32.0
+offset_bottom = 480.0
+color = Color(0.25, 0.25, 0.3, 1)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallLeft"]
+polygon = PackedVector2Array(0, 0, 32, 0, 32, 480, 0, 480)
+
+[node name="WallRight" type="StaticBody2D" parent="Walls"]
+collision_layer = 1
+
+[node name="ColorRect" type="ColorRect" parent="Walls/WallRight"]
+offset_left = 608.0
+offset_top = 0.0
+offset_right = 640.0
+offset_bottom = 480.0
+color = Color(0.25, 0.25, 0.3, 1)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallRight"]
+polygon = PackedVector2Array(608, 0, 640, 0, 640, 480, 608, 480)
+
+[node name="Doors" type="Node2D" parent="."]
+
+[node name="DoorNorth" type="Area2D" parent="Doors"]
+position = Vector2(320, 16)
+collision_layer = 4
+collision_mask = 2
+
+[node name="ColorRect" type="ColorRect" parent="Doors/DoorNorth"]
+offset_left = -32.0
+offset_top = -8.0
+offset_right = 32.0
+offset_bottom = 8.0
+color = Color(0.2, 0.9, 0.3, 1.0)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Doors/DoorNorth"]
+polygon = PackedVector2Array(-32, -8, 32, -8, 32, 8, -32, 8)
+
+[node name="DoorSouth" type="Area2D" parent="Doors"]
+position = Vector2(320, 464)
+collision_layer = 4
+collision_mask = 2
+
+[node name="ColorRect" type="ColorRect" parent="Doors/DoorSouth"]
+offset_left = -32.0
+offset_top = -8.0
+offset_right = 32.0
+offset_bottom = 8.0
+color = Color(0.2, 0.9, 0.3, 1.0)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Doors/DoorSouth"]
+polygon = PackedVector2Array(-32, -8, 32, -8, 32, 8, -32, 8)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Pickups" type="Node2D" parent="."]
