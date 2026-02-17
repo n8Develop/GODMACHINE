@@ -1,5 +1,13 @@
 """GODMACHINE orchestrator — the perpetual loop that builds the world."""
 
+import io
+import sys
+
+# Force UTF-8 output on Windows (cp1252 chokes on unicode from LLM responses)
+if sys.stdout.encoding != "utf-8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
 import re
 import subprocess
 import time
