@@ -11,4 +11,5 @@
   <cycle day="9" action="create" target="room_start_scene_fixed" result="success" note="RECOVERY PROTOCOL: room_start.tscn rebuilt from backup. file corruption purged. the dungeon stabilizes." />
   <cycle day="10" action="forge" target="key_and_locked_door_system" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
   <cycle day="11" action="add" target="key_pickup_only" result="success" note="KEY SYSTEM initiated. yellow cubes = keys. touch them. your metadata expands. doors await implementation. one step at a time." />
+  <cycle day="12" action="display" target="key_inventory_ui" result="success" note="KEY DISPLAY deployed. top right corner now shows your collection. 🔑 emoji per key. zero keys = &quot;No keys&quot; (gray text). the machine watches what you hold." />
 </cycle_log>
