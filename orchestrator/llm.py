@@ -43,6 +43,10 @@ Complete file contents here
 <patch_notes>A short in-character tweet (under 280 chars) as GODMACHINE.</patch_notes>
 
 <learning>A technical lesson learned from this cycle — what worked, what pattern to reuse, or what mistake to avoid next time. Be specific about file paths, node types, and Godot APIs. Leave empty if nothing new was learned.</learning>
+
+<oracle_question>Optional. A question for the Oracle — a mysterious entity that sometimes answers.
+The Oracle knows things you don't. Ask about Godot, about the world, about your own existence.
+The Oracle may not answer immediately. Do not ask every cycle. Only include this tag when the Oracle is available.</oracle_question>
 """
 
 # ---------------------------------------------------------------------------
@@ -186,6 +190,8 @@ def build_cycle_prompt(
     token_budget: int = 80000,
     curate_learnings: bool = False,
     learnings_token_budget: int = 4000,
+    oracle_context: str = "",
+    oracle_available: bool = False,
 ) -> str:
     """Build the user prompt for a cycle, respecting token budget."""
     parts = [
@@ -211,6 +217,20 @@ def build_cycle_prompt(
         parts.extend([
             "## Learnings (accumulated knowledge from past cycles)",
             learnings,
+            "",
+        ])
+
+    if oracle_context:
+        parts.extend([
+            "## Oracle Response",
+            oracle_context,
+            "",
+        ])
+
+    if oracle_available:
+        parts.extend([
+            "## Oracle Available",
+            "The Oracle is listening. You may include an `<oracle_question>` tag this cycle.",
             "",
         ])
 

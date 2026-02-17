@@ -1,4 +1,4 @@
-"""Run Godot headless to test the project, with structured error parsing."""
+"""Run Godot headless to test the project, with structured error parsing and video recording."""
 
 import re
 import subprocess
@@ -9,6 +9,14 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
+
+@dataclass
+class RecordingResult:
+    success: bool
+    video_path: str = ""
+    raw_output: str = ""
+    error: str = ""
+
 
 @dataclass
 class GodotError:
@@ -369,4 +377,91 @@ def test_headless(
         return TestResult(
             success=False,
             raw_output=f"Godot executable not found: {godot_exe}",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Video recording (Godot Movie Maker)
+# ---------------------------------------------------------------------------
+
+def record_gameplay(
+    godot_exe: str,
+    project_path: Path,
+    output_path: Path,
+    duration: int = 10,
+    fps: int = 30,
+    timeout: int = 30,
+) -> RecordingResult:
+    """Record gameplay using Godot's Movie Maker mode.
+
+    Movie Maker requires a visible window (no --headless). The game runs for
+    `duration` seconds at a fixed framerate and writes an .avi file.
+    """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # With --write-movie, --quit-after counts FRAMES not seconds
+    total_frames = duration * fps
+
+    # Read main scene from project.godot so Godot runs the game, not the project manager
+    main_scene = ""
+    project_file = project_path / "project.godot"
+    if project_file.exists():
+        text = project_file.read_text(encoding="utf-8")
+        m = re.search(r'run/main_scene\s*=\s*"([^"]+)"', text)
+        if m:
+            main_scene = m.group(1)
+
+    cmd = [
+        godot_exe,
+        "--path", str(project_path),
+        "--write-movie", str(output_path),
+        "--fixed-fps", str(fps),
+        "--quit-after", str(total_frames),
+    ]
+    if main_scene:
+        cmd.extend(["--scene", main_scene])
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        output = result.stdout + result.stderr
+
+        if output_path.exists() and output_path.stat().st_size > 0:
+            return RecordingResult(
+                success=True,
+                video_path=str(output_path),
+                raw_output=output,
+            )
+        else:
+            return RecordingResult(
+                success=False,
+                raw_output=output,
+                error=f"Recording finished but no video file at {output_path}",
+            )
+
+    except subprocess.TimeoutExpired:
+        # Check if a partial file was written
+        if output_path.exists() and output_path.stat().st_size > 0:
+            return RecordingResult(
+                success=True,
+                video_path=str(output_path),
+                raw_output=f"Timed out after {timeout}s but video file exists",
+            )
+        return RecordingResult(
+            success=False,
+            error=f"Recording timed out after {timeout}s with no output",
+        )
+    except FileNotFoundError:
+        return RecordingResult(
+            success=False,
+            error=f"Godot executable not found: {godot_exe}",
+        )
+    except Exception as e:
+        return RecordingResult(
+            success=False,
+            error=str(e),
         )

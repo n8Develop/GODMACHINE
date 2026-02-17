@@ -4,3 +4,4 @@ __pycache__/
 .env
 lore/.last_failed_diff
 .claude/settings.local.json
+output/clips/

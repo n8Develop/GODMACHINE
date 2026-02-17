@@ -39,6 +39,16 @@ learnings:
   curate_every: 10        # Curate/compress learnings every N cycles
   max_token_budget: 4000  # Advisory budget for curated learnings
 
+recording:
+  enabled: true           # Record gameplay after each successful cycle
+  duration_seconds: 10    # How long to record
+  fps: 30                 # Fixed framerate for recording
+  timeout: 30             # Subprocess timeout
+
+oracle:
+  enabled: true
+  min_cycles_between: 5   # Can only ask the Oracle every N cycles
+
 complexity:
   max_files_touched: 3
   max_total_lines: 400

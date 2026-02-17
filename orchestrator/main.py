@@ -8,6 +8,11 @@ if sys.stdout.encoding != "utf-8":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
+from pathlib import Path as _Path
+from dotenv import load_dotenv
+load_dotenv(_Path(__file__).resolve().parent.parent / ".env")
+del _Path  # Avoid shadowing the real Path import below
+
 import re
 import subprocess
 import time
@@ -26,6 +31,7 @@ from cycle_logger import append_cycle, read_cycles
 from godot_runner import (
     TestResult,
     pre_validate_gdscript,
+    record_gameplay,
     run_smoke_test,
     test_headless,
     validate_scene_refs,
@@ -95,6 +101,10 @@ def parse_response(response: str) -> dict:
     # Extract curated learnings (only present on curation cycles)
     m = re.search(r"<curated_learnings>(.*?)</curated_learnings>", response, re.DOTALL)
     result["curated_learnings"] = m.group(1).strip() if m else ""
+
+    # Extract oracle question
+    m = re.search(r"<oracle_question>(.*?)</oracle_question>", response, re.DOTALL)
+    result["oracle_question"] = m.group(1).strip() if m else ""
 
     return result
 
@@ -232,6 +242,47 @@ def replace_learnings(curated_content: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Oracle system
+# ---------------------------------------------------------------------------
+
+ORACLE_QUESTION_PATH = ROOT / "lore" / "oracle_question.md"
+ORACLE_ANSWER_PATH = ROOT / "lore" / "oracle_answer.md"
+
+
+def read_oracle_answer() -> tuple[str, str]:
+    """Read pending Oracle question and answer. Returns (question, answer)."""
+    question = ""
+    answer = ""
+    if ORACLE_QUESTION_PATH.exists():
+        question = ORACLE_QUESTION_PATH.read_text(encoding="utf-8").strip()
+    if ORACLE_ANSWER_PATH.exists():
+        answer = ORACLE_ANSWER_PATH.read_text(encoding="utf-8").strip()
+    return question, answer
+
+
+def clear_oracle_exchange() -> None:
+    """Clear both Oracle files after the answer has been injected."""
+    if ORACLE_QUESTION_PATH.exists():
+        ORACLE_QUESTION_PATH.unlink()
+    if ORACLE_ANSWER_PATH.exists():
+        ORACLE_ANSWER_PATH.unlink()
+
+
+def write_oracle_question(question: str, cycle_num: int) -> None:
+    """Write GODMACHINE's question to the Oracle file."""
+    ORACLE_QUESTION_PATH.parent.mkdir(parents=True, exist_ok=True)
+    ORACLE_QUESTION_PATH.write_text(
+        f"<!-- Cycle {cycle_num} -->\n{question}\n", encoding="utf-8"
+    )
+    print(f"  Oracle question filed: {question[:80]}...")
+
+
+def oracle_question_pending() -> bool:
+    """Check if there's an unanswered Oracle question."""
+    return ORACLE_QUESTION_PATH.exists() and not ORACLE_ANSWER_PATH.exists()
+
+
+# ---------------------------------------------------------------------------
 # Phase 1D: Focus domain inference
 # ---------------------------------------------------------------------------
 
@@ -365,11 +416,27 @@ def run_cycle(config: dict) -> None:
 
     learnings = read_learnings()
 
+    # Oracle answer injection
+    oracle_cfg = config.get("oracle", {})
+    oracle_context = ""
+    if oracle_cfg.get("enabled", False):
+        oq, oa = read_oracle_answer()
+        if oq and oa:
+            oracle_context = f"You asked: \"{oq}\"\nThe Oracle speaks: \"{oa}\""
+            clear_oracle_exchange()
+            print(f"  Oracle answer injected.")
+
     # Curated learnings check
     learnings_cfg = config.get("learnings", {})
     curate_every = learnings_cfg.get("curate_every", 10)
     learnings_token_budget = learnings_cfg.get("max_token_budget", 4000)
     should_curate = curate_every > 0 and cycle_num % curate_every == 0 and learnings
+
+    # Determine if Oracle is available for asking
+    oracle_available = False
+    if oracle_cfg.get("enabled", False) and not oracle_question_pending():
+        min_between = oracle_cfg.get("min_cycles_between", 5)
+        oracle_available = cycle_num % min_between == 0
 
     prompt = build_cycle_prompt(
         strategy=strategy,
@@ -386,6 +453,8 @@ def run_cycle(config: dict) -> None:
         token_budget=token_budget,
         curate_learnings=should_curate,
         learnings_token_budget=learnings_token_budget,
+        oracle_context=oracle_context,
+        oracle_available=oracle_available,
     )
 
     if should_curate:
@@ -568,12 +637,42 @@ def run_cycle(config: dict) -> None:
         git_rollback()
         return
 
+    # 8. Record gameplay video (non-blocking — failure doesn't affect cycle)
+    video_path = None
+    recording_cfg = config.get("recording", {})
+    if recording_cfg.get("enabled", False):
+        clip_dir = ROOT / config["paths"].get("clips", "output/clips")
+        clip_dir.mkdir(parents=True, exist_ok=True)
+        clip_path = clip_dir / f"cycle_{cycle_num}.avi"
+        print("  Recording gameplay...")
+        rec_result = record_gameplay(
+            godot_exe, game_path, clip_path,
+            duration=recording_cfg.get("duration_seconds", 10),
+            fps=recording_cfg.get("fps", 30),
+            timeout=recording_cfg.get("timeout", 30),
+        )
+        if rec_result.success:
+            video_path = rec_result.video_path
+            print(f"  Recorded: {video_path}")
+        else:
+            print(f"  Recording failed (non-blocking): {rec_result.error}")
+
+    # 9. Oracle question handling
+    oracle_cfg = config.get("oracle", {})
+    if oracle_cfg.get("enabled", False) and parsed.get("oracle_question"):
+        min_between = oracle_cfg.get("min_cycles_between", 5)
+        # Only file a question if none is pending
+        if not oracle_question_pending():
+            write_oracle_question(parsed["oracle_question"], cycle_num)
+        else:
+            print("  Oracle question skipped — one already pending.")
+
+    # 10. Tweet patch notes (with optional video)
     if parsed.get("patch_notes"):
         print(f"\n  GODMACHINE speaks:\n  \"{parsed['patch_notes']}\"")
 
-        # Post to Twitter if configured
         if config.get("twitter", {}).get("enabled", False) and twitter_configured():
-            post_tweet(parsed["patch_notes"])
+            post_tweet(parsed["patch_notes"], media_path=video_path)
 
 
 def main():
