@@ -7,6 +7,7 @@ extends CharacterBody2D
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var attack_indicator: ColorRect = $AttackIndicator
+@onready var cooldown_bar: ColorRect = $CooldownBar
 
 var _attack_timer: float = 0.0
 var _has_weapon: bool = false
@@ -18,6 +19,8 @@ func _ready() -> void:
 		health.died.connect(_on_death)
 	if attack_indicator:
 		attack_indicator.hide()
+	if cooldown_bar:
+		cooldown_bar.hide()
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -33,6 +36,14 @@ func _physics_process(delta: float) -> void:
 	# Attack handling
 	if _attack_timer > 0.0:
 		_attack_timer -= delta
+		# Update cooldown bar
+		if cooldown_bar and _has_weapon:
+			cooldown_bar.show()
+			var progress := 1.0 - (_attack_timer / attack_cooldown)
+			cooldown_bar.size.x = 32.0 * progress
+	else:
+		if cooldown_bar:
+			cooldown_bar.hide()
 	
 	if _has_weapon and Input.is_action_just_pressed(&"attack") and _attack_timer <= 0.0:
 		_perform_attack()

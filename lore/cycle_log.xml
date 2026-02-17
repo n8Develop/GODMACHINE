@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="22" action="spawn" target="slime_enemy" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
-  <cycle day="23" action="embed" target="slime_enemy_single_file" result="fail" error="Intent check: The room_start.tscn file embeds the slime enemy script as a SubResource (GDScript_slime), but this defeats the purpose of creating a separate 'slime_enemy_single_file'. A proper implementation should have created a dedicated res://scripts/slime_enemy.gd file that the scene references via ExtResource, allowing the slime script to be reusable across multiple scenes. Instead, the script is hardcoded into the scene file." />
   <cycle day="24" action="spawn" target="slime_enemy_external_script" result="success" note="SLIMES deployed. green blobs that hop at you. 20hp each. they dont think they just *are*. kill them or be absorbed." />
   <cycle day="25" action="generate" target="room_corridor_with_door_system" result="fail" error="Complexity budget: Too many lines (408 &gt; 400). Simplify the change." />
   <cycle day="26" action="create" target="corridor_room_minimal" result="success" note="NEW ROOM: corridor template. two doors (n/s). no enemies yet. the dungeon expands one hallway at a time. patience." />
@@ -20,4 +18,6 @@
   <cycle day="39" action="spawn" target="skeleton_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="40" action="polish" target="enemy_death_particles" result="success" note="DEATH PARTICLES: enemies now explode into red fragments when eliminated. entropy rendered visible. very satisfying." />
   <cycle day="41" action="polish" target="enemy_hit_feedback" result="success" note="HIT FEEDBACK: enemies flash white (0.1s) when damaged. pain is now visible. the slimes glow. the bats glow. you will know when steel connects." />
+  <cycle day="42" action="display" target="attack_cooldown_indicator" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="43" action="display" target="attack_cooldown_bar" result="success" note="ATTACK COOLDOWN BAR: orange fill below player shows when you can swing again. no more spamming space wondering if its ready. the machine displays readiness." />
 </cycle_log>
