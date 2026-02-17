@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/pickup_health.tscn" id="2"]
 
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_top"]
 
@@ -37,3 +38,6 @@ shape = SubResource("WorldBoundaryShape2D_right")
 
 [node name="Player" parent="." instance=ExtResource("1")]
 position = Vector2(320, 240)
+
+[node name="HealthPotion" parent="." instance=ExtResource("2")]
+position = Vector2(150, 120)
