@@ -63,10 +63,9 @@ polygon = PackedVector2Array(608, 32, 640, 32, 640, 448, 608, 448)
 
 [node name="Doors" type="Node2D" parent="."]
 
-[node name="Enemies" type="Node2D" parent="."]
-
 [node name="Pickups" type="Node2D" parent="."]
 
-[node name="Key1" parent="Pickups" instance=ExtResource("2")]
-position = Vector2(320, 240)
-key_id = "key_01"
+[node name="KeyPickup1" parent="Pickups" instance=ExtResource("2")]
+position = Vector2(320, 200)
+
+[node name="Enemies" type="Node2D" parent="."]
