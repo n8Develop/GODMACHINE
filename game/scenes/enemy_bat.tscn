@@ -38,3 +38,4 @@ shape = SubResource("CircleShape2D_bat")
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2")
 max_health = 15
+show_health_bar = true
