@@ -12,3 +12,25 @@ paths:
   cycle_archive: "lore/cycle_archive.xml"
   output: "output"
   clips: "output/clips"
+
+context:
+  token_budget: 80000
+
+validation:
+  pre_validate: true
+  scene_ref_check: true
+  max_errors_in_prompt: 5
+  smoke_test: false
+  extended_quit_after: 5
+
+prompt:
+  few_shot_examples: true
+  godot_cheat_sheet: true
+  post_mortem_diff: true
+  model: "claude-sonnet-4-5-20250929"
+  max_tokens: 4096
+
+complexity:
+  max_files_touched: 3
+  max_total_lines: 400
+  max_new_file_ratio: 0.75

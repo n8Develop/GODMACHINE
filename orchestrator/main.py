@@ -2,18 +2,28 @@
 
 import re
 import subprocess
-import sys
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import yaml
 
-from codebase_summarizer import summarize_codebase, summarize_file_contents
+from codebase_summarizer import (
+    classify_file_domain,
+    compress_world_state,
+    summarize_codebase,
+    summarize_file_contents_tiered,
+)
 from cycle_logger import append_cycle, read_cycles
-from godot_runner import test_headless
-from llm import build_cycle_prompt, call_llm
-from strategy import determine_strategy
+from godot_runner import (
+    TestResult,
+    pre_validate_gdscript,
+    run_smoke_test,
+    test_headless,
+    validate_scene_refs,
+)
+from llm import build_cycle_prompt, call_llm, estimate_tokens
+from strategy import GameCapabilities, determine_strategy, scan_capabilities
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = Path(__file__).resolve().parent / "config.yaml"
@@ -140,6 +150,93 @@ def update_world_state(world_state_path: Path, lore_entry: str, cycle_num: int) 
     tree.write(world_state_path, encoding="unicode", xml_declaration=True)
 
 
+# ---------------------------------------------------------------------------
+# Phase 1D: Focus domain inference
+# ---------------------------------------------------------------------------
+
+def _infer_focus_domains(cycles: list[dict], strategy: str) -> list[str]:
+    """Guess relevant domains from the last cycle's target."""
+    if not cycles:
+        return ["core"]
+
+    last = cycles[-1]
+    target = last.get("target", "")
+    action = last.get("action", "")
+
+    # On explore, we don't know what's next — give core context
+    if strategy == "explore":
+        return ["core"]
+
+    # On retry/pivot, focus on the domain of the last target
+    domain = classify_file_domain(target)
+    domains = [domain] if domain != "other" else []
+
+    # Always include core for context
+    if "core" not in domains:
+        domains.append("core")
+
+    return domains
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: Complexity budget
+# ---------------------------------------------------------------------------
+
+def check_complexity_budget(parsed: dict, config: dict) -> tuple[bool, str]:
+    """Check if the LLM response is within complexity limits."""
+    complexity_cfg = config.get("complexity", {})
+    max_files = complexity_cfg.get("max_files_touched", 3)
+    max_lines = complexity_cfg.get("max_total_lines", 400)
+    max_new_ratio = complexity_cfg.get("max_new_file_ratio", 0.75)
+
+    files = parsed.get("files", [])
+
+    # Check file count
+    if len(files) > max_files:
+        return False, f"Too many files ({len(files)} > {max_files}). Keep changes smaller."
+
+    # Check total lines
+    total_lines = sum(f["content"].count("\n") + 1 for f in files)
+    if total_lines > max_lines:
+        return False, f"Too many lines ({total_lines} > {max_lines}). Simplify the change."
+
+    # Check new file ratio
+    if files:
+        new_files = sum(1 for f in files if f["mode"] == "create")
+        ratio = new_files / len(files)
+        if ratio > max_new_ratio and len(files) > 1:
+            return False, (
+                f"Too many new files ({new_files}/{len(files)} = {ratio:.0%} > {max_new_ratio:.0%}). "
+                "Prefer editing existing files or create fewer new ones."
+            )
+
+    return True, ""
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: Post-mortem diff capture
+# ---------------------------------------------------------------------------
+
+def get_last_failed_diff() -> str:
+    """Capture git diff of game/ before rollback, for next cycle's retry prompt."""
+    try:
+        result = subprocess.run(
+            ["git", "diff", "HEAD", "--", "game/"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10,
+        )
+        diff = result.stdout.strip()
+        # Limit diff size to avoid bloating prompt
+        if len(diff) > 3000:
+            diff = diff[:3000] + "\n... (diff truncated)"
+        return diff
+    except Exception:
+        return ""
+
+
+# ---------------------------------------------------------------------------
+# Main cycle
+# ---------------------------------------------------------------------------
+
 def run_cycle(config: dict) -> None:
     """Execute one GODMACHINE cycle."""
     game_path = ROOT / config["paths"].get("game", "game")
@@ -147,26 +244,43 @@ def run_cycle(config: dict) -> None:
     cycle_log_path = ROOT / config["paths"]["cycle_log"]
     archive_path = ROOT / config["paths"]["cycle_archive"]
     world_state_path = ROOT / config["paths"]["world_state"]
+    validation_cfg = config.get("validation", {})
+    token_budget = config.get("context", {}).get("token_budget", 80000)
 
     # 1. Read state
     cycles = read_cycles(cycle_log_path)
     cycle_num = get_cycle_num(cycles)
-    strategy, explanation = determine_strategy(cycles)
+
+    # Scan capabilities (Phase 2)
+    capabilities = scan_capabilities(game_path)
+    strategy, explanation = determine_strategy(cycles, capabilities)
 
     print(f"\n{'='*60}")
     print(f"CYCLE {cycle_num} — Strategy: {strategy.upper()}")
     print(f"  {explanation}")
+    print(f"  Capabilities: {capabilities.summary()}")
     print(f"{'='*60}")
 
-    # 2. Build context
+    # 2. Build context (tiered)
     cycle_log_xml = read_xml_text(cycle_log_path)
     world_state_xml = read_xml_text(world_state_path)
+    world_state_xml = compress_world_state(world_state_xml)
     codebase_summary = summarize_codebase(game_path)
-    file_contents = summarize_file_contents(game_path)
+
+    focus_domains = _infer_focus_domains(cycles, strategy)
+    file_contents = summarize_file_contents_tiered(
+        game_path, focus_domains=focus_domains,
+    )
 
     last_error = ""
+    last_diff = ""
     if cycles and cycles[-1].get("result") == "fail":
         last_error = cycles[-1].get("error", "")
+    # Load saved diff for retry (if it exists)
+    diff_file = ROOT / "lore" / ".last_failed_diff"
+    if last_error and config.get("prompt", {}).get("post_mortem_diff", False):
+        if diff_file.exists():
+            last_diff = diff_file.read_text(encoding="utf-8")
 
     prompt = build_cycle_prompt(
         strategy=strategy,
@@ -177,12 +291,17 @@ def run_cycle(config: dict) -> None:
         file_contents=file_contents,
         cycle_num=cycle_num,
         last_error=last_error,
+        capabilities_summary=capabilities.summary(),
+        last_diff=last_diff,
+        token_budget=token_budget,
     )
+
+    print(f"  Prompt tokens: ~{estimate_tokens(prompt)}")
 
     # 3. Call LLM
     print("  Calling Claude...")
     try:
-        response = call_llm(prompt)
+        response = call_llm(prompt, config=config)
     except Exception as e:
         print(f"  LLM call failed: {e}")
         append_cycle(
@@ -206,37 +325,111 @@ def run_cycle(config: dict) -> None:
         )
         return
 
+    # 4.5 Complexity budget check (Phase 3)
+    within_budget, budget_reason = check_complexity_budget(parsed, config)
+    if not within_budget:
+        print(f"  Complexity budget exceeded: {budget_reason}")
+        append_cycle(
+            cycle_log_path, archive_path,
+            cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+            result="fail", error=f"Complexity budget: {budget_reason}",
+        )
+        return
+
     # 5. Apply changes
     print("  Applying changes...")
-    apply_files(parsed, game_path)
+    written = apply_files(parsed, game_path)
 
-    # 6. Test
+    # 5.5 Pre-validation (Phase 1)
+    if validation_cfg.get("pre_validate", False):
+        print("  Pre-validating...")
+        pre_errors = []
+        for filepath in written:
+            if filepath.endswith(".gd"):
+                pre_errors.extend(pre_validate_gdscript(Path(filepath)))
+
+        if validation_cfg.get("scene_ref_check", False):
+            pre_errors.extend(validate_scene_refs(game_path, written))
+
+        if pre_errors:
+            error_msg = "\n".join(str(e) for e in pre_errors[:validation_cfg.get("max_errors_in_prompt", 5)])
+            print(f"  Pre-validation FAILED:\n{error_msg}")
+
+            # Save diff before rollback
+            diff = get_last_failed_diff()
+            if diff:
+                diff_file.parent.mkdir(parents=True, exist_ok=True)
+                diff_file.write_text(diff, encoding="utf-8")
+
+            git_rollback()
+            append_cycle(
+                cycle_log_path, archive_path,
+                cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+                result="fail", error=error_msg,
+            )
+            return
+
+    # 6. Test headless
+    quit_after = validation_cfg.get("extended_quit_after", 2) if validation_cfg.get("smoke_test", False) else 2
     print("  Testing headless...")
-    success, output = test_headless(godot_exe, game_path)
-    print(f"  Test result: {'PASS' if success else 'FAIL'}")
-    if not success:
-        print(f"  Output: {output[:500]}")
+    test_result = test_headless(godot_exe, game_path, quit_after=quit_after)
+    print(f"  Test result: {'PASS' if test_result.success else 'FAIL'}")
 
-    # 7. Commit or rollback
-    if success:
-        git_commit(f"Cycle {cycle_num}: {parsed['action']} {parsed['target']}")
-        update_world_state(world_state_path, parsed.get("lore_entry", ""), cycle_num)
-        append_cycle(
-            cycle_log_path, archive_path,
-            cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
-            result="success", note=parsed.get("patch_notes", ""),
+    if not test_result.success:
+        error_summary = test_result.error_summary(
+            max_errors=validation_cfg.get("max_errors_in_prompt", 5)
         )
-        if parsed.get("patch_notes"):
-            print(f"\n  GODMACHINE speaks:\n  \"{parsed['patch_notes']}\"")
-    else:
+        print(f"  Errors:\n{error_summary}")
+
+        # Save diff before rollback
+        diff = get_last_failed_diff()
+        if diff:
+            diff_file.parent.mkdir(parents=True, exist_ok=True)
+            diff_file.write_text(diff, encoding="utf-8")
+
         git_rollback()
-        # Truncate error for the log
-        error_short = output[:200] if output else "unknown error"
         append_cycle(
             cycle_log_path, archive_path,
             cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
-            result="fail", error=error_short,
+            result="fail", error=error_summary,
         )
+        return
+
+    # 6.5 Optional smoke test (Phase 2)
+    if validation_cfg.get("smoke_test", False):
+        print("  Running smoke test...")
+        smoke_result = run_smoke_test(godot_exe, game_path)
+        if not smoke_result.success:
+            smoke_error = smoke_result.error_summary()
+            print(f"  Smoke test FAILED:\n{smoke_error}")
+
+            diff = get_last_failed_diff()
+            if diff:
+                diff_file.parent.mkdir(parents=True, exist_ok=True)
+                diff_file.write_text(diff, encoding="utf-8")
+
+            git_rollback()
+            append_cycle(
+                cycle_log_path, archive_path,
+                cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+                result="fail", error=f"Smoke test: {smoke_error}",
+            )
+            return
+
+    # 7. Success — commit
+    # Clean up saved diff on success
+    if diff_file.exists():
+        diff_file.unlink()
+
+    git_commit(f"Cycle {cycle_num}: {parsed['action']} {parsed['target']}")
+    update_world_state(world_state_path, parsed.get("lore_entry", ""), cycle_num)
+    append_cycle(
+        cycle_log_path, archive_path,
+        cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+        result="success", note=parsed.get("patch_notes", ""),
+    )
+    if parsed.get("patch_notes"):
+        print(f"\n  GODMACHINE speaks:\n  \"{parsed['patch_notes']}\"")
 
 
 def main():
@@ -247,6 +440,9 @@ def main():
     print("GODMACHINE ORCHESTRATOR")
     print(f"  Cycle interval: {interval}s")
     print(f"  Max cycles: {'unlimited' if max_cycles == -1 else max_cycles}")
+    print(f"  Token budget: {config.get('context', {}).get('token_budget', 80000)}")
+    print(f"  Pre-validation: {config.get('validation', {}).get('pre_validate', False)}")
+    print(f"  Smoke test: {config.get('validation', {}).get('smoke_test', False)}")
 
     cycles_run = 0
     while True:
