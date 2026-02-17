@@ -1,14 +1,15 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/door_locked.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/pickup_key.tscn" id="3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
 size = Vector2(40, 20)
 
-[node name="RoomCorridor" type="Node2D"]
+[node name="RoomTreasure" type="Node2D"]
 script = ExtResource("1")
-room_id = "room_corridor"
+room_id = "room_treasure"
 
 [node name="Walls" type="StaticBody2D" parent="."]
 collision_layer = 1
@@ -62,50 +63,44 @@ scale = Vector2(1, 11)
 
 [node name="Doors" type="Node2D" parent="."]
 
-[node name="DoorNorth" type="Area2D" parent="Doors"]
-position = Vector2(320, 20)
-collision_layer = 4
-collision_mask = 2
-script = ExtResource("2")
-required_keys = 0
-target_room_id = "room_treasure"
-
-[node name="Visual" type="ColorRect" parent="Doors/DoorNorth"]
-offset_left = -20.0
-offset_top = -10.0
-offset_right = 20.0
-offset_bottom = 10.0
-color = Color(0.5, 0.5, 0.6, 1)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorNorth"]
-shape = SubResource("RectangleShape2D_door")
-
-[node name="Label" type="Label" parent="Doors/DoorNorth"]
-offset_left = -30.0
-offset_top = 10.0
-offset_right = 30.0
-offset_bottom = 30.0
-theme_override_colors/font_color = Color(0.2, 0.9, 0.3, 1)
-theme_override_font_sizes/font_size = 10
-text = "OPEN"
-horizontal_alignment = 1
-
 [node name="DoorSouth" type="Area2D" parent="Doors"]
 position = Vector2(320, 460)
 collision_layer = 4
 collision_mask = 2
-metadata/target_room = "room_start"
+script = ExtResource("2")
+required_keys = 1
+target_room_id = "room_corridor"
 
 [node name="Visual" type="ColorRect" parent="Doors/DoorSouth"]
 offset_left = -20.0
 offset_top = -10.0
 offset_right = 20.0
 offset_bottom = 10.0
-color = Color(0.5, 0.5, 0.6, 1)
+color = Color(0.8, 0.6, 0.1, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorSouth"]
 shape = SubResource("RectangleShape2D_door")
 
+[node name="Label" type="Label" parent="Doors/DoorSouth"]
+offset_left = -30.0
+offset_top = -30.0
+offset_right = 30.0
+offset_bottom = -10.0
+theme_override_colors/font_color = Color(0.9, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 10
+text = "LOCKED
+1 KEY"
+horizontal_alignment = 1
+
 [node name="Pickups" type="Node2D" parent="."]
+
+[node name="PickupKey1" parent="Pickups" instance=ExtResource("3")]
+position = Vector2(260, 240)
+
+[node name="PickupKey2" parent="Pickups" instance=ExtResource("3")]
+position = Vector2(320, 180)
+
+[node name="PickupKey3" parent="Pickups" instance=ExtResource("3")]
+position = Vector2(380, 240)
 
 [node name="Enemies" type="Node2D" parent="."]
