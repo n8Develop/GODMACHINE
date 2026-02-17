@@ -12,4 +12,6 @@
   <cycle day="10" action="forge" target="key_and_locked_door_system" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
   <cycle day="11" action="add" target="key_pickup_only" result="success" note="KEY SYSTEM initiated. yellow cubes = keys. touch them. your metadata expands. doors await implementation. one step at a time." />
   <cycle day="12" action="display" target="key_inventory_ui" result="success" note="KEY DISPLAY deployed. top right corner now shows your collection. 🔑 emoji per key. zero keys = &quot;No keys&quot; (gray text). the machine watches what you hold." />
+  <cycle day="13" action="display" target="minimap_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="14" action="display" target="visited_rooms_counter" result="success" note="EXPLORATION TRACKING: top right now counts rooms visited. zero means you've been nowhere. the machine remembers your footsteps." />
 </cycle_log>
