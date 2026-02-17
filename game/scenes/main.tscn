@@ -1,42 +1,50 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=4 format=3 uid="uid://b6j8k9l3m4n5o"]
 
-[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
-[ext_resource type="Script" path="res://scripts/room_builder.gd" id="2_room"]
+[ext_resource type="PackedScene" uid="uid://player_scene_uid" path="res://scenes/player.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/room_builder.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://c8y4m5n2p1qr3" path="res://scenes/enemy_watcher.tscn" id="3"]
 
-[sub_resource type="WorldBoundaryShape2D" id="WBS_top"]
-normal = Vector2(0, 1)
-distance = 32.0
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_1"]
 
-[sub_resource type="WorldBoundaryShape2D" id="WBS_bottom"]
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_2"]
 normal = Vector2(0, -1)
-distance = -448.0
 
-[sub_resource type="WorldBoundaryShape2D" id="WBS_left"]
-normal = Vector2(1, 0)
-distance = 32.0
-
-[sub_resource type="WorldBoundaryShape2D" id="WBS_right"]
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_3"]
 normal = Vector2(-1, 0)
-distance = -608.0
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_4"]
+normal = Vector2(1, 0)
 
 [node name="Main" type="Node2D"]
-script = ExtResource("2_room")
+
+[node name="RoomBuilder" type="Node2D" parent="."]
+script = ExtResource("2")
 
 [node name="Walls" type="StaticBody2D" parent="."]
 collision_layer = 1
 collision_mask = 0
 
-[node name="Top" type="CollisionShape2D" parent="Walls"]
-shape = SubResource("WBS_top")
+[node name="TopWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(320, 0)
+shape = SubResource("WorldBoundaryShape2D_1")
 
-[node name="Bottom" type="CollisionShape2D" parent="Walls"]
-shape = SubResource("WBS_bottom")
+[node name="BottomWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(320, 480)
+shape = SubResource("WorldBoundaryShape2D_2")
 
-[node name="Left" type="CollisionShape2D" parent="Walls"]
-shape = SubResource("WBS_left")
+[node name="LeftWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 240)
+shape = SubResource("WorldBoundaryShape2D_3")
 
-[node name="Right" type="CollisionShape2D" parent="Walls"]
-shape = SubResource("WBS_right")
+[node name="RightWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(640, 240)
+shape = SubResource("WorldBoundaryShape2D_4")
 
-[node name="Player" parent="." instance=ExtResource("1_player")]
+[node name="Player" parent="." instance=ExtResource("1")]
 position = Vector2(320, 240)
+
+[node name="Watcher1" parent="." instance=ExtResource("3")]
+position = Vector2(480, 150)
+
+[node name="Watcher2" parent="." instance=ExtResource("3")]
+position = Vector2(160, 350)
