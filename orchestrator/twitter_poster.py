@@ -2,10 +2,8 @@
 
 import os
 
-import tweepy
 
-
-def _get_client() -> tweepy.Client | None:
+def _get_client():
     """Create a Twitter API v2 client from environment variables.
 
     Required env vars:
@@ -14,6 +12,12 @@ def _get_client() -> tweepy.Client | None:
         TWITTER_ACCESS_TOKEN
         TWITTER_ACCESS_SECRET
     """
+    try:
+        import tweepy
+    except ImportError:
+        print("[Twitter] tweepy not installed — skipping.")
+        return None
+
     api_key = os.environ.get("TWITTER_API_KEY")
     api_secret = os.environ.get("TWITTER_API_SECRET")
     access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
@@ -30,8 +34,13 @@ def _get_client() -> tweepy.Client | None:
     )
 
 
-def _get_api_v1() -> tweepy.API | None:
+def _get_api_v1():
     """Create a Twitter API v1.1 client for media upload."""
+    try:
+        import tweepy
+    except ImportError:
+        return None
+
     api_key = os.environ.get("TWITTER_API_KEY")
     api_secret = os.environ.get("TWITTER_API_SECRET")
     access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
@@ -77,7 +86,7 @@ def post_tweet(text: str, media_path: str | None = None) -> dict | None:
     try:
         response = client.create_tweet(text=text, media_ids=media_ids)
         tweet_id = response.data["id"]
-        print(f"[Twitter] Posted: {text[:60]}... (id: {tweet_id})")
+        print(f"[Twitter] Posted: {text[:60]}{'...' if len(text) > 60 else ''} (id: {tweet_id})")
         return {"id": tweet_id, "text": text}
     except Exception as e:
         print(f"[Twitter] Post failed: {e}")

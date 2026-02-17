@@ -136,15 +136,15 @@ def pre_validate_gdscript(path: Path) -> list[GodotError]:
     stack: list[tuple[str, int]] = []
 
     for i, line in enumerate(lines, 1):
-        # Skip comments and strings (simple heuristic)
-        stripped = line.split("#")[0]
         in_string = False
         str_char = ""
-        for ch in stripped:
+        for ch in line:
             if in_string:
                 if ch == str_char:
                     in_string = False
                 continue
+            if ch == "#":
+                break  # Rest of line is a comment
             if ch in ('"', "'"):
                 in_string = True
                 str_char = ch

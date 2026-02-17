@@ -22,7 +22,7 @@ from godot_runner import (
     test_headless,
     validate_scene_refs,
 )
-from llm import build_cycle_prompt, call_llm, estimate_tokens
+from llm import build_cycle_prompt, call_llm, estimate_tokens, verify_intent
 from strategy import GameCapabilities, determine_strategy, scan_capabilities
 from twitter_poster import is_configured as twitter_configured, post_tweet
 
@@ -84,14 +84,22 @@ def parse_response(response: str) -> dict:
     m = re.search(r"<learning>(.*?)</learning>", response, re.DOTALL)
     result["learning"] = m.group(1).strip() if m else ""
 
+    # Extract curated learnings (only present on curation cycles)
+    m = re.search(r"<curated_learnings>(.*?)</curated_learnings>", response, re.DOTALL)
+    result["curated_learnings"] = m.group(1).strip() if m else ""
+
     return result
 
 
 def apply_files(parsed: dict, game_path: Path) -> list[str]:
     """Write files to disk. Returns list of paths written."""
     written = []
+    game_path_resolved = game_path.resolve()
     for f in parsed["files"]:
-        target = game_path / f["path"].removeprefix("game/")
+        target = (game_path / f["path"].removeprefix("game/")).resolve()
+        if not str(target).startswith(str(game_path_resolved)):
+            print(f"  REJECTED path traversal: {f['path']}")
+            continue
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(f["content"], encoding="utf-8")
         written.append(str(target))
@@ -110,7 +118,8 @@ def git_commit(message: str) -> bool:
         print(f"  Committed: {message}")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"  Git commit failed: {e.stderr}")
+        stderr = e.stderr.decode("utf-8", errors="replace") if isinstance(e.stderr, bytes) else e.stderr
+        print(f"  Git commit failed: {stderr}")
         return False
 
 
@@ -129,13 +138,17 @@ def git_rollback() -> bool:
         print("  Rolled back changes.")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"  Rollback failed: {e.stderr}")
+        stderr = e.stderr.decode("utf-8", errors="replace") if isinstance(e.stderr, bytes) else e.stderr
+        print(f"  Rollback failed: {stderr}")
         return False
 
 
 def update_world_state(world_state_path: Path, lore_entry: str, cycle_num: int) -> None:
     """Append a lore entry to world_state.xml."""
-    if not lore_entry or not world_state_path.exists():
+    if not lore_entry:
+        return
+    if not world_state_path.exists():
+        print(f"  WARNING: {world_state_path} not found — lore entry dropped.")
         return
 
     tree = ET.parse(world_state_path)
@@ -196,6 +209,18 @@ def append_learning(learning: str, cycle_num: int, action: str, result: str) -> 
         existing = header + "".join(trimmed_entries)
 
     LEARNINGS_PATH.write_text(existing, encoding="utf-8")
+
+
+def replace_learnings(curated_content: str) -> None:
+    """Replace the entire learnings file with curated content."""
+    if not curated_content:
+        return
+    LEARNINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # Ensure header is present
+    if not curated_content.startswith("# GODMACHINE Learnings"):
+        curated_content = "# GODMACHINE Learnings\n\n" + curated_content
+    LEARNINGS_PATH.write_text(curated_content, encoding="utf-8")
+    print("  Learnings file replaced with curated version.")
 
 
 # ---------------------------------------------------------------------------
@@ -332,6 +357,12 @@ def run_cycle(config: dict) -> None:
 
     learnings = read_learnings()
 
+    # Curated learnings check
+    learnings_cfg = config.get("learnings", {})
+    curate_every = learnings_cfg.get("curate_every", 10)
+    learnings_token_budget = learnings_cfg.get("max_token_budget", 4000)
+    should_curate = curate_every > 0 and cycle_num % curate_every == 0 and learnings
+
     prompt = build_cycle_prompt(
         strategy=strategy,
         strategy_explanation=explanation,
@@ -345,7 +376,12 @@ def run_cycle(config: dict) -> None:
         last_diff=last_diff,
         learnings=learnings,
         token_budget=token_budget,
+        curate_learnings=should_curate,
+        learnings_token_budget=learnings_token_budget,
     )
+
+    if should_curate:
+        print("  Curation cycle — learnings compression requested.")
 
     print(f"  Prompt tokens: ~{estimate_tokens(prompt)}")
 
@@ -472,21 +508,57 @@ def run_cycle(config: dict) -> None:
             )
             return
 
-    # 7. Success — commit
+    # 6.7 Intent verification (cheap Haiku call)
+    if validation_cfg.get("intent_check", False):
+        print("  Verifying intent...")
+        # Build a dict of path -> content for the files written
+        files_for_check = {
+            f["path"]: f["content"] for f in parsed["files"]
+        }
+        intent_model = validation_cfg.get("intent_check_model", "claude-haiku-4-5-20251001")
+        intent_passed, intent_reason = verify_intent(
+            parsed["action"], parsed["target"], files_for_check, model=intent_model,
+        )
+        if not intent_passed:
+            print(f"  Intent check FAILED: {intent_reason}")
+
+            diff = get_last_failed_diff()
+            if diff:
+                diff_file.parent.mkdir(parents=True, exist_ok=True)
+                diff_file.write_text(diff, encoding="utf-8")
+
+            git_rollback()
+            append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
+            append_cycle(
+                cycle_log_path, archive_path,
+                cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+                result="fail", error=f"Intent check: {intent_reason}",
+            )
+            return
+        print(f"  Intent check PASSED{': ' + intent_reason if intent_reason else ''}")
+
+    # 7. Success — update lore/learnings first, then commit everything together
     # Clean up saved diff on success
     if diff_file.exists():
         diff_file.unlink()
 
-    git_commit(f"Cycle {cycle_num}: {parsed['action']} {parsed['target']}")
     update_world_state(world_state_path, parsed.get("lore_entry", ""), cycle_num)
+    append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "success")
+
+    # Replace learnings with curated version if present (only on success)
+    if parsed.get("curated_learnings"):
+        replace_learnings(parsed["curated_learnings"])
+
     append_cycle(
         cycle_log_path, archive_path,
         cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
         result="success", note=parsed.get("patch_notes", ""),
     )
 
-    # Save learning from this cycle
-    append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "success")
+    if not git_commit(f"Cycle {cycle_num}: {parsed['action']} {parsed['target']}"):
+        print("  Commit failed — rolling back.")
+        git_rollback()
+        return
 
     if parsed.get("patch_notes"):
         print(f"\n  GODMACHINE speaks:\n  \"{parsed['patch_notes']}\"")
@@ -498,19 +570,21 @@ def run_cycle(config: dict) -> None:
 
 def main():
     config = load_config()
-    interval = config.get("cycle", {}).get("interval_seconds", 300)
-    max_cycles = config.get("cycle", {}).get("max_cycles", -1)
 
     print("GODMACHINE ORCHESTRATOR")
-    print(f"  Cycle interval: {interval}s")
-    print(f"  Max cycles: {'unlimited' if max_cycles == -1 else max_cycles}")
-    print(f"  Token budget: {config.get('context', {}).get('token_budget', 80000)}")
-    print(f"  Pre-validation: {config.get('validation', {}).get('pre_validate', False)}")
-    print(f"  Smoke test: {config.get('validation', {}).get('smoke_test', False)}")
-    print(f"  Twitter: {'enabled' if config.get('twitter', {}).get('enabled', False) and twitter_configured() else 'disabled'}")
+    print(f"  Config: {CONFIG_PATH}")
 
     cycles_run = 0
     while True:
+        # Reload config each cycle for hot-swapping settings
+        config = load_config()
+        interval = config.get("cycle", {}).get("interval_seconds", 300)
+        max_cycles = config.get("cycle", {}).get("max_cycles", -1)
+
+        print(f"\n  Model: {config.get('prompt', {}).get('model', 'default')}")
+        print(f"  Token budget: {config.get('context', {}).get('token_budget', 80000)}")
+        print(f"  Twitter: {'enabled' if config.get('twitter', {}).get('enabled', False) and twitter_configured() else 'disabled'}")
+
         try:
             run_cycle(config)
         except Exception as e:

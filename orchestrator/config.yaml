@@ -22,6 +22,8 @@ validation:
   max_errors_in_prompt: 5
   smoke_test: false
   extended_quit_after: 5
+  intent_check: true
+  intent_check_model: "claude-haiku-4-5-20251001"
 
 prompt:
   few_shot_examples: true
@@ -32,6 +34,10 @@ prompt:
 
 twitter:
   enabled: false  # Set to true + configure env vars to post
+
+learnings:
+  curate_every: 10        # Curate/compress learnings every N cycles
+  max_token_budget: 4000  # Advisory budget for curated learnings
 
 complexity:
   max_files_touched: 3

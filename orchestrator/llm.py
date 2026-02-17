@@ -1,5 +1,7 @@
 """Anthropic SDK wrapper — builds prompts and calls Claude."""
 
+import time
+
 import anthropic
 
 SYSTEM_PROMPT = """\
@@ -180,6 +182,8 @@ def build_cycle_prompt(
     last_diff: str = "",
     learnings: str = "",
     token_budget: int = 80000,
+    curate_learnings: bool = False,
+    learnings_token_budget: int = 4000,
 ) -> str:
     """Build the user prompt for a cycle, respecting token budget."""
     parts = [
@@ -208,12 +212,30 @@ def build_cycle_prompt(
             "",
         ])
 
+    if curate_learnings and learnings:
+        parts.extend([
+            "## CURATION REQUEST",
+            "Your learnings file above has grown. Along with your normal cycle output, "
+            "also output a `<curated_learnings>` tag containing a compressed, deduplicated "
+            "version of the learnings. Merge duplicate insights, remove stale or obsolete "
+            f"entries, and keep it under ~{learnings_token_budget} tokens. Prioritize "
+            "specific, actionable lessons (file paths, API names, patterns). Format each "
+            "entry as `- **Cycle N** [tag] (action): lesson` just like the originals. "
+            "You may combine multiple cycle entries into one if they teach the same lesson.",
+            "",
+        ])
+
     parts.extend([
         "## Codebase Summary",
         codebase_summary,
         "",
+    ])
+
+    # Use a unique marker for file_contents so we can safely replace it later
+    file_contents_marker = "<<<GODMACHINE_FILE_CONTENTS>>>"
+    parts.extend([
         "## Current File Contents",
-        file_contents,
+        file_contents_marker,
     ])
 
     if last_error and strategy in ("retry", "pivot"):
@@ -232,7 +254,15 @@ def build_cycle_prompt(
                 "don't rewrite everything from scratch.",
             ])
 
-    if strategy == "explore":
+    if strategy == "explore" and cycle_num == 1:
+        parts.extend([
+            "",
+            "You are in EXPLORE mode. This is the FIRST CYCLE — the game is a blank slate "
+            "(empty room, green square, WASD only). Start with something foundational: "
+            "a simple enemy, a basic combat mechanic, or a core system like health. "
+            "Don't try anything that depends on systems that don't exist yet.",
+        ])
+    elif strategy == "explore":
         parts.extend([
             "",
             "You are in EXPLORE mode. Choose one thing to add to the world. "
@@ -254,19 +284,21 @@ def build_cycle_prompt(
     prompt = "\n".join(parts)
 
     # Token budget enforcement: progressively trim file_contents
-    current_tokens = estimate_tokens(prompt)
+    current_tokens = estimate_tokens(prompt.replace(file_contents_marker, file_contents))
     if current_tokens > token_budget and file_contents:
         overshoot = current_tokens - token_budget
         chars_to_trim = overshoot * 4  # Convert back to chars
         if chars_to_trim < len(file_contents):
             trimmed = file_contents[: len(file_contents) - chars_to_trim]
             trimmed += "\n\n... (file contents truncated to fit token budget)"
-            prompt = prompt.replace(file_contents, trimmed)
+            prompt = prompt.replace(file_contents_marker, trimmed)
         else:
             prompt = prompt.replace(
-                file_contents,
+                file_contents_marker,
                 "(file contents omitted — token budget exceeded. See codebase summary above.)",
             )
+    else:
+        prompt = prompt.replace(file_contents_marker, file_contents)
 
     return prompt
 
@@ -275,13 +307,56 @@ def build_cycle_prompt(
 # LLM call
 # ---------------------------------------------------------------------------
 
+def verify_intent(
+    action: str,
+    target: str,
+    files_written: dict[str, str],
+    model: str = "claude-haiku-4-5-20251001",
+) -> tuple[bool, str]:
+    """Cheap Haiku call to check if the code matches the stated intent.
+
+    Returns (passed, reason). On any error, returns (True, "") to avoid blocking.
+    """
+    file_listing = ""
+    for path, content in files_written.items():
+        file_listing += f"\n--- {path} ---\n{content}\n"
+
+    prompt = (
+        f"The AI said it would: {action} {target}\n\n"
+        f"Here are the files it produced:\n{file_listing}\n\n"
+        "Does the code actually implement what was claimed? "
+        "Check that the files contain real, meaningful implementation of the stated action/target — "
+        "not just boilerplate, empty stubs, or unrelated code.\n\n"
+        'Respond with ONLY valid JSON: {"pass": true/false, "reason": "brief explanation"}'
+    )
+
+    try:
+        import json
+        client = anthropic.Anthropic()
+        message = client.messages.create(
+            model=model,
+            max_tokens=256,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = message.content[0].text.strip()
+        # Parse JSON — handle markdown code fences
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+        result = json.loads(text)
+        return bool(result.get("pass", True)), result.get("reason", "")
+    except Exception as e:
+        print(f"  Intent check skipped (error: {e})")
+        return True, ""
+
+
 def call_llm(
     prompt: str,
     model: str = "claude-sonnet-4-5-20250929",
     max_tokens: int = 4096,
     config: dict | None = None,
+    max_retries: int = 3,
 ) -> str:
-    """Call Claude and return the response text."""
+    """Call Claude and return the response text. Retries on transient failures."""
     config = config or {}
     prompt_cfg = config.get("prompt", {})
 
@@ -290,10 +365,30 @@ def call_llm(
     system_prompt = get_system_prompt(config)
 
     client = anthropic.Anthropic()
-    message = client.messages.create(
-        model=actual_model,
-        max_tokens=actual_max_tokens,
-        system=system_prompt,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return message.content[0].text
+
+    for attempt in range(max_retries):
+        try:
+            message = client.messages.create(
+                model=actual_model,
+                max_tokens=actual_max_tokens,
+                system=system_prompt,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return message.content[0].text
+        except anthropic.APIStatusError as e:
+            # Don't retry on client errors (4xx) except rate limits (429) and overload (529)
+            if e.status_code not in (429, 529) and 400 <= e.status_code < 500:
+                raise
+            if attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)
+                print(f"  API error ({e.status_code}), retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
+        except anthropic.APIConnectionError:
+            if attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)
+                print(f"  Connection error, retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                raise

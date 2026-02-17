@@ -102,6 +102,15 @@ def summarize_file_contents_tiered(
             else:
                 name_parts.append(f"- {rel}")
 
+    # Include project.godot (autoloads, input actions, physics layers)
+    project_file = game_path / "project.godot"
+    if project_file.exists():
+        try:
+            content = project_file.read_text(encoding="utf-8")
+            full_parts.insert(0, f"### project.godot (FULL)\n```ini\n{content}\n```")
+        except Exception:
+            pass
+
     sections = []
     if full_parts:
         sections.append("#### Full Source\n" + "\n\n".join(full_parts))

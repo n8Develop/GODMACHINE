@@ -106,7 +106,8 @@ GODMACHINE/
 - **Composable system prompt**: `SYSTEM_PROMPT` (base rules + `<learning>` tag) + optional `FEW_SHOT_EXAMPLES` + optional `GODOT_CHEAT_SHEET` — assembled by `get_system_prompt(config)`
 - **`estimate_tokens(text)`**: rough `len(text) // 4`
 - **`build_cycle_prompt(...)`**: accepts `capabilities_summary`, `last_diff`, `learnings`, `token_budget` — progressively trims on overflow
-- **`call_llm(prompt, config=config)`**: reads model + max_tokens from config
+- **`call_llm(prompt, config=config)`**: reads model + max_tokens from config, retries up to 3x with exponential backoff on transient failures (429, 529, connection errors)
+- **First-cycle hint**: when `cycle_num == 1`, explore mode nudges the AI to start with foundational systems
 
 ### `twitter_poster.py`
 - **`post_tweet(text, media_path=None)`**: posts via Twitter API v2, optional media via v1.1 upload
@@ -167,10 +168,9 @@ complexity:
 - `project.godot` may be modified by the AI for input actions, autoloads, and physics layer names — but NOT display settings, main scene path, or compatibility flags
 - The ANTHROPIC_API_KEY must be set as an environment variable (never in code/config)
 - `.claude/settings.local.json` is gitignored — it contained a leaked key that was rotated
-- `git_commit` stderr is bytes not string (minor display issue)
 - Token estimation is rough (`len//4`), no proper tokenizer
-- No retry logic on transient API failures
 - Anthropic client is recreated every call (works but wasteful)
+- Config is hot-reloaded each cycle — edit `config.yaml` while running to change settings
 
 ## What's Not Built Yet
 - Video recording (Godot Movie Maker + FFmpeg)
