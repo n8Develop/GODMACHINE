@@ -33,7 +33,7 @@ prompt:
   max_tokens: 8192
 
 twitter:
-  enabled: false  # Set to true + configure env vars to post
+  enabled: true
 
 learnings:
   curate_every: 10        # Curate/compress learnings every N cycles
