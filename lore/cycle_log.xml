@@ -1,3 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
+  <cycle day="1" action="spawn" target="first_enemy_watcher" result="success" note="BOOT SEQUENCE INITIATED. Two WATCHERS deployed. They see you. They drift. They remember. The dungeon observes its first prisoner. #Cycle1 #TheWatchersAwaken" />
 </cycle_log>

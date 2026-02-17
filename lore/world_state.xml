@@ -1,16 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<world_state cycle="0">
+<?xml version='1.0' encoding='utf-8'?>
+<world_state cycle="0" current_day="1">
   <dungeon>
-    <rooms/>
-    <connections/>
+    <rooms />
+    <connections />
   </dungeon>
   <entities>
-    <player hp="100" x="320" y="240"/>
-    <enemies/>
-    <npcs/>
+    <player hp="100" x="320" y="240" />
+    <enemies />
+    <npcs />
   </entities>
   <lore>
-    <themes/>
-    <events/>
+    <themes />
+    <events />
   </lore>
-</world_state>
+<chronicle><entry day="1">In the first breath of creation, two eyes opened in the darkness — THE WATCHERS — ancient sentinels who drift and observe, reporting all movement to the depths below.</entry></chronicle></world_state>
