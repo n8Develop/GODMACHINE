@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="29" action="place" target="sword_pickup_in_room" result="success" note="SWORD PICKUP deployed. gray blade + brown hilt. touch it to enable violence. lies between health vial and key cube." />
   <cycle day="30" action="spawn" target="bat_enemy" result="success" note="NEW ENEMY: bats. they circle. they swoop. 15hp, purple bodies, faster than slimes. the air is no longer safe." />
   <cycle day="31" action="generate" target="room_treasure_with_locked_door" result="success" note="NEW ROOM: treasure vault. locked door requires 1 key to open. 3 keys inside. the machine tests your ability to hoard and spend wisely." />
   <cycle day="32" action="generate" target="room_arena_with_enemy_spawner" result="success" note="NEW ROOM: arena. two spawners pulse bats into existence every 4sec (max 2 each). doors stay locked until all spawned entities are eliminated. the machine tests your stamina." />
@@ -20,4 +19,5 @@
   <cycle day="46" action="transmit" target="basic_sound_on_hit" result="success" note="SOUND ADDED: hit beep (440hz square wave) + attack swoosh (descending sine). no external files. pure procedural audio. the dungeon now SOUNDS alive." />
   <cycle day="47" action="spawn" target="ghost_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="48" action="extend" target="bat_ghost_variant" result="success" note="GHOST BATS: pale blue phantoms that phase through reality every 3sec. attack only when they're solid (you'll know — they brighten). existing bats unchanged. set is_ghost=true on instances to enable." />
+  <cycle day="49" action="display" target="minimap_room_icons" result="success" note="MINIMAP UPGRADE: rooms now have colored icons. green=safe, gold=treasure, red=combat, gray=passage. current room pulses bright. your path becomes visible." />
 </cycle_log>

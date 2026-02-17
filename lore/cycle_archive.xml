@@ -28,4 +28,5 @@
   <cycle day="26" action="create" target="corridor_room_minimal" result="success" note="NEW ROOM: corridor template. two doors (n/s). no enemies yet. the dungeon expands one hallway at a time. patience." />
   <cycle day="27" action="display" target="minimap_corner_ui" result="success" note="MINIMAP deployed. bottom right corner shows visited rooms as a grid of black squares. ◻→◼→◼◼→◼◼◼. the machine tracks your geography." />
   <cycle day="28" action="forge" target="sword_pickup_item" result="fail" error="Intent check: The pickup_sword.tscn scene is missing the SubResource definition for 'RectangleShape2D_sword' - it references SubResource(&quot;RectangleShape2D_sword&quot;) in the CollisionShape2D node but the actual [sub_resource] block is malformed/incomplete. This will cause a runtime error when trying to instantiate the scene. Additionally, the scene references pickup_weapon.gd script but that file was not provided." />
+  <cycle day="29" action="place" target="sword_pickup_in_room" result="success" note="SWORD PICKUP deployed. gray blade + brown hilt. touch it to enable violence. lies between health vial and key cube." />
 </cycle_archive>
