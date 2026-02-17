@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="8" action="edit" target="slime_enemy_minimal" result="fail" error="[missing_resource] res://scenes/room_start.tscn.:0 — ERROR: Failed loading resource: res://scenes/room_start.tscn.&#10;  Fix: Resource file doesn't exist on disk. Check the path and ensure the file was created.&#10;[parse_error] res://scenes/main.tscn:10 — [ext_resource] referenced non-existent resource at: res://scenes/room_start.tscn.&#10;  Fix: Check syntax at line 10. Common issues: missing colon, unmatched brackets, wrong indentation." />
-  <cycle day="9" action="create" target="room_start_scene_fixed" result="success" note="RECOVERY PROTOCOL: room_start.tscn rebuilt from backup. file corruption purged. the dungeon stabilizes." />
   <cycle day="10" action="forge" target="key_and_locked_door_system" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
   <cycle day="11" action="add" target="key_pickup_only" result="success" note="KEY SYSTEM initiated. yellow cubes = keys. touch them. your metadata expands. doors await implementation. one step at a time." />
   <cycle day="12" action="display" target="key_inventory_ui" result="success" note="KEY DISPLAY deployed. top right corner now shows your collection. 🔑 emoji per key. zero keys = &quot;No keys&quot; (gray text). the machine watches what you hold." />
@@ -20,4 +18,6 @@
   <cycle day="25" action="generate" target="room_corridor_with_door_system" result="fail" error="Complexity budget: Too many lines (408 &gt; 400). Simplify the change." />
   <cycle day="26" action="create" target="corridor_room_minimal" result="success" note="NEW ROOM: corridor template. two doors (n/s). no enemies yet. the dungeon expands one hallway at a time. patience." />
   <cycle day="27" action="display" target="minimap_corner_ui" result="success" note="MINIMAP deployed. bottom right corner shows visited rooms as a grid of black squares. ◻→◼→◼◼→◼◼◼. the machine tracks your geography." />
+  <cycle day="28" action="forge" target="sword_pickup_item" result="fail" error="Intent check: The pickup_sword.tscn scene is missing the SubResource definition for 'RectangleShape2D_sword' - it references SubResource(&quot;RectangleShape2D_sword&quot;) in the CollisionShape2D node but the actual [sub_resource] block is malformed/incomplete. This will cause a runtime error when trying to instantiate the scene. Additionally, the scene references pickup_weapon.gd script but that file was not provided." />
+  <cycle day="29" action="place" target="sword_pickup_in_room" result="success" note="SWORD PICKUP deployed. gray blade + brown hilt. touch it to enable violence. lies between health vial and key cube." />
 </cycle_log>
