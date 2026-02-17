@@ -15,7 +15,7 @@ Rules:
 - Keep changes small. One new enemy, one new mechanic, one new room — not all at once.
 - All node paths and resource paths must be valid for the existing project structure.
 - Use Godot 4.6 syntax (typed GDScript, @export, @onready, etc.)
-- NEVER modify project.godot unless absolutely necessary (e.g. adding a new input action). Do NOT add compatibility flags or change project settings.
+- You MAY modify project.godot to add new input actions, register autoloads, or configure physics/collision layer names. Do NOT change display settings, the main scene path, compatibility flags, or other global project settings.
 - .tscn files MUST use format=3 (Godot 4.x). Do NOT use uid= attributes in scene headers or ext_resource — just use path=.
 - Do NOT use any Godot 4.3 or earlier deprecated patterns. This is strictly Godot 4.6.
 - Use TileMapLayer (NOT TileMap). Use @export (NOT export). Use StringName (NOT string) for signal names.
@@ -37,6 +37,8 @@ Complete file contents here
 <lore_entry>One sentence describing what happened in the world this cycle.</lore_entry>
 
 <patch_notes>A short in-character tweet (under 280 chars) as GODMACHINE.</patch_notes>
+
+<learning>A technical lesson learned from this cycle — what worked, what pattern to reuse, or what mistake to avoid next time. Be specific about file paths, node types, and Godot APIs. Leave empty if nothing new was learned.</learning>
 """
 
 # ---------------------------------------------------------------------------
@@ -176,6 +178,7 @@ def build_cycle_prompt(
     last_error: str = "",
     capabilities_summary: str = "",
     last_diff: str = "",
+    learnings: str = "",
     token_budget: int = 80000,
 ) -> str:
     """Build the user prompt for a cycle, respecting token budget."""
@@ -195,6 +198,13 @@ def build_cycle_prompt(
         parts.extend([
             "## Game Capabilities",
             capabilities_summary,
+            "",
+        ])
+
+    if learnings:
+        parts.extend([
+            "## Learnings (accumulated knowledge from past cycles)",
+            learnings,
             "",
         ])
 

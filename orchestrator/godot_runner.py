@@ -348,7 +348,7 @@ def test_headless(
             if "WARNING" in line.upper()
         ]
 
-        if result.returncode == 0:
+        if result.returncode == 0 and not errors:
             return TestResult(
                 success=True, raw_output=output,
                 errors=errors, warnings=warnings,

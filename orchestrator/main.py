@@ -24,6 +24,7 @@ from godot_runner import (
 )
 from llm import build_cycle_prompt, call_llm, estimate_tokens
 from strategy import GameCapabilities, determine_strategy, scan_capabilities
+from twitter_poster import is_configured as twitter_configured, post_tweet
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = Path(__file__).resolve().parent / "config.yaml"
@@ -78,6 +79,10 @@ def parse_response(response: str) -> dict:
     # Extract patch notes
     m = re.search(r"<patch_notes>(.*?)</patch_notes>", response, re.DOTALL)
     result["patch_notes"] = m.group(1).strip() if m else ""
+
+    # Extract learning
+    m = re.search(r"<learning>(.*?)</learning>", response, re.DOTALL)
+    result["learning"] = m.group(1).strip() if m else ""
 
     return result
 
@@ -148,6 +153,49 @@ def update_world_state(world_state_path: Path, lore_entry: str, cycle_num: int) 
     entry.text = lore_entry
 
     tree.write(world_state_path, encoding="unicode", xml_declaration=True)
+
+
+# ---------------------------------------------------------------------------
+# Learnings system
+# ---------------------------------------------------------------------------
+
+LEARNINGS_PATH = ROOT / "lore" / "learnings.md"
+MAX_LEARNINGS = 50  # Keep the file from growing unbounded
+
+
+def read_learnings() -> str:
+    """Read the learnings file and return its contents."""
+    if LEARNINGS_PATH.exists():
+        return LEARNINGS_PATH.read_text(encoding="utf-8")
+    return ""
+
+
+def append_learning(learning: str, cycle_num: int, action: str, result: str) -> None:
+    """Append a learning entry to learnings.md."""
+    if not learning:
+        return
+
+    LEARNINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # Read existing
+    existing = LEARNINGS_PATH.read_text(encoding="utf-8") if LEARNINGS_PATH.exists() else "# GODMACHINE Learnings\n\n"
+
+    # Count existing entries
+    entry_count = existing.count("\n- **Cycle")
+
+    # Append new entry
+    tag = "discovery" if result == "success" else "correction"
+    entry = f"- **Cycle {cycle_num}** [{tag}] ({action}): {learning}\n"
+    existing += entry
+
+    # Trim if too many (keep header + last MAX_LEARNINGS entries)
+    entries = [l for l in existing.splitlines(True) if l.startswith("- **Cycle")]
+    if len(entries) > MAX_LEARNINGS:
+        header = "# GODMACHINE Learnings\n\n"
+        trimmed_entries = entries[-MAX_LEARNINGS:]
+        existing = header + "".join(trimmed_entries)
+
+    LEARNINGS_PATH.write_text(existing, encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -282,6 +330,8 @@ def run_cycle(config: dict) -> None:
         if diff_file.exists():
             last_diff = diff_file.read_text(encoding="utf-8")
 
+    learnings = read_learnings()
+
     prompt = build_cycle_prompt(
         strategy=strategy,
         strategy_explanation=explanation,
@@ -293,6 +343,7 @@ def run_cycle(config: dict) -> None:
         last_error=last_error,
         capabilities_summary=capabilities.summary(),
         last_diff=last_diff,
+        learnings=learnings,
         token_budget=token_budget,
     )
 
@@ -315,6 +366,8 @@ def run_cycle(config: dict) -> None:
     parsed = parse_response(response)
     print(f"  Action: {parsed['action']} -> {parsed['target']}")
     print(f"  Files: {len(parsed['files'])}")
+    if parsed.get("learning"):
+        print(f"  Learning: {parsed['learning'][:80]}...")
 
     if not parsed["files"]:
         print("  No files in response — skipping.")
@@ -362,6 +415,7 @@ def run_cycle(config: dict) -> None:
                 diff_file.write_text(diff, encoding="utf-8")
 
             git_rollback()
+            append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
             append_cycle(
                 cycle_log_path, archive_path,
                 cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
@@ -388,6 +442,7 @@ def run_cycle(config: dict) -> None:
             diff_file.write_text(diff, encoding="utf-8")
 
         git_rollback()
+        append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
         append_cycle(
             cycle_log_path, archive_path,
             cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
@@ -409,6 +464,7 @@ def run_cycle(config: dict) -> None:
                 diff_file.write_text(diff, encoding="utf-8")
 
             git_rollback()
+            append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
             append_cycle(
                 cycle_log_path, archive_path,
                 cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
@@ -428,8 +484,16 @@ def run_cycle(config: dict) -> None:
         cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
         result="success", note=parsed.get("patch_notes", ""),
     )
+
+    # Save learning from this cycle
+    append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "success")
+
     if parsed.get("patch_notes"):
         print(f"\n  GODMACHINE speaks:\n  \"{parsed['patch_notes']}\"")
+
+        # Post to Twitter if configured
+        if config.get("twitter", {}).get("enabled", False) and twitter_configured():
+            post_tweet(parsed["patch_notes"])
 
 
 def main():
@@ -443,6 +507,7 @@ def main():
     print(f"  Token budget: {config.get('context', {}).get('token_budget', 80000)}")
     print(f"  Pre-validation: {config.get('validation', {}).get('pre_validate', False)}")
     print(f"  Smoke test: {config.get('validation', {}).get('smoke_test', False)}")
+    print(f"  Twitter: {'enabled' if config.get('twitter', {}).get('enabled', False) and twitter_configured() else 'disabled'}")
 
     cycles_run = 0
     while True:

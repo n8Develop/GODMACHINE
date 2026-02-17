@@ -28,7 +28,10 @@ prompt:
   godot_cheat_sheet: true
   post_mortem_diff: true
   model: "claude-sonnet-4-5-20250929"
-  max_tokens: 4096
+  max_tokens: 8192
+
+twitter:
+  enabled: false  # Set to true + configure env vars to post
 
 complexity:
   max_files_touched: 3

@@ -128,7 +128,7 @@ complexity:
 ## Known Issues / Things to Watch
 - Claude's training data is heavily Godot 4.3. The system prompt + cheat sheet enforce 4.6 patterns (TileMapLayer not TileMap, no uid= in hand-written .tscn, format=3, etc.)
 - The LLM sometimes generates too many files at once — the complexity budget now rejects these
-- `project.godot` should rarely be modified by the AI — only for new input actions
+- `project.godot` may be modified by the AI for input actions, autoloads, and physics layer names — but NOT display settings, main scene path, or compatibility flags
 - The ANTHROPIC_API_KEY must be set as an environment variable (never in code/config)
 - Pre-validation catches bracket mismatches and missing preload paths before wasting a Godot run
 - Domain cooldown nudges the AI away from repeatedly building in the same domain
