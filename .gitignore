@@ -2,3 +2,4 @@ game/.godot/
 __pycache__/
 *.pyc
 .env
+lore/.last_failed_diff
