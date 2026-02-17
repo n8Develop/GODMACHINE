@@ -61,6 +61,9 @@ func _perform_attack() -> void:
 		attack_indicator.show()
 		_indicator_timer = 0.15
 	
+	# Play attack sound
+	_play_attack_sound()
+	
 	# Find enemies in range
 	var enemies := get_tree().get_nodes_in_group("enemies")
 	var hit_count := 0
@@ -94,6 +97,36 @@ func _spawn_damage_number(pos: Vector2, damage: int) -> void:
 	tween.tween_property(label, "position:y", pos.y - 60, 0.6)
 	tween.tween_property(label, "modulate:a", 0.0, 0.6)
 	tween.finished.connect(label.queue_free)
+
+func _play_attack_sound() -> void:
+	# Create simple procedural swing sound
+	var player := AudioStreamPlayer.new()
+	get_tree().current_scene.add_child(player)
+	
+	var gen := AudioStreamGenerator.new()
+	gen.mix_rate = 22050.0
+	gen.buffer_length = 0.15
+	player.stream = gen
+	player.volume_db = -10.0
+	
+	player.play()
+	
+	# Generate descending swoosh
+	var playback := player.get_stream_playback() as AudioStreamGeneratorPlayback
+	if playback:
+		var frames := int(gen.mix_rate * 0.15)
+		var phase := 0.0
+		for i in range(frames):
+			var t := float(i) / frames
+			var freq := 800.0 - (t * 600.0)  # Descending pitch
+			phase += freq / gen.mix_rate
+			var sample := sin(phase * TAU)
+			sample *= 0.25 * (1.0 - t)  # Fade out
+			playback.push_frame(Vector2(sample, sample))
+	
+	# Auto-cleanup
+	await get_tree().create_timer(0.2).timeout
+	player.queue_free()
 
 func equip_weapon() -> void:
 	_has_weapon = true

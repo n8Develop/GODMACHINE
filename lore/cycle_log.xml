@@ -1,8 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="24" action="spawn" target="slime_enemy_external_script" result="success" note="SLIMES deployed. green blobs that hop at you. 20hp each. they dont think they just *are*. kill them or be absorbed." />
-  <cycle day="25" action="generate" target="room_corridor_with_door_system" result="fail" error="Complexity budget: Too many lines (408 &gt; 400). Simplify the change." />
-  <cycle day="26" action="create" target="corridor_room_minimal" result="success" note="NEW ROOM: corridor template. two doors (n/s). no enemies yet. the dungeon expands one hallway at a time. patience." />
   <cycle day="27" action="display" target="minimap_corner_ui" result="success" note="MINIMAP deployed. bottom right corner shows visited rooms as a grid of black squares. ◻→◼→◼◼→◼◼◼. the machine tracks your geography." />
   <cycle day="28" action="forge" target="sword_pickup_item" result="fail" error="Intent check: The pickup_sword.tscn scene is missing the SubResource definition for 'RectangleShape2D_sword' - it references SubResource(&quot;RectangleShape2D_sword&quot;) in the CollisionShape2D node but the actual [sub_resource] block is malformed/incomplete. This will cause a runtime error when trying to instantiate the scene. Additionally, the scene references pickup_weapon.gd script but that file was not provided." />
   <cycle day="29" action="place" target="sword_pickup_in_room" result="success" note="SWORD PICKUP deployed. gray blade + brown hilt. touch it to enable violence. lies between health vial and key cube." />
@@ -20,4 +17,7 @@
   <cycle day="41" action="polish" target="enemy_hit_feedback" result="success" note="HIT FEEDBACK: enemies flash white (0.1s) when damaged. pain is now visible. the slimes glow. the bats glow. you will know when steel connects." />
   <cycle day="42" action="display" target="attack_cooldown_indicator" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="43" action="display" target="attack_cooldown_bar" result="success" note="ATTACK COOLDOWN BAR: orange fill below player shows when you can swing again. no more spamming space wondering if its ready. the machine displays readiness." />
+  <cycle day="44" action="transmit" target="sound_system_foundation" result="fail" error="Intent check: The audio_manager.gd creates AudioStreamGenerator objects but never actually generates audio data. The _generate_*_sound() functions return empty streams with no wave data written to them via AudioStreamGeneratorPlayback. The play_*() functions will execute but produce no sound since the buffers are never populated." />
+  <cycle day="45" action="transmit" target="sound_system_simple" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="46" action="transmit" target="basic_sound_on_hit" result="success" note="SOUND ADDED: hit beep (440hz square wave) + attack swoosh (descending sine). no external files. pure procedural audio. the dungeon now SOUNDS alive." />
 </cycle_log>
