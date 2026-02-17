@@ -1,35 +1,72 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/pickup_health.tscn" id="2"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
-size = Vector2(600, 20)
+[ext_resource type="PackedScene" path="res://scenes/pickup_key.tscn" id="2"]
 
 [node name="RoomStart" type="Node2D"]
 script = ExtResource("1")
-room_id = "start"
+room_id = "room_start"
 
-[node name="Walls" type="StaticBody2D" parent="."]
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="WallTop" type="StaticBody2D" parent="Walls"]
 collision_layer = 1
-collision_mask = 0
 
-[node name="Floor" type="CollisionShape2D" parent="Walls"]
-position = Vector2(320, 470)
-shape = SubResource("RectangleShape2D_floor")
+[node name="ColorRect" type="ColorRect" parent="Walls/WallTop"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 640.0
+offset_bottom = 32.0
+color = Color(0.3, 0.3, 0.35, 1)
 
-[node name="FloorVisual" type="ColorRect" parent="Walls/Floor"]
-offset_left = -300.0
-offset_top = -10.0
-offset_right = 300.0
-offset_bottom = 10.0
-color = Color(0.15, 0.15, 0.18, 1)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallTop"]
+polygon = PackedVector2Array(0, 0, 640, 0, 640, 32, 0, 32)
 
-[node name="Pickups" type="Node2D" parent="."]
+[node name="WallBottom" type="StaticBody2D" parent="Walls"]
+collision_layer = 1
 
-[node name="Pickup1" parent="Pickups" instance=ExtResource("2")]
-position = Vector2(320, 240)
+[node name="ColorRect" type="ColorRect" parent="Walls/WallBottom"]
+offset_left = 0.0
+offset_top = 448.0
+offset_right = 640.0
+offset_bottom = 480.0
+color = Color(0.3, 0.3, 0.35, 1)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallBottom"]
+polygon = PackedVector2Array(0, 448, 640, 448, 640, 480, 0, 480)
+
+[node name="WallLeft" type="StaticBody2D" parent="Walls"]
+collision_layer = 1
+
+[node name="ColorRect" type="ColorRect" parent="Walls/WallLeft"]
+offset_left = 0.0
+offset_top = 32.0
+offset_right = 32.0
+offset_bottom = 448.0
+color = Color(0.3, 0.3, 0.35, 1)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallLeft"]
+polygon = PackedVector2Array(0, 32, 32, 32, 32, 448, 0, 448)
+
+[node name="WallRight" type="StaticBody2D" parent="Walls"]
+collision_layer = 1
+
+[node name="ColorRect" type="ColorRect" parent="Walls/WallRight"]
+offset_left = 608.0
+offset_top = 32.0
+offset_right = 640.0
+offset_bottom = 448.0
+color = Color(0.3, 0.3, 0.35, 1)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallRight"]
+polygon = PackedVector2Array(608, 32, 640, 32, 640, 448, 608, 448)
+
+[node name="Doors" type="Node2D" parent="."]
 
 [node name="Enemies" type="Node2D" parent="."]
 
-[node name="Doors" type="Node2D" parent="."]
+[node name="Pickups" type="Node2D" parent="."]
+
+[node name="Key1" parent="Pickups" instance=ExtResource("2")]
+position = Vector2(320, 240)
+key_id = "key_01"
