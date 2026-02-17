@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<world_state cycle="0">
+  <dungeon>
+    <rooms/>
+    <connections/>
+  </dungeon>
+  <entities>
+    <player hp="100" x="320" y="240"/>
+    <enemies/>
+    <npcs/>
+  </entities>
+  <lore>
+    <themes/>
+    <events/>
+  </lore>
+</world_state>

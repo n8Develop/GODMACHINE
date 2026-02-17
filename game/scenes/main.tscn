@@ -1,0 +1,42 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://scripts/room_builder.gd" id="2_room"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WBS_top"]
+normal = Vector2(0, 1)
+distance = 32.0
+
+[sub_resource type="WorldBoundaryShape2D" id="WBS_bottom"]
+normal = Vector2(0, -1)
+distance = -448.0
+
+[sub_resource type="WorldBoundaryShape2D" id="WBS_left"]
+normal = Vector2(1, 0)
+distance = 32.0
+
+[sub_resource type="WorldBoundaryShape2D" id="WBS_right"]
+normal = Vector2(-1, 0)
+distance = -608.0
+
+[node name="Main" type="Node2D"]
+script = ExtResource("2_room")
+
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+shape = SubResource("WBS_top")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+shape = SubResource("WBS_bottom")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+shape = SubResource("WBS_left")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+shape = SubResource("WBS_right")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(320, 240)

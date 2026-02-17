@@ -1,0 +1,14 @@
+godot:
+  executable: "C:\\Users\\User\\Downloads\\Godot_v4.6-stable_win64.exe\\Godot_v4.6-stable_win64_console.exe"
+
+cycle:
+  interval_seconds: 300
+  max_cycles: -1  # -1 = unlimited
+
+paths:
+  game: "game"
+  world_state: "lore/world_state.xml"
+  cycle_log: "lore/cycle_log.xml"
+  cycle_archive: "lore/cycle_archive.xml"
+  output: "output"
+  clips: "output/clips"
