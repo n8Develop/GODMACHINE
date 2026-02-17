@@ -1,22 +1,10 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/pickup_health.tscn" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(600, 20)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_left"]
-size = Vector2(20, 440)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_right"]
-size = Vector2(20, 440)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ceiling"]
-size = Vector2(600, 20)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
-size = Vector2(80, 20)
 
 [node name="RoomStart" type="Node2D"]
 script = ExtResource("1")
@@ -37,60 +25,11 @@ offset_right = 300.0
 offset_bottom = 10.0
 color = Color(0.15, 0.15, 0.18, 1)
 
-[node name="Ceiling" type="CollisionShape2D" parent="Walls"]
-position = Vector2(320, 10)
-shape = SubResource("RectangleShape2D_ceiling")
-
-[node name="CeilingVisual" type="ColorRect" parent="Walls/Ceiling"]
-offset_left = -300.0
-offset_top = -10.0
-offset_right = 300.0
-offset_bottom = 10.0
-color = Color(0.15, 0.15, 0.18, 1)
-
-[node name="WallLeft" type="CollisionShape2D" parent="Walls"]
-position = Vector2(10, 240)
-shape = SubResource("RectangleShape2D_wall_left")
-
-[node name="WallLeftVisual" type="ColorRect" parent="Walls/WallLeft"]
-offset_left = -10.0
-offset_top = -220.0
-offset_right = 10.0
-offset_bottom = 220.0
-color = Color(0.15, 0.15, 0.18, 1)
-
-[node name="WallRight" type="CollisionShape2D" parent="Walls"]
-position = Vector2(630, 240)
-shape = SubResource("RectangleShape2D_wall_right")
-
-[node name="WallRightVisual" type="ColorRect" parent="Walls/WallRight"]
-offset_left = -10.0
-offset_top = -220.0
-offset_right = 10.0
-offset_bottom = 220.0
-color = Color(0.15, 0.15, 0.18, 1)
-
-[node name="Doors" type="Node2D" parent="."]
-
-[node name="DoorNorth" type="Area2D" parent="Doors"]
-position = Vector2(320, 10)
-collision_layer = 0
-collision_mask = 2
-metadata/target_room = "north_corridor"
-
-[node name="DoorShape" type="CollisionShape2D" parent="Doors/DoorNorth"]
-shape = SubResource("RectangleShape2D_door")
-
-[node name="DoorVisual" type="ColorRect" parent="Doors/DoorNorth"]
-offset_left = -40.0
-offset_top = -10.0
-offset_right = 40.0
-offset_bottom = 10.0
-color = Color(0.8, 0.6, 0.1, 1)
-
 [node name="Pickups" type="Node2D" parent="."]
 
-[node name="HealthPotion" parent="Pickups" instance=ExtResource("2")]
-position = Vector2(150, 240)
+[node name="Pickup1" parent="Pickups" instance=ExtResource("2")]
+position = Vector2(320, 240)
 
 [node name="Enemies" type="Node2D" parent="."]
+
+[node name="Doors" type="Node2D" parent="."]
