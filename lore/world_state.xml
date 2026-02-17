@@ -1,4 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<world_state cycle="0" current_day="0">
-  <chronicle />
+<world_state cycle="0" current_day="2">
+  <chronicle><entry day="2">The first mortal coil was woven — fragile threads of life and death bound into flesh.</entry></chronicle>
 </world_state>

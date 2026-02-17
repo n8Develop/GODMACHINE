@@ -2,8 +2,12 @@ extends CharacterBody2D
 
 @export var speed: float = 200.0
 
+@onready var health: HealthComponent = $HealthComponent
+
 func _ready() -> void:
 	add_to_group("player")
+	if health:
+		health.died.connect(_on_death)
 
 func _physics_process(_delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -15,3 +19,6 @@ func _physics_process(_delta: float) -> void:
 
 	velocity = input_dir * speed
 	move_and_slide()
+
+func _on_death() -> void:
+	queue_free()
