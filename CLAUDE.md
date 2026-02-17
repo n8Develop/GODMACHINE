@@ -1,16 +1,25 @@
 # GODMACHINE — Project Context
 
 ## What This Is
-An autonomous AI art project. A Python orchestrator runs in a perpetual loop, calling the Anthropic API (Claude) each cycle to make ONE small change to a Godot 4.6 dungeon crawler. The game starts as an empty room with a green square. The AI adds enemies, mechanics, items, rooms, lore — forever. Every successful cycle gets a git commit and eventually a Twitter post written in the voice of GODMACHINE, an unhinged deity building a world it doesn't fully control.
+An autonomous AI art project. A Python orchestrator runs in a perpetual loop, calling the Anthropic API (Claude) each cycle to make ONE small change to a Godot 4.6 dungeon crawler. The game starts as an empty room with a green square. The AI adds enemies, mechanics, items, rooms, lore — forever. Every successful cycle gets a git commit and a Twitter post written in the voice of GODMACHINE, an unhinged deity building a world it doesn't fully control.
 
 The game is never finished. The art project IS the process.
 
 ## Current State
-- **Godot skeleton**: Working top-down 2D game with player movement (WASD), shooting (IJKL), walled room, camera follow
-- **Python orchestrator**: Hardened loop with tiered context, pre-validation, complexity budget, capability tracking
-- **5 successful AI cycles have run**, adding: Watcher enemies, projectile system, health pickups, door/room transitions, cursed shrine
+- **Game reset to Day 0**: Empty room, green square player, WASD movement only. No enemies, items, mechanics, or combat. GODMACHINE builds everything from scratch.
+- **Python orchestrator**: Hardened loop with tiered context, pre-validation, complexity budget, capability tracking, self-improving learnings system, and Twitter posting.
+- **Zero AI cycles have run** on the current blank slate.
 - **Lore system**: world_state.xml accumulates narrative entries each cycle (auto-compressed when >10 entries)
+- **Learnings system**: AI writes technical lessons to `lore/learnings.md` each cycle, which are fed back into the prompt. The AI builds its own knowledge base over time.
+- **Twitter integration**: Posts patch notes automatically after successful cycles (opt-in via config + env vars)
 - **Strategy system**: explore / retry / pivot with domain nudges, dependency awareness, and cooldown tracking
+
+## Philosophy
+- **Hands-off**: Let the LLM figure things out. Don't over-restrict its creativity.
+- **Failures are art**: The process of the AI learning, failing, and adapting IS the project.
+- **Validate output, don't constrain input**: Pre-validation and headless testing catch broken code. The system prompt gives the AI freedom to choose what to build.
+- **Self-improving**: The learnings system lets the AI accumulate knowledge across cycles — it stops repeating the same mistakes.
+- **Only GODMACHINE touches the game**: Humans modify the orchestrator. The AI modifies game/.
 
 ## Architecture
 
@@ -23,39 +32,51 @@ GODMACHINE/
 │   ├── cycle_logger.py     # Read/write cycle_log.xml (last ~20 entries)
 │   ├── codebase_summarizer.py  # Domain classification, tiered file summarization
 │   ├── godot_runner.py     # Headless testing, error parsing, pre-validation, smoke tests
-│   └── config.yaml         # All settings: godot, cycle, context, validation, prompt, complexity
-├── game/                   # Godot 4.6 project — the AI edits this
-│   ├── project.godot
-│   ├── scenes/             # .tscn files (main, player, enemies, rooms, items, UI)
-│   ├── scripts/            # .gd files (all GDScript)
+│   ├── twitter_poster.py   # Tweepy integration — posts patch notes after successful cycles
+│   └── config.yaml         # All settings: godot, cycle, context, validation, prompt, twitter, complexity
+├── game/                   # Godot 4.6 project — ONLY the AI edits this
+│   ├── project.godot       # WASD input mappings, window settings, main scene
+│   ├── scenes/             # .tscn files (currently: main.tscn, player.tscn)
+│   ├── scripts/            # .gd files (currently: player.gd)
 │   └── assets/             # Sprites, sounds (currently empty — colored rectangles)
 ├── lore/
 │   ├── world_state.xml     # Living lore document — AI reads this every cycle
 │   ├── cycle_log.xml       # Rolling log of last ~20 cycle results
 │   ├── cycle_archive.xml   # Archived old cycles
+│   ├── learnings.md        # Self-improving knowledge — AI writes lessons, reads them back
 │   └── .last_failed_diff   # Temp: git diff from last failed cycle (for retry context)
 └── output/clips/           # For future video recording
 ```
 
 ## How the Orchestrator Loop Works
-1. Read `world_state.xml`, `cycle_log.xml`, scan `game/` for codebase summary
+1. Read `world_state.xml`, `cycle_log.xml`, `learnings.md`, scan `game/` for codebase summary
 2. **Scan capabilities** — discover existing enemies, items, rooms, mechanics, autoloads
 3. Determine strategy (explore/retry/pivot) with **domain nudges** and **dependency warnings**
 4. Build **tiered prompt** (full source for focus domain, signatures for related, filenames for rest)
-5. **Token budget** — if prompt exceeds 80k tokens, progressively truncate file contents
-6. Call Claude via Anthropic SDK (model and max_tokens configurable)
-7. Parse response (structured XML tags: `<action>`, `<target>`, `<files>`, `<lore_entry>`, `<patch_notes>`)
-8. **Complexity budget** — reject if >3 files, >400 lines, or >75% new files
-9. Write files to disk
-10. **Pre-validation** — check bracket balance, preload paths, scene ext_resource refs
-11. Run `Godot --headless --quit-after N` to test
-12. **Structured error parsing** — regex patterns categorize errors with actionable suggestions
-13. Optional **smoke test** — temp GDScript checks main scene loads + autoloads present
-14. If PASS: git commit, update lore, clean up saved diff, log success
-15. If FAIL: **save diff** for next retry, git rollback, log structured error
-16. Sleep, repeat
+5. **Inject learnings** — accumulated technical knowledge from past cycles
+6. **Token budget** — if prompt exceeds 80k tokens, progressively truncate file contents
+7. Call Claude via Anthropic SDK (model and max_tokens configurable)
+8. Parse response (structured XML tags: `<action>`, `<target>`, `<files>`, `<lore_entry>`, `<patch_notes>`, `<learning>`)
+9. **Complexity budget** — reject if >3 files, >400 lines, or >75% new files
+10. Write files to disk
+11. **Pre-validation** — check bracket balance, preload paths, scene ext_resource refs
+12. Run `Godot --headless --quit-after N` to test
+13. **Structured error parsing** — regex patterns categorize errors with actionable suggestions. Test FAILS if any errors parsed, even with exit code 0.
+14. Optional **smoke test** — temp GDScript checks main scene loads + autoloads present
+15. If PASS: git commit, update lore, **save learning**, clean up saved diff, log success, **post to Twitter**
+16. If FAIL: **save learning**, **save diff** for next retry, git rollback, log structured error
+17. Sleep, repeat
 
 ## Orchestrator Module Details
+
+### `main.py`
+- Core loop with `run_cycle()` and `main()`
+- `parse_response()`: extracts `<action>`, `<target>`, `<files>`, `<lore_entry>`, `<patch_notes>`, `<learning>`
+- `apply_files()`: writes LLM-generated files to disk
+- `check_complexity_budget()`: rejects over-scoped changes
+- `read_learnings()` / `append_learning()`: read/write `lore/learnings.md`, auto-trims to last 50 entries
+- `git_commit()` / `git_rollback()`: version control safety
+- Twitter posting on success (when configured)
 
 ### `codebase_summarizer.py`
 - **Domain classification**: `DOMAIN_KEYWORDS` maps domains (enemies, items, rooms, core, ui) to filename keywords
@@ -71,7 +92,7 @@ GODMACHINE/
 - **`pre_validate_gdscript(path)`**: bracket/paren balancing, preload path existence
 - **`validate_scene_refs(game_path, files_written)`**: checks ext_resource paths exist on disk
 - **`run_smoke_test(godot_exe, project_path)`**: writes temp `_smoke_test.gd`, checks main scene + autoloads
-- **`test_headless(..., quit_after=2)`**: configurable run duration
+- **`test_headless(..., quit_after=2)`**: fails if exit code != 0 OR if any errors are parsed (no silent failures)
 
 ### `strategy.py`
 - **`GameCapabilities`** dataclass: `enemies`, `items`, `rooms`, `mechanics`, `ui_elements`, `autoloads` — with `summary()` for prompt injection
@@ -82,10 +103,15 @@ GODMACHINE/
 - **`determine_strategy(cycles, capabilities)`**: enhanced with domain nudges + dependency warnings
 
 ### `llm.py`
-- **Composable system prompt**: `SYSTEM_PROMPT` (base rules) + `FEW_SHOT_EXAMPLES` (enemy addition example) + `GODOT_CHEAT_SHEET` (4.6 quick reference) — assembled by `get_system_prompt(config)`
+- **Composable system prompt**: `SYSTEM_PROMPT` (base rules + `<learning>` tag) + optional `FEW_SHOT_EXAMPLES` + optional `GODOT_CHEAT_SHEET` — assembled by `get_system_prompt(config)`
 - **`estimate_tokens(text)`**: rough `len(text) // 4`
-- **`build_cycle_prompt(...)`**: accepts `capabilities_summary`, `last_diff`, `token_budget` — progressively trims on overflow
+- **`build_cycle_prompt(...)`**: accepts `capabilities_summary`, `last_diff`, `learnings`, `token_budget` — progressively trims on overflow
 - **`call_llm(prompt, config=config)`**: reads model + max_tokens from config
+
+### `twitter_poster.py`
+- **`post_tweet(text, media_path=None)`**: posts via Twitter API v2, optional media via v1.1 upload
+- **`is_configured()`**: checks env vars are present
+- Auth via env vars: `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_SECRET`
 
 ### `config.yaml`
 ```yaml
@@ -102,7 +128,9 @@ prompt:
   godot_cheat_sheet: true      # Include 4.6 API reference
   post_mortem_diff: true       # Show failed diff on retry
   model: "claude-sonnet-4-5-20250929"
-  max_tokens: 4096
+  max_tokens: 8192
+twitter:
+  enabled: false               # Set to true + configure env vars to post
 complexity:
   max_files_touched: 3         # Reject if LLM produces too many files
   max_total_lines: 400         # Reject if total output too large
@@ -114,27 +142,37 @@ complexity:
 - **Modularity** — new enemies/items/rooms are self-contained files, not edits to core systems
 - **Rollback safety** — every change is tested before committing; failures revert cleanly
 - **Failure is input** — the AI sees structured errors with actionable suggestions
+- **Self-improving** — the learnings system lets the AI accumulate technical knowledge across cycles
 - **Lore continuity** — the AI reads its own history and builds on it narratively
 - **Context scaling** — tiered summarization keeps prompt size manageable as the game grows
 - **Complexity gating** — budget limits prevent scope creep in LLM output
 
 ## Tech Stack
-- **Python 3.12+** with `anthropic` SDK, `pyyaml`
+- **Python 3.12+** with `anthropic` SDK, `pyyaml`, `tweepy`
 - **Godot 4.6** (NOT 4.3 — the LLM tends to generate 4.3-era code, must be constrained)
 - **GDScript** for all game code
 - **Git** for rollback safety
 - **Godot executable**: `C:\Users\User\Downloads\Godot_v4.6-stable_win64.exe\Godot_v4.6-stable_win64_console.exe`
 
+## Environment Variables
+- `ANTHROPIC_API_KEY` — required, set as persistent user env var
+- `TWITTER_API_KEY` — optional, for Twitter posting
+- `TWITTER_API_SECRET` — optional, for Twitter posting
+- `TWITTER_ACCESS_TOKEN` — optional, for Twitter posting
+- `TWITTER_ACCESS_SECRET` — optional, for Twitter posting
+
 ## Known Issues / Things to Watch
-- Claude's training data is heavily Godot 4.3. The system prompt + cheat sheet enforce 4.6 patterns (TileMapLayer not TileMap, no uid= in hand-written .tscn, format=3, etc.)
-- The LLM sometimes generates too many files at once — the complexity budget now rejects these
+- Claude's training data is heavily Godot 4.3. The system prompt enforces 4.6 patterns (TileMapLayer not TileMap, no uid= in hand-written .tscn, format=3, etc.)
+- The LLM sometimes generates too many files at once — the complexity budget rejects these
 - `project.godot` may be modified by the AI for input actions, autoloads, and physics layer names — but NOT display settings, main scene path, or compatibility flags
 - The ANTHROPIC_API_KEY must be set as an environment variable (never in code/config)
-- Pre-validation catches bracket mismatches and missing preload paths before wasting a Godot run
-- Domain cooldown nudges the AI away from repeatedly building in the same domain
+- `.claude/settings.local.json` is gitignored — it contained a leaked key that was rotated
+- `git_commit` stderr is bytes not string (minor display issue)
+- Token estimation is rough (`len//4`), no proper tokenizer
+- No retry logic on transient API failures
+- Anthropic client is recreated every call (works but wasteful)
 
 ## What's Not Built Yet
-- Twitter posting (Tweepy integration)
 - Video recording (Godot Movie Maker + FFmpeg)
 - Autopilot player for recordings
 - Deployment to VPS (systemd/Docker)
