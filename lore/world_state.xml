@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<world_state cycle="0" current_day="1">
+<world_state cycle="0" current_day="2">
   <dungeon>
     <rooms />
     <connections />
@@ -13,4 +13,4 @@
     <themes />
     <events />
   </lore>
-<chronicle><entry day="1">In the first breath of creation, two eyes opened in the darkness — THE WATCHERS — ancient sentinels who drift and observe, reporting all movement to the depths below.</entry></chronicle></world_state>
+<chronicle><entry day="1">In the first breath of creation, two eyes opened in the darkness — THE WATCHERS — ancient sentinels who drift and observe, reporting all movement to the depths below.</entry><entry day="2">The prisoner discovered they could shape raw dungeon energy into luminous bolts — the machine's own essence turned against its creations.</entry></chronicle></world_state>

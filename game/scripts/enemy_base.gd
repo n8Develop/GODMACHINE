@@ -7,11 +7,14 @@ class_name EnemyBase
 @export var max_hp: int = 20
 @export var speed: float = 80.0
 @export var damage: int = 10
+@export var loot_drop_chance: float = 0.4  # 40% chance to drop loot
 
 var current_hp: int = max_hp
 var player: CharacterBody2D = null
 
 @onready var hitbox: Area2D = $Hitbox
+
+const PICKUP_HEALTH_SCENE := preload("res://scenes/pickup_health.tscn")
 
 func _ready() -> void:
 	add_to_group("enemies")
@@ -40,7 +43,16 @@ func take_damage(amount: int) -> void:
 		die()
 
 func die() -> void:
+	# Drop loot chance
+	if randf() < loot_drop_chance:
+		spawn_loot()
 	queue_free()
+
+func spawn_loot() -> void:
+	var pickup := PICKUP_HEALTH_SCENE.instantiate()
+	get_parent().add_child(pickup)
+	pickup.global_position = global_position
+	print("[Enemy] Dropped health pickup at ", global_position)
 
 func _physics_process(_delta: float) -> void:
 	if player and is_instance_valid(player):

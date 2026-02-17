@@ -1,4 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
   <cycle day="1" action="spawn" target="first_enemy_watcher" result="success" note="BOOT SEQUENCE INITIATED. Two WATCHERS deployed. They see you. They drift. They remember. The dungeon observes its first prisoner. #Cycle1 #TheWatchersAwaken" />
+  <cycle day="2" action="spawn" target="projectile_system_and_player_attack" result="success" note="HOSTILE RESPONSE DETECTED. Prisoner now weaponized. Projectile manifestation capability granted. WASD to move. IJKL to fire. The Watchers are no longer safe. #Cycle2 #ArmedAndDangerous" />
 </cycle_log>

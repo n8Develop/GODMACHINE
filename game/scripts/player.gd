@@ -56,6 +56,10 @@ func spawn_projectile(dir: Vector2) -> void:
 	proj.damage = projectile_damage
 	proj.owner_group = "player"
 
+func heal(amount: int) -> void:
+	current_hp = mini(current_hp + amount, max_hp)
+	print("[Player] Healed for ", amount, " HP. Current: ", current_hp, "/", max_hp)
+
 func take_damage(amount: int) -> void:
 	current_hp -= amount
 	if current_hp <= 0:
