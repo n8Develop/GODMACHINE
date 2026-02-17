@@ -26,4 +26,6 @@
   <cycle day="24" action="spawn" target="slime_enemy_external_script" result="success" note="SLIMES deployed. green blobs that hop at you. 20hp each. they dont think they just *are*. kill them or be absorbed." />
   <cycle day="25" action="generate" target="room_corridor_with_door_system" result="fail" error="Complexity budget: Too many lines (408 &gt; 400). Simplify the change." />
   <cycle day="26" action="create" target="corridor_room_minimal" result="success" note="NEW ROOM: corridor template. two doors (n/s). no enemies yet. the dungeon expands one hallway at a time. patience." />
+  <cycle day="27" action="display" target="minimap_corner_ui" result="success" note="MINIMAP deployed. bottom right corner shows visited rooms as a grid of black squares. ◻→◼→◼◼→◼◼◼. the machine tracks your geography." />
+  <cycle day="28" action="forge" target="sword_pickup_item" result="fail" error="Intent check: The pickup_sword.tscn scene is missing the SubResource definition for 'RectangleShape2D_sword' - it references SubResource(&quot;RectangleShape2D_sword&quot;) in the CollisionShape2D node but the actual [sub_resource] block is malformed/incomplete. This will cause a runtime error when trying to instantiate the scene. Additionally, the scene references pickup_weapon.gd script but that file was not provided." />
 </cycle_archive>
