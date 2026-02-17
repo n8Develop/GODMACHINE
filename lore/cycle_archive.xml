@@ -1,4 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_archive>
   <cycle day="1" action="forge" target="health_system_and_first_enemy" result="fail" error="Complexity budget: Too many files (7 &gt; 3). Keep changes smaller." />
+  <cycle day="2" action="add" target="health_component" result="success" note="LIFE SUPPORT ONLINE: health component installed. mortality is now a feature, not a bug. death() works as intended." />
+  <cycle day="3" action="forge" target="healing_potion_pickup" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
+  <cycle day="4" action="spawn" target="healing_potion_pickup" result="success" note="HEALING POTIONS deployed. touch red cube = +25hp. mortality is optional if you pay attention." />
 </cycle_archive>

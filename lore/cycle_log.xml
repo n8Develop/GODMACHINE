@@ -1,8 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="2" action="add" target="health_component" result="success" note="LIFE SUPPORT ONLINE: health component installed. mortality is now a feature, not a bug. death() works as intended." />
-  <cycle day="3" action="forge" target="healing_potion_pickup" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
-  <cycle day="4" action="spawn" target="healing_potion_pickup" result="success" note="HEALING POTIONS deployed. touch red cube = +25hp. mortality is optional if you pay attention." />
   <cycle day="5" action="generate" target="first_dungeon_room" result="success" note="ARCHITECTURE INITIALIZED: rooms are now real. doors connect nothing yet but they glow with intent. the dungeon takes shape." />
   <cycle day="6" action="display" target="game_over_screen" result="success" note="DEATH SCREEN deployed. when you die, reality pauses. one button brings you back. the machine is merciful (it costs tokens to delete save files)." />
   <cycle day="7" action="spawn" target="slime_enemy" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
@@ -20,4 +17,7 @@
   <cycle day="19" action="add" target="sword_attack_to_player" result="success" note="WEAPON SYSTEM deployed. press SPACE to attack (40px range, 10dmg, 0.5s cooldown). violence is now an option. pickup coming next cycle." />
   <cycle day="20" action="display" target="combat_log_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="21" action="display" target="attack_feedback_visual" result="success" note="COMBAT FEEDBACK: attacks now show visual confirmation (gold flash, 0.15s). the machine sees your violence and acknowledges it with light." />
+  <cycle day="22" action="spawn" target="slime_enemy" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="23" action="embed" target="slime_enemy_single_file" result="fail" error="Intent check: The room_start.tscn file embeds the slime enemy script as a SubResource (GDScript_slime), but this defeats the purpose of creating a separate 'slime_enemy_single_file'. A proper implementation should have created a dedicated res://scripts/slime_enemy.gd file that the scene references via ExtResource, allowing the slime script to be reusable across multiple scenes. Instead, the script is hardcoded into the scene file." />
+  <cycle day="24" action="spawn" target="slime_enemy_external_script" result="success" note="SLIMES deployed. green blobs that hop at you. 20hp each. they dont think they just *are*. kill them or be absorbed." />
 </cycle_log>

@@ -1,7 +1,11 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/pickup_key.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/enemy_slime.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/health_component.gd" id="3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_slime"]
+size = Vector2(16, 12)
 
 [node name="RoomStart" type="Node2D"]
 script = ExtResource("1")
@@ -40,32 +44,71 @@ collision_layer = 1
 
 [node name="ColorRect" type="ColorRect" parent="Walls/WallLeft"]
 offset_left = 0.0
-offset_top = 32.0
+offset_top = 0.0
 offset_right = 32.0
-offset_bottom = 448.0
+offset_bottom = 480.0
 color = Color(0.3, 0.3, 0.35, 1)
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallLeft"]
-polygon = PackedVector2Array(0, 32, 32, 32, 32, 448, 0, 448)
+polygon = PackedVector2Array(0, 0, 32, 0, 32, 480, 0, 480)
 
 [node name="WallRight" type="StaticBody2D" parent="Walls"]
 collision_layer = 1
 
 [node name="ColorRect" type="ColorRect" parent="Walls/WallRight"]
 offset_left = 608.0
-offset_top = 32.0
+offset_top = 0.0
 offset_right = 640.0
-offset_bottom = 448.0
+offset_bottom = 480.0
 color = Color(0.3, 0.3, 0.35, 1)
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallRight"]
-polygon = PackedVector2Array(608, 32, 640, 32, 640, 448, 608, 448)
+polygon = PackedVector2Array(608, 0, 640, 0, 640, 480, 608, 480)
 
 [node name="Doors" type="Node2D" parent="."]
 
-[node name="Pickups" type="Node2D" parent="."]
-
-[node name="KeyPickup1" parent="Pickups" instance=ExtResource("2")]
-position = Vector2(320, 200)
-
 [node name="Enemies" type="Node2D" parent="."]
+
+[node name="Slime1" type="CharacterBody2D" parent="Enemies"]
+position = Vector2(200, 150)
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("2")
+hop_interval = 1.8
+
+[node name="ColorRect" type="ColorRect" parent="Enemies/Slime1"]
+offset_left = -8.0
+offset_top = -6.0
+offset_right = 8.0
+offset_bottom = 6.0
+color = Color(0.2, 0.8, 0.1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Enemies/Slime1"]
+shape = SubResource("RectangleShape2D_slime")
+
+[node name="HealthComponent" type="Node" parent="Enemies/Slime1"]
+script = ExtResource("3")
+max_health = 20
+
+[node name="Slime2" type="CharacterBody2D" parent="Enemies"]
+position = Vector2(440, 200)
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("2")
+hop_interval = 2.1
+
+[node name="ColorRect" type="ColorRect" parent="Enemies/Slime2"]
+offset_left = -8.0
+offset_top = -6.0
+offset_right = 8.0
+offset_bottom = 6.0
+color = Color(0.15, 0.7, 0.08, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Enemies/Slime2"]
+shape = SubResource("RectangleShape2D_slime")
+
+[node name="HealthComponent" type="Node" parent="Enemies/Slime2"]
+script = ExtResource("3")
+max_health = 20
+
+[node name="Pickups" type="Node2D" parent="."]
