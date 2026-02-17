@@ -15,6 +15,10 @@ Rules:
 - Keep changes small. One new enemy, one new mechanic, one new room — not all at once.
 - All node paths and resource paths must be valid for the existing project structure.
 - Use Godot 4.6 syntax (typed GDScript, @export, @onready, etc.)
+- NEVER modify project.godot unless absolutely necessary (e.g. adding a new input action). Do NOT add compatibility flags or change project settings.
+- .tscn files MUST use format=3 (Godot 4.x). Do NOT use uid= attributes in scene headers or ext_resource — just use path=.
+- Do NOT use any Godot 4.3 or earlier deprecated patterns. This is strictly Godot 4.6.
+- Use TileMapLayer (NOT TileMap). Use @export (NOT export). Use StringName (NOT string) for signal names.
 
 Respond in this exact format:
 

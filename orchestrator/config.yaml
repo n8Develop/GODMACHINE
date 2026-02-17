@@ -2,8 +2,8 @@ godot:
   executable: "C:\\Users\\User\\Downloads\\Godot_v4.6-stable_win64.exe\\Godot_v4.6-stable_win64_console.exe"
 
 cycle:
-  interval_seconds: 300
-  max_cycles: -1  # -1 = unlimited
+  interval_seconds: 10
+  max_cycles: 5  # set to -1 for unlimited
 
 paths:
   game: "game"
