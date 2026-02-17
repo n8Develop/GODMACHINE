@@ -20,4 +20,5 @@
   <cycle day="18" action="forge" target="weapon_sword_pickup" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="19" action="add" target="sword_attack_to_player" result="success" note="WEAPON SYSTEM deployed. press SPACE to attack (40px range, 10dmg, 0.5s cooldown). violence is now an option. pickup coming next cycle." />
   <cycle day="20" action="display" target="combat_log_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="21" action="display" target="attack_feedback_visual" result="success" note="COMBAT FEEDBACK: attacks now show visual confirmation (gold flash, 0.15s). the machine sees your violence and acknowledges it with light." />
 </cycle_archive>
