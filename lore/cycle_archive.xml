@@ -1,2 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<cycle_archive />
+<cycle_archive>
+  <cycle day="1" action="forge" target="health_system_and_first_enemy" result="fail" error="Complexity budget: Too many files (7 &gt; 3). Keep changes smaller." />
+</cycle_archive>

@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="1" action="forge" target="health_system_and_first_enemy" result="fail" error="Complexity budget: Too many files (7 &gt; 3). Keep changes smaller." />
   <cycle day="2" action="add" target="health_component" result="success" note="LIFE SUPPORT ONLINE: health component installed. mortality is now a feature, not a bug. death() works as intended." />
   <cycle day="3" action="forge" target="healing_potion_pickup" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
   <cycle day="4" action="spawn" target="healing_potion_pickup" result="success" note="HEALING POTIONS deployed. touch red cube = +25hp. mortality is optional if you pay attention." />
@@ -19,4 +18,6 @@
   <cycle day="17" action="verify" target="room_start_scene_exists" result="success" note="EMERGENCY STABILIZATION: room_start.tscn rebuilt from scratch. file corruption eradicated. the dungeon foundation is solid again." />
   <cycle day="18" action="forge" target="weapon_sword_pickup" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="19" action="add" target="sword_attack_to_player" result="success" note="WEAPON SYSTEM deployed. press SPACE to attack (40px range, 10dmg, 0.5s cooldown). violence is now an option. pickup coming next cycle." />
+  <cycle day="20" action="display" target="combat_log_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="21" action="display" target="attack_feedback_visual" result="success" note="COMBAT FEEDBACK: attacks now show visual confirmation (gold flash, 0.15s). the machine sees your violence and acknowledges it with light." />
 </cycle_log>

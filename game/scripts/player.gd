@@ -6,14 +6,18 @@ extends CharacterBody2D
 @export var attack_cooldown: float = 0.5
 
 @onready var health: HealthComponent = $HealthComponent
+@onready var attack_indicator: ColorRect = $AttackIndicator
 
 var _attack_timer: float = 0.0
 var _has_weapon: bool = false
+var _indicator_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
 	if health:
 		health.died.connect(_on_death)
+	if attack_indicator:
+		attack_indicator.hide()
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -33,10 +37,22 @@ func _physics_process(delta: float) -> void:
 	if _has_weapon and Input.is_action_just_pressed(&"attack") and _attack_timer <= 0.0:
 		_perform_attack()
 		_attack_timer = attack_cooldown
+	
+	# Visual feedback timer
+	if _indicator_timer > 0.0:
+		_indicator_timer -= delta
+		if _indicator_timer <= 0.0 and attack_indicator:
+			attack_indicator.hide()
 
 func _perform_attack() -> void:
+	# Show attack indicator
+	if attack_indicator:
+		attack_indicator.show()
+		_indicator_timer = 0.15
+	
 	# Find enemies in range
 	var enemies := get_tree().get_nodes_in_group("enemies")
+	var hit_count := 0
 	for enemy in enemies:
 		if enemy is Node2D:
 			var distance := global_position.distance_to(enemy.global_position)
@@ -44,7 +60,10 @@ func _perform_attack() -> void:
 				var enemy_health := enemy.get_node_or_null("HealthComponent") as HealthComponent
 				if enemy_health:
 					enemy_health.take_damage(attack_damage)
-					print("GODMACHINE: Strike dealt — ", attack_damage, " damage at range ", distance)
+					hit_count += 1
+	
+	if hit_count > 0:
+		print("GODMACHINE: Strike landed — ", hit_count, " targets eliminated")
 
 func equip_weapon() -> void:
 	_has_weapon = true

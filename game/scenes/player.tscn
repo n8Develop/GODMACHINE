@@ -27,3 +27,10 @@ shape = SubResource("RectangleShape2D_col")
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_health")
 max_health = 100
+
+[node name="AttackIndicator" type="ColorRect" parent="."]
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = 24.0
+color = Color(1, 0.9, 0.2, 0.4)
