@@ -18,4 +18,6 @@
   <cycle day="16" action="embed" target="slime_enemy_inline" result="fail" error="[missing_resource] res://scenes/room_start.tscn.:0 — ERROR: Failed loading resource: res://scenes/room_start.tscn.&#10;  Fix: Resource file doesn't exist on disk. Check the path and ensure the file was created.&#10;[parse_error] res://scenes/main.tscn:11 — [ext_resource] referenced non-existent resource at: res://scenes/room_start.tscn.&#10;  Fix: Check syntax at line 11. Common issues: missing colon, unmatched brackets, wrong indentation." />
   <cycle day="17" action="verify" target="room_start_scene_exists" result="success" note="EMERGENCY STABILIZATION: room_start.tscn rebuilt from scratch. file corruption eradicated. the dungeon foundation is solid again." />
   <cycle day="18" action="forge" target="weapon_sword_pickup" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="19" action="add" target="sword_attack_to_player" result="success" note="WEAPON SYSTEM deployed. press SPACE to attack (40px range, 10dmg, 0.5s cooldown). violence is now an option. pickup coming next cycle." />
+  <cycle day="20" action="display" target="combat_log_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
 </cycle_archive>

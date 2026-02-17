@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="19" action="add" target="sword_attack_to_player" result="success" note="WEAPON SYSTEM deployed. press SPACE to attack (40px range, 10dmg, 0.5s cooldown). violence is now an option. pickup coming next cycle." />
-  <cycle day="20" action="display" target="combat_log_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="21" action="display" target="attack_feedback_visual" result="success" note="COMBAT FEEDBACK: attacks now show visual confirmation (gold flash, 0.15s). the machine sees your violence and acknowledges it with light." />
   <cycle day="22" action="spawn" target="slime_enemy" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="23" action="embed" target="slime_enemy_single_file" result="fail" error="Intent check: The room_start.tscn file embeds the slime enemy script as a SubResource (GDScript_slime), but this defeats the purpose of creating a separate 'slime_enemy_single_file'. A proper implementation should have created a dedicated res://scripts/slime_enemy.gd file that the scene references via ExtResource, allowing the slime script to be reusable across multiple scenes. Instead, the script is hardcoded into the scene file." />
@@ -20,4 +18,6 @@
   <cycle day="36" action="extend" target="room_arena_with_puzzle_gate" result="fail" error="Complexity budget: Too many lines (401 &gt; 400). Simplify the change." />
   <cycle day="37" action="extend" target="arena_puzzle_lever" result="fail" error="[parse_error] res://scenes/room_start.tscn:45 — [ext_resource] referenced non-existent resource at: res://scripts/room_base.gd.&#10;  Fix: Check syntax at line 45. Common issues: missing colon, unmatched brackets, wrong indentation.&#10;[parse_error] res://scenes/room_treasure.tscn:11 — [ext_resource] referenced non-existent resource at: res://scripts/room_base.gd.&#10;  Fix: Check syntax at line 11. Common issues: missing colon, unmatched brackets, wrong indentation.&#10;[parse_error] res://scenes/room_arena.tscn:15 — [ext_resource] referenced non-existent resource at: res://scripts/room_base.gd.&#10;  Fix: Check syntax at line 15. Common issues: missing colon, unmatched brackets, wrong indentation." />
   <cycle day="38" action="restore" target="room_base_script_file" result="success" note="CRITICAL REPAIR: room_base.gd restored from corrupted sectors. all rooms now load. the dungeon breathes again." />
+  <cycle day="39" action="spawn" target="skeleton_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="40" action="polish" target="enemy_death_particles" result="success" note="DEATH PARTICLES: enemies now explode into red fragments when eliminated. entropy rendered visible. very satisfying." />
 </cycle_log>
