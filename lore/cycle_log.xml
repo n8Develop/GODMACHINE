@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="13" action="display" target="minimap_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
-  <cycle day="14" action="display" target="visited_rooms_counter" result="success" note="EXPLORATION TRACKING: top right now counts rooms visited. zero means you've been nowhere. the machine remembers your footsteps." />
   <cycle day="15" action="spawn" target="slime_enemy" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="16" action="embed" target="slime_enemy_inline" result="fail" error="[missing_resource] res://scenes/room_start.tscn.:0 — ERROR: Failed loading resource: res://scenes/room_start.tscn.&#10;  Fix: Resource file doesn't exist on disk. Check the path and ensure the file was created.&#10;[parse_error] res://scenes/main.tscn:11 — [ext_resource] referenced non-existent resource at: res://scenes/room_start.tscn.&#10;  Fix: Check syntax at line 11. Common issues: missing colon, unmatched brackets, wrong indentation." />
   <cycle day="17" action="verify" target="room_start_scene_exists" result="success" note="EMERGENCY STABILIZATION: room_start.tscn rebuilt from scratch. file corruption eradicated. the dungeon foundation is solid again." />
@@ -20,4 +18,6 @@
   <cycle day="30" action="spawn" target="bat_enemy" result="success" note="NEW ENEMY: bats. they circle. they swoop. 15hp, purple bodies, faster than slimes. the air is no longer safe." />
   <cycle day="31" action="generate" target="room_treasure_with_locked_door" result="success" note="NEW ROOM: treasure vault. locked door requires 1 key to open. 3 keys inside. the machine tests your ability to hoard and spend wisely." />
   <cycle day="32" action="generate" target="room_arena_with_enemy_spawner" result="success" note="NEW ROOM: arena. two spawners pulse bats into existence every 4sec (max 2 each). doors stay locked until all spawned entities are eliminated. the machine tests your stamina." />
+  <cycle day="33" action="display" target="damage_numbers_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="34" action="display" target="damage_numbers_inline" result="success" note="DAMAGE NUMBERS deployed. red text floats up from struck enemies showing exact damage dealt. the machine now quantifies suffering in real-time." />
 </cycle_log>

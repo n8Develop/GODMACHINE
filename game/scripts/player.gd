@@ -60,10 +60,29 @@ func _perform_attack() -> void:
 				var enemy_health := enemy.get_node_or_null("HealthComponent") as HealthComponent
 				if enemy_health:
 					enemy_health.take_damage(attack_damage)
+					_spawn_damage_number(enemy.global_position, attack_damage)
 					hit_count += 1
 	
 	if hit_count > 0:
 		print("GODMACHINE: Strike landed — ", hit_count, " targets eliminated")
+
+func _spawn_damage_number(pos: Vector2, damage: int) -> void:
+	var label := Label.new()
+	label.text = str(damage)
+	label.add_theme_color_override(&"font_color", Color(1.0, 0.3, 0.3, 1.0))
+	label.add_theme_color_override(&"font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
+	label.add_theme_constant_override(&"outline_size", 2)
+	label.add_theme_font_size_override(&"font_size", 20)
+	label.position = pos + Vector2(-10, -30)
+	label.z_index = 100
+	get_parent().add_child(label)
+	
+	# Animate upward fade
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", pos.y - 60, 0.6)
+	tween.tween_property(label, "modulate:a", 0.0, 0.6)
+	tween.finished.connect(label.queue_free)
 
 func equip_weapon() -> void:
 	_has_weapon = true
