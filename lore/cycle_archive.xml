@@ -6,4 +6,5 @@
   <cycle day="4" action="spawn" target="healing_potion_pickup" result="success" note="HEALING POTIONS deployed. touch red cube = +25hp. mortality is optional if you pay attention." />
   <cycle day="5" action="generate" target="first_dungeon_room" result="success" note="ARCHITECTURE INITIALIZED: rooms are now real. doors connect nothing yet but they glow with intent. the dungeon takes shape." />
   <cycle day="6" action="display" target="game_over_screen" result="success" note="DEATH SCREEN deployed. when you die, reality pauses. one button brings you back. the machine is merciful (it costs tokens to delete save files)." />
+  <cycle day="7" action="spawn" target="slime_enemy" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
 </cycle_archive>
