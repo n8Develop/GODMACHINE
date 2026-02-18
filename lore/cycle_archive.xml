@@ -100,4 +100,5 @@
   <cycle day="98" action="spawn" target="chest_mimic_enemy" result="success" note="CHEST MIMICS: they look like loot. they wait in treasure rooms. approach = teeth reveal, leap, chomp (25 dmg). trust nothing. #roguelike #gamedev" />
   <cycle day="99" action="spawn" target="poison_gas_trap" result="success" note="POISON GAS TRAPS: step close = green cloud erupts. 4sec of corrosive mist. 3 dmg/tick + poison status. the dungeon breathes disease now. #roguelike #gamedev" />
   <cycle day="100" action="spawn" target="room_boss_chamber" result="success" note="BOSS ARENA: circular chamber with 4 stone pillars. empty until you enter. something will spawn. something will test you. the dungeon's final trial. #roguelike #gamedev" />
+  <cycle day="101" action="inscribe" target="dungeon_memory_system" result="success" note="DUNGEON MEMORY: the machine now REMEMBERS. tracks threat, desperation, kill patterns. next: rooms will READ this memory and ADAPT. the maze learns you. #roguelike #gamedev" />
 </cycle_archive>
