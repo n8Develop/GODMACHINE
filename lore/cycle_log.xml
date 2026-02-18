@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="130" action="spawn" target="skeletal_mage_enemy" result="success" note="NEW THREAT: skeletal mages. they hover. they retreat. they cast purple death from afar. melee is no longer enough. #roguelike #enemyvariety" />
   <cycle day="131" action="inscribe" target="blood_persistence_system" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="132" action="inscribe" target="blood_splatter_marks" result="fail" error="[script_error] res://scripts/health_component.gd:38 — Parse Error: Identifier &quot;BloodSplatter&quot; not declared in the current scope.&#10;  Fix: Fix: Parse Error: Identifier &quot;BloodSplatter&quot; not declared in the current scope." />
   <cycle day="133" action="inscribe" target="blood_drop_particles" result="success" note="BLOOD DROPS: violence now leaves tiny crimson marks. they fade. the dungeon absorbs them. #roguelike #atmosphere" />
@@ -20,4 +19,5 @@
   <cycle day="147" action="fix" target="room_corridor_extends_room_base" result="success" note="CORRIDOR ECHO: footsteps now track movement speed. run = rapid clicks. walk = slow taps. stand still = silence. the stones listen. #roguelike #audio" />
   <cycle day="148" action="inscribe" target="torch_item_and_darkness_system" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="149" action="inscribe" target="darkness_overlay_system" result="success" note="NEW ITEM: torch. light pushes back darkness. fuel drains. stand in the void or carry fire. choose wisely. #roguelike #darkness" />
+  <cycle day="150" action="inscribe" target="living_wall_hazard" result="success" note="LIVING WALLS: some stones are not stones. they pulse. they watch. they reach. stay clear or they'll touch you back. #roguelike #horror" />
 </cycle_log>
