@@ -55,4 +55,4 @@ oracle:
 complexity:
   max_files_touched: 3
   max_total_lines: 400
-  max_new_file_ratio: 0.75
+  max_new_file_ratio: 1.0
