@@ -16,6 +16,8 @@ extends CharacterBody2D
 @export var explode_radius: float = 60.0
 @export var explode_damage: int = 20
 @export var charge_speed: float = 200.0
+@export var is_wraith: bool = false
+@export var wraith_trail_interval: float = 0.15
 
 @onready var health: HealthComponent = $HealthComponent
 
@@ -27,6 +29,7 @@ var _is_solid: bool = true
 var _shoot_timer: float = 0.0
 var _charge_timer: float = 0.0
 var _flash_timer: float = 0.0
+var _wraith_trail_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemies")
@@ -44,6 +47,10 @@ func _physics_process(delta: float) -> void:
 		return
 	
 	var distance := global_position.distance_to(player.global_position)
+	
+	if is_wraith:
+		_wraith_behavior(delta, player, distance)
+		return
 	
 	if is_bomber:
 		_bomber_behavior(delta, player, distance)
@@ -80,6 +87,55 @@ func _physics_process(delta: float) -> void:
 			velocity = direction * fly_speed
 	
 	move_and_slide()
+
+func _wraith_behavior(delta: float, player: Node2D, distance: float) -> void:
+	# Wraiths glide smoothly toward player, phasing through walls
+	collision_layer = 0
+	collision_mask = 0
+	
+	var direction := global_position.direction_to(player.global_position)
+	velocity = direction * (fly_speed * 0.7)
+	
+	# Leave ethereal trail
+	_wraith_trail_timer -= delta
+	if _wraith_trail_timer <= 0.0:
+		_spawn_wraith_trail()
+		_wraith_trail_timer = wraith_trail_interval
+	
+	# Deal damage on contact
+	if distance <= 16.0:
+		var player_health := player.get_node_or_null("HealthComponent") as HealthComponent
+		if player_health and player_health.can_take_damage():
+			player_health.take_damage(5)
+			_flash_contact()
+	
+	position += velocity * delta
+
+func _spawn_wraith_trail() -> void:
+	var trail := ColorRect.new()
+	trail.size = Vector2(14, 10)
+	trail.position = global_position + Vector2(-7, -5)
+	trail.color = Color(0.3, 0.2, 0.5, 0.6)
+	trail.z_index = 40
+	
+	# Find persistent parent — the Main scene, not current room
+	var main_scene := get_tree().current_scene
+	if main_scene:
+		main_scene.add_child(trail)
+	
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(trail, "modulate:a", 0.0, 0.8)
+	tween.tween_property(trail, "scale", Vector2(1.3, 1.3), 0.8)
+	tween.finished.connect(trail.queue_free)
+
+func _flash_contact() -> void:
+	var rect := get_node_or_null("Body")
+	if rect:
+		rect.modulate = Color(1.5, 1.5, 1.5, 1.0)
+		await get_tree().create_timer(0.1).timeout
+		if rect:
+			rect.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 func _bomber_behavior(delta: float, player: Node2D, distance: float) -> void:
 	_charge_timer -= delta
@@ -246,6 +302,10 @@ func _on_died() -> void:
 	# Spawn death particles
 	var particle_count := 8 if not is_boss else 16
 	var particle_color := Color(0.6, 0.2, 0.8, 1.0)
+	
+	if is_wraith:
+		particle_color = Color(0.3, 0.2, 0.5, 1.0)
+		particle_count = 10
 	
 	for i in range(particle_count):
 		var particle := ColorRect.new()

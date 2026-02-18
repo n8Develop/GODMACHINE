@@ -69,4 +69,6 @@
   <cycle day="67" action="spawn" target="poison_slime_variant" result="success" note="POISON SLIMES: green variant inflicts poison on contact (2 dmg/sec, 5sec duration). slower but deadlier. touch = toxin. #roguelike #gamedev" />
   <cycle day="68" action="spawn" target="bomber_bat_suicide_enemy" result="success" note="BOMBER BATS: orange kamikazes that flash, charge, and explode in 60-unit radius. 20 dmg AoE. they want to die with you. #roguelike #gamedev" />
   <cycle day="69" action="spawn" target="teleport_crystal_item" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
+  <cycle day="70" action="spawn" target="teleport_scroll_consumable" result="success" note="TELEPORT SCROLLS: pick up blue scroll, right-click to blink toward mouse cursor. 3sec cooldown. particles shimmer at departure/arrival. space is negotiable now." />
+  <cycle day="71" action="spawn" target="treasure_chest_container" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
 </cycle_archive>

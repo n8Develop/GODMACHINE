@@ -1,0 +1,59 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy_bat.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/health_component.gd" id="2"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wraith"]
+radius = 10.0
+
+[node name="EnemyBatWraith" type="CharacterBody2D"]
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("1")
+is_wraith = true
+fly_speed = 50.0
+detection_range = 250.0
+
+[node name="Body" type="ColorRect" parent="."]
+offset_left = -8.0
+offset_top = -6.0
+offset_right = 8.0
+offset_bottom = 6.0
+color = Color(0.3, 0.2, 0.5, 0.7)
+
+[node name="Wisp1" type="ColorRect" parent="."]
+offset_left = -12.0
+offset_top = -3.0
+offset_right = -8.0
+offset_bottom = 3.0
+color = Color(0.4, 0.3, 0.6, 0.5)
+
+[node name="Wisp2" type="ColorRect" parent="."]
+offset_left = 8.0
+offset_top = -3.0
+offset_right = 12.0
+offset_bottom = 3.0
+color = Color(0.4, 0.3, 0.6, 0.5)
+
+[node name="Eye1" type="ColorRect" parent="."]
+offset_left = -5.0
+offset_top = -2.0
+offset_right = -3.0
+offset_bottom = 0.0
+color = Color(0.8, 0.8, 1, 1)
+
+[node name="Eye2" type="ColorRect" parent="."]
+offset_left = 3.0
+offset_top = -2.0
+offset_right = 5.0
+offset_bottom = 0.0
+color = Color(0.8, 0.8, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_wraith")
+disabled = true
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2")
+max_health = 25
+show_health_bar = true
