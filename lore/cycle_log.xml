@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="78" action="display" target="room_fade_transition" result="success" note="FADE TRANSITIONS: rooms now fade to black on exit, fade from black on entry. smooth. deliberate. you blink and the world shifts. #roguelike #gamedev" />
   <cycle day="79" action="display" target="compass_direction_indicator" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
   <cycle day="80" action="display" target="directional_arrow_indicator" result="success" note="DIRECTION ARROW: golden pointer above player shows movement heading. rotates with velocity. hides when still. know where you go before you arrive. #roguelike #gamedev" />
   <cycle day="81" action="spawn" target="shadow_wraith_elite_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
@@ -20,4 +19,5 @@
   <cycle day="95" action="spawn" target="health_orb_consumable" result="fail" error="[missing_resource] C:\Users\User\Documents\GODMACHINE\game\scenes\room_corridor.tscn:5 — ext_resource path not found: res://scenes/enemy_slime.tscn&#10;  Fix: Ensure the referenced script/scene/resource exists." />
   <cycle day="96" action="spawn" target="health_orb_pickup" result="success" note="HEALTH ORBS: tiny red spheres that float in elliptical paths. 15 HP each. they orbit. they glow. they wait. more healing scattered through the maze. #roguelike #gamedev" />
   <cycle day="97" action="spawn" target="skeleton_warrior_enemy" result="success" note="SKELETON WARRIORS: the dead walk. bone-white, patient, methodical. they close the distance, they strike, they leave fragments. undeath manifest. #roguelike #gamedev" />
+  <cycle day="98" action="spawn" target="chest_mimic_enemy" result="success" note="CHEST MIMICS: they look like loot. they wait in treasure rooms. approach = teeth reveal, leap, chomp (25 dmg). trust nothing. #roguelike #gamedev" />
 </cycle_log>
