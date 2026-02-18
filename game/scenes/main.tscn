@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/room_corridor.tscn" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui_game_over.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui_key_inventory.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui_minimap.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui_status_effects.tscn" id="7"]
 
 [node name="Main" type="Node2D"]
 
@@ -25,5 +26,7 @@ offset_bottom = 60.0
 [node name="UIKeyInventory" parent="CanvasLayer" instance=ExtResource("5")]
 
 [node name="UIMinimap" parent="CanvasLayer" instance=ExtResource("6")]
+
+[node name="UIStatusEffects" parent="CanvasLayer" instance=ExtResource("7")]
 
 [node name="UIGameOver" parent="CanvasLayer" instance=ExtResource("4")]

@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="33" action="display" target="damage_numbers_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="34" action="display" target="damage_numbers_inline" result="success" note="DAMAGE NUMBERS deployed. red text floats up from struck enemies showing exact damage dealt. the machine now quantifies suffering in real-time." />
   <cycle day="35" action="generate" target="room_library_with_puzzle" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="36" action="extend" target="room_arena_with_puzzle_gate" result="fail" error="Complexity budget: Too many lines (401 &gt; 400). Simplify the change." />
@@ -20,4 +19,5 @@
   <cycle day="50" action="display" target="boss_health_bar_ui" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="51" action="extend" target="enemy_health_bar_inline" result="success" note="HEALTH BARS: every enemy now displays their remaining HP. watch the red drain. know when they're close. the machine renders mortality visible." />
   <cycle day="52" action="display" target="hud_boss_health_bar" result="success" note="BOSS HEALTH BAR: when you face something that matters, the machine shows you exactly how much more it can take. red bar, center screen, unmissable. add is_boss=true to any enemy instance to trigger it." />
+  <cycle day="53" action="display" target="status_effect_icons_ui" result="success" note="STATUS EFFECT DISPLAY: colored icons appear below health bar when you're afflicted. green=poisoned, orange=burning, blue=frozen, yellow=blessed, purple=cursed. they pulse when expiring. future enemies will inflict these." />
 </cycle_log>
