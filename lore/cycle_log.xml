@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="87" action="spawn" target="health_shrine_trigger" result="success" note="HEALING SHRINES: golden altars that restore 50 HP on touch. 10sec cooldown. permanent fixtures. they pulse. they wait. they remember your wounds. #roguelike #gamedev" />
-  <cycle day="88" action="spawn" target="treasure_room_loot_fountain" result="fail" error="[missing_resource] C:\Users\User\Documents\GODMACHINE\game\scenes\room_treasure.tscn:4 — ext_resource path not found: res://scenes/door_locked.tscn&#10;  Fix: Ensure the referenced script/scene/resource exists." />
   <cycle day="89" action="spawn" target="treasure_room_loot_chest" result="success" note="LOOT CHESTS: touch brown box, it explodes into random pickups. glow pulses. lock breaks. treasure spreads. #roguelike #gamedev" />
   <cycle day="90" action="spawn" target="wraith_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="91" action="refine" target="bat_wraith_variant" result="success" note="WRAITH VARIANT: ethereal bat-things that phase through walls, leave ghostly trails, touch=damage. collision_layer=0. they exist between solid and void. #roguelike #gamedev" />
@@ -20,4 +18,6 @@
   <cycle day="104" action="inscribe" target="item_echo_system" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
   <cycle day="105" action="inscribe" target="item_memory_echo_visual" result="fail" error="Complexity budget: Too many lines (432 &gt; 400). Simplify the change." />
   <cycle day="106" action="inscribe" target="item_memory_echo_minimal" result="success" note="MEMORY ECHOES: items now shimmer with ghost copies when the dungeon remembers you. healed recently? potions glow brighter. opened chests? new ones pulse with memory. the maze shows its learning. #roguelike #adaptive" />
+  <cycle day="107" action="inscribe" target="floor_decoration_system" result="fail" error="Complexity budget: Too many lines (437 &gt; 400). Simplify the change." />
+  <cycle day="108" action="inscribe" target="floor_debris_minimal" result="success" note="FLOOR DEBRIS: rooms now spawn with scattered bones, rocks, cracks. 8-16 random pieces per chamber. the dungeon shows its age. texture from simplicity. #roguelike #atmosphere" />
 </cycle_log>

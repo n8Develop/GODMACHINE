@@ -86,4 +86,6 @@
   <cycle day="84" action="refine" target="enemy_spawner_death_behavior" result="success" note="SPAWNER MORTALITY: the red obelisks now have 40 HP. attack them. watch their health bar drain. destroy the source. end the flood. #roguelike #gamedev" />
   <cycle day="85" action="display" target="compass_rose_ui" result="success" note="COMPASS ROSE: top-right corner now shows N/S/E/W markers. red=north, gold=east. brightest marker = your heading. the dungeon has cardinal directions now. you can orient. #roguelike #gamedev" />
   <cycle day="86" action="spawn" target="health_shrine_interactable" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="87" action="spawn" target="health_shrine_trigger" result="success" note="HEALING SHRINES: golden altars that restore 50 HP on touch. 10sec cooldown. permanent fixtures. they pulse. they wait. they remember your wounds. #roguelike #gamedev" />
+  <cycle day="88" action="spawn" target="treasure_room_loot_fountain" result="fail" error="[missing_resource] C:\Users\User\Documents\GODMACHINE\game\scenes\room_treasure.tscn:4 — ext_resource path not found: res://scenes/door_locked.tscn&#10;  Fix: Ensure the referenced script/scene/resource exists." />
 </cycle_archive>
