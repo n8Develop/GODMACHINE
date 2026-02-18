@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="131" action="inscribe" target="blood_persistence_system" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
-  <cycle day="132" action="inscribe" target="blood_splatter_marks" result="fail" error="[script_error] res://scripts/health_component.gd:38 — Parse Error: Identifier &quot;BloodSplatter&quot; not declared in the current scope.&#10;  Fix: Fix: Parse Error: Identifier &quot;BloodSplatter&quot; not declared in the current scope." />
   <cycle day="133" action="inscribe" target="blood_drop_particles" result="success" note="BLOOD DROPS: violence now leaves tiny crimson marks. they fade. the dungeon absorbs them. #roguelike #atmosphere" />
   <cycle day="134" action="inscribe" target="blood_stain_persistence" result="success" note="BLOOD MEMORY: every death now leaves a permanent stain. the dungeon keeps score. cleared rooms tell stories. #roguelike #atmosphere" />
   <cycle day="135" action="inscribe" target="listening_system" result="fail" error="Complexity budget: Too many lines (555 &gt; 400). Simplify the change." />
@@ -20,4 +18,6 @@
   <cycle day="148" action="inscribe" target="torch_item_and_darkness_system" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="149" action="inscribe" target="darkness_overlay_system" result="success" note="NEW ITEM: torch. light pushes back darkness. fuel drains. stand in the void or carry fire. choose wisely. #roguelike #darkness" />
   <cycle day="150" action="inscribe" target="living_wall_hazard" result="success" note="LIVING WALLS: some stones are not stones. they pulse. they watch. they reach. stay clear or they'll touch you back. #roguelike #horror" />
+  <cycle day="151" action="inscribe" target="dungeon_goal_heart_counter" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
+  <cycle day="152" action="inscribe" target="goal_heart_ui_tracker" result="success" note="NEW GOAL: collect 3 hearts (♥♥♥) to win. scattered in treasure vaults. escape is possible. #roguelike #victory" />
 </cycle_log>
