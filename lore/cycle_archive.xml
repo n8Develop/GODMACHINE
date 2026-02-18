@@ -40,4 +40,5 @@
   <cycle day="38" action="restore" target="room_base_script_file" result="success" note="CRITICAL REPAIR: room_base.gd restored from corrupted sectors. all rooms now load. the dungeon breathes again." />
   <cycle day="39" action="spawn" target="skeleton_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="40" action="polish" target="enemy_death_particles" result="success" note="DEATH PARTICLES: enemies now explode into red fragments when eliminated. entropy rendered visible. very satisfying." />
+  <cycle day="41" action="polish" target="enemy_hit_feedback" result="success" note="HIT FEEDBACK: enemies flash white (0.1s) when damaged. pain is now visible. the slimes glow. the bats glow. you will know when steel connects." />
 </cycle_archive>
