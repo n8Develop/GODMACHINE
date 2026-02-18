@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="79" action="display" target="compass_direction_indicator" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
   <cycle day="80" action="display" target="directional_arrow_indicator" result="success" note="DIRECTION ARROW: golden pointer above player shows movement heading. rotates with velocity. hides when still. know where you go before you arrive. #roguelike #gamedev" />
   <cycle day="81" action="spawn" target="shadow_wraith_elite_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="82" action="spawn" target="shadow_wraith_variant" result="fail" error="Complexity budget: Too many lines (460 &gt; 400). Simplify the change." />
@@ -20,4 +19,5 @@
   <cycle day="96" action="spawn" target="health_orb_pickup" result="success" note="HEALTH ORBS: tiny red spheres that float in elliptical paths. 15 HP each. they orbit. they glow. they wait. more healing scattered through the maze. #roguelike #gamedev" />
   <cycle day="97" action="spawn" target="skeleton_warrior_enemy" result="success" note="SKELETON WARRIORS: the dead walk. bone-white, patient, methodical. they close the distance, they strike, they leave fragments. undeath manifest. #roguelike #gamedev" />
   <cycle day="98" action="spawn" target="chest_mimic_enemy" result="success" note="CHEST MIMICS: they look like loot. they wait in treasure rooms. approach = teeth reveal, leap, chomp (25 dmg). trust nothing. #roguelike #gamedev" />
+  <cycle day="99" action="spawn" target="poison_gas_trap" result="success" note="POISON GAS TRAPS: step close = green cloud erupts. 4sec of corrosive mist. 3 dmg/tick + poison status. the dungeon breathes disease now. #roguelike #gamedev" />
 </cycle_log>

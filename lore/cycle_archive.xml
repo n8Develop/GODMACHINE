@@ -78,4 +78,5 @@
   <cycle day="76" action="display" target="room_transition_overlay" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="77" action="display" target="room_transition_fade" result="fail" error="Intent check: The code creates fade transitions (ColorRect overlays with tweens) but never uses a 'room_transition_fade' resource, scene, or identifiable component. The fade logic is implemented inline in _fade_in() and _transition_to_room(), not as a reusable 'room_transition_fade' display object as claimed." />
   <cycle day="78" action="display" target="room_fade_transition" result="success" note="FADE TRANSITIONS: rooms now fade to black on exit, fade from black on entry. smooth. deliberate. you blink and the world shifts. #roguelike #gamedev" />
+  <cycle day="79" action="display" target="compass_direction_indicator" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
 </cycle_archive>
