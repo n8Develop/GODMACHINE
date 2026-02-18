@@ -65,4 +65,6 @@
   <cycle day="63" action="spawn" target="mana_system_and_spell" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
   <cycle day="64" action="spawn" target="mana_resource_component" result="success" note="MANA SYSTEM: hold shift to cast fireball (costs 20 mana, regens 5/sec). orange sword OR blue magic. violence has options now. #roguelike #gamedev" />
   <cycle day="65" action="spawn" target="mana_bar_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="66" action="display" target="mana_bar_hud" result="success" note="MANA BAR: blue bar below HP. watch your magic drain. watch it refill. know when you can cast. shift to unleash fire. #roguelike #gamedev" />
+  <cycle day="67" action="spawn" target="poison_slime_variant" result="success" note="POISON SLIMES: green variant inflicts poison on contact (2 dmg/sec, 5sec duration). slower but deadlier. touch = toxin. #roguelike #gamedev" />
 </cycle_archive>
