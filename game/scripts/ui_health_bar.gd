@@ -13,6 +13,11 @@ var _boss_fill: ColorRect = null
 var _boss_label: Label = null
 var _boss_target: Node = null
 
+# Mana bar elements (added inline)
+var _mana_bg: ColorRect = null
+var _mana_fill: ColorRect = null
+var _mana_label: Label = null
+
 func _ready() -> void:
 	var player := get_tree().get_first_node_in_group("player")
 	if player:
@@ -26,6 +31,9 @@ func _ready() -> void:
 	
 	# Create boss health bar (hidden by default)
 	_create_boss_bar()
+	
+	# Create mana bar below health bar
+	_create_mana_bar()
 
 func _process(_delta: float) -> void:
 	# Check for boss enemy
@@ -45,6 +53,60 @@ func _process(_delta: float) -> void:
 		if _boss_bar_container:
 			_boss_bar_container.hide()
 		_boss_target = null
+	
+	# Update mana bar
+	_update_mana_display()
+
+func _create_mana_bar() -> void:
+	# Background
+	_mana_bg = ColorRect.new()
+	_mana_bg.position = Vector2(0, 35)
+	_mana_bg.size = Vector2(180, 20)
+	_mana_bg.color = Color(0.1, 0.1, 0.15, 1.0)
+	add_child(_mana_bg)
+	
+	# Fill
+	_mana_fill = ColorRect.new()
+	_mana_fill.position = Vector2(10, 40)
+	_mana_fill.size = Vector2(160, 10)
+	_mana_fill.color = Color(0.2, 0.4, 1.0, 1.0)
+	add_child(_mana_fill)
+	
+	# Label
+	_mana_label = Label.new()
+	_mana_label.position = Vector2(10, 37)
+	_mana_label.size = Vector2(160, 16)
+	_mana_label.add_theme_color_override(&"font_color", Color(0.8, 0.9, 1.0, 1.0))
+	_mana_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 1))
+	_mana_label.add_theme_constant_override(&"outline_size", 1)
+	_mana_label.add_theme_font_size_override(&"font_size", 12)
+	_mana_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_mana_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_mana_label.text = "MP: 100/100"
+	add_child(_mana_label)
+
+func _update_mana_display() -> void:
+	if not _mana_fill or not _mana_label:
+		return
+	
+	var player := get_tree().get_first_node_in_group("player")
+	if not player:
+		return
+	
+	var mana := player.get_node_or_null("ManaComponent")
+	if not mana:
+		_mana_bg.hide()
+		_mana_fill.hide()
+		_mana_label.hide()
+		return
+	
+	_mana_bg.show()
+	_mana_fill.show()
+	_mana_label.show()
+	
+	var ratio := float(mana.current_mana) / float(mana.max_mana) if mana.max_mana > 0 else 0.0
+	_mana_fill.size.x = 160 * ratio
+	_mana_label.text = "MP: %d/%d" % [mana.current_mana, mana.max_mana]
 
 func _create_boss_bar() -> void:
 	_boss_bar_container = Control.new()
