@@ -7,113 +7,92 @@ extends CharacterBody2D
 @export var swoop_duration: float = 0.6
 @export var is_ghost: bool = false
 @export var phase_interval: float = 3.0
+@export var is_boss: bool = false
 
-var _player: Node2D = null
+@onready var health: HealthComponent = $HealthComponent
+
+var _state: String = "patrol"
 var _swoop_timer: float = 0.0
-var _swoop_active: bool = false
-var _swoop_time: float = 0.0
-var _idle_drift: Vector2 = Vector2.ZERO
+var _swoop_target: Vector2 = Vector2.ZERO
 var _phase_timer: float = 0.0
-var _is_phased: bool = false
+var _is_solid: bool = true
 
 func _ready() -> void:
 	add_to_group("enemies")
-	_idle_drift = Vector2(randf_range(-1, 1), randf_range(-1, 1)).normalized()
-	
-	if is_ghost:
-		# Ghost visual style - pale blue/white, semi-transparent
-		var body := get_node_or_null("Body") as ColorRect
-		if body:
-			body.color = Color(0.6, 0.7, 1.0, 0.6)
-		var wing1 := get_node_or_null("Wing1") as ColorRect
-		if wing1:
-			wing1.color = Color(0.5, 0.6, 0.9, 0.5)
-		var wing2 := get_node_or_null("Wing2") as ColorRect
-		if wing2:
-			wing2.color = Color(0.5, 0.6, 0.9, 0.5)
-		
-		# Ghosts start phased out
-		_is_phased = true
-		_update_collision_state()
+	if is_boss:
+		add_to_group("boss")
+	if health:
+		health.died.connect(_on_died)
+	_phase_timer = phase_interval
 
 func _physics_process(delta: float) -> void:
-	if not _player:
-		_player = get_tree().get_first_node_in_group("player")
-		if not _player:
-			return
+	var player := get_tree().get_first_node_in_group("player")
+	if not player:
+		return
 	
-	var distance := global_position.distance_to(_player.global_position)
+	var distance := global_position.distance_to(player.global_position)
 	
-	# Update timers
-	if _swoop_timer > 0.0:
-		_swoop_timer -= delta
-	
-	if _swoop_active:
-		_swoop_time -= delta
-		if _swoop_time <= 0.0:
-			_swoop_active = false
-	
-	# Ghost phasing mechanic
+	# Ghost phasing logic
 	if is_ghost:
-		_phase_timer += delta
-		if _phase_timer >= phase_interval:
-			_phase_timer = 0.0
-			_is_phased = !_is_phased
+		_phase_timer -= delta
+		if _phase_timer <= 0.0:
+			_phase_timer = phase_interval
+			_is_solid = not _is_solid
 			_update_collision_state()
 			_update_visual_phase()
 	
-	# Behavior logic
-	if distance < detection_range:
-		if not _swoop_active and _swoop_timer <= 0.0:
-			# Start swoop
-			_swoop_active = true
-			_swoop_time = swoop_duration
-			_swoop_timer = swoop_cooldown
+	# State machine
+	match _state:
+		"patrol":
+			_patrol_movement(delta)
+			if distance <= detection_range:
+				_state = "chase"
 		
-		if _swoop_active:
-			# Swoop at player
-			var dir := global_position.direction_to(_player.global_position)
+		"chase":
+			if distance > detection_range * 1.5:
+				_state = "patrol"
+			elif _swoop_timer <= 0.0 and distance < detection_range * 0.6:
+				_state = "swoop"
+				_swoop_target = player.global_position
+				_swoop_timer = swoop_cooldown
+			else:
+				_swoop_timer -= delta
+				var dir := global_position.direction_to(player.global_position)
+				velocity = dir * fly_speed
+		
+		"swoop":
+			var dir := global_position.direction_to(_swoop_target)
 			velocity = dir * swoop_speed
-		else:
-			# Circle slowly
-			var offset := Vector2(sin(Time.get_ticks_msec() * 0.002) * 30, cos(Time.get_ticks_msec() * 0.002) * 30)
-			var target := _player.global_position + offset
-			var dir := global_position.direction_to(target)
-			velocity = dir * fly_speed
-	else:
-		# Idle drift
-		velocity = _idle_drift * fly_speed * 0.4
+			if global_position.distance_to(_swoop_target) < 20.0:
+				_state = "chase"
 	
 	move_and_slide()
 
+func _patrol_movement(delta: float) -> void:
+	var time := Time.get_ticks_msec() / 1000.0
+	var offset_x := sin(time * 1.2) * 30.0
+	var offset_y := cos(time * 0.8) * 20.0
+	var target := global_position + Vector2(offset_x, offset_y)
+	var dir := global_position.direction_to(target)
+	velocity = dir * fly_speed * 0.3
+
 func _update_collision_state() -> void:
-	if _is_phased:
-		# Phased out - no collision with player attacks
-		collision_mask = 0
-		collision_layer = 0
-	else:
-		# Phased in - normal collision
-		collision_mask = 1
+	if _is_solid:
 		collision_layer = 2
+		collision_mask = 3
+	else:
+		collision_layer = 0
+		collision_mask = 0
 
 func _update_visual_phase() -> void:
-	var body := get_node_or_null("Body") as ColorRect
-	var wing1 := get_node_or_null("Wing1") as ColorRect
-	var wing2 := get_node_or_null("Wing2") as ColorRect
-	
-	if _is_phased:
-		# Nearly invisible when phased
-		if body:
-			body.modulate.a = 0.2
-		if wing1:
-			wing1.modulate.a = 0.2
-		if wing2:
-			wing2.modulate.a = 0.2
-	else:
-		# More visible when vulnerable
-		if body:
-			body.modulate.a = 0.8
-		if wing1:
-			wing1.modulate.a = 0.7
-		if wing2:
-			wing2.modulate.a = 0.7
+	var sprite := get_node_or_null("ColorRect")
+	if sprite:
+		if _is_solid:
+			sprite.modulate.a = 1.0
+			sprite.color = Color(0.6, 0.8, 1.0, 1.0)
+		else:
+			sprite.modulate.a = 0.4
+			sprite.color = Color(0.4, 0.6, 0.9, 0.4)
+
+func _on_died() -> void:
+	queue_free()
