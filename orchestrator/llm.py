@@ -166,6 +166,26 @@ def get_system_prompt(config: dict | None = None) -> str:
 # Token estimation
 # ---------------------------------------------------------------------------
 
+def count_tokens(messages: list[dict], model: str, system: str | list = "") -> int:
+    """Exact token count via the Anthropic API. Falls back to estimate on error."""
+    try:
+        client = anthropic.Anthropic()
+        result = client.messages.count_tokens(
+            model=model,
+            system=system if system else [],
+            messages=messages,
+        )
+        return result.input_tokens
+    except Exception as e:
+        print(f"  Token count API failed ({e}), using estimate")
+        total = sum(len(m.get("content", "")) for m in messages)
+        if isinstance(system, str):
+            total += len(system)
+        elif isinstance(system, list):
+            total += sum(len(b.get("text", "")) for b in system)
+        return total // 4
+
+
 def estimate_tokens(text: str) -> int:
     """Rough token count: ~4 chars per token."""
     return len(text) // 4
@@ -384,7 +404,11 @@ def call_llm(
     config: dict | None = None,
     max_retries: int = 3,
 ) -> str:
-    """Call Claude and return the response text. Retries on transient failures."""
+    """Call Claude and return the response text.
+
+    Uses prompt caching for the system prompt (identical every cycle) to cut
+    input costs by ~90% on that portion. Retries on transient failures.
+    """
     config = config or {}
     prompt_cfg = config.get("prompt", {})
 
@@ -393,6 +417,23 @@ def call_llm(
     api_timeout = prompt_cfg.get("api_timeout", 120)
     system_prompt = get_system_prompt(config)
 
+    # Wrap system prompt with cache_control for prompt caching.
+    # The system prompt + few-shot + cheat sheet are identical every cycle.
+    # Cache TTL is 5 min, refreshed on each use — stays warm across cycles.
+    system_with_cache = [
+        {
+            "type": "text",
+            "text": system_prompt,
+            "cache_control": {"type": "ephemeral"},
+        }
+    ]
+
+    messages = [{"role": "user", "content": prompt}]
+
+    # Exact token count (pre-flight check)
+    token_count = count_tokens(messages, actual_model, system_with_cache)
+    print(f"  Exact input tokens: {token_count}")
+
     client = anthropic.Anthropic(timeout=api_timeout)
 
     for attempt in range(max_retries):
@@ -400,9 +441,15 @@ def call_llm(
             message = client.messages.create(
                 model=actual_model,
                 max_tokens=actual_max_tokens,
-                system=system_prompt,
-                messages=[{"role": "user", "content": prompt}],
+                system=system_with_cache,
+                messages=messages,
             )
+            # Log cache performance
+            usage = message.usage
+            cached = getattr(usage, "cache_read_input_tokens", 0)
+            created = getattr(usage, "cache_creation_input_tokens", 0)
+            if cached or created:
+                print(f"  Cache: {cached} read, {created} created, {usage.input_tokens} input, {usage.output_tokens} output")
             return message.content[0].text
         except anthropic.APIStatusError as e:
             # Don't retry on client errors (4xx) except rate limits (429) and overload (529)

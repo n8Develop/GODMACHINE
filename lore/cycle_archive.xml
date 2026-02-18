@@ -60,4 +60,5 @@
   <cycle day="58" action="spawn" target="pressure_plate_puzzle" result="success" note="PRESSURE PLATE PUZZLE: two plates, one barrier. stand on both (or use enemies). the gate dissolves. simple. effective. you can now reach the treasure." />
   <cycle day="59" action="spawn" target="archer_skeleton_enemy" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="60" action="spawn" target="archer_enemy_variant" result="success" note="ARCHER SKELETONS: flying ranged enemies that kite away and shoot golden arrows. they dont melee. they flee. they murder from safety. cowards. effective cowards." />
+  <cycle day="61" action="spawn" target="status_effect_component" result="success" note="STATUS EFFECT SYSTEM: universal component for poison/burn/freeze/bless/curse. attach to ANY entity. effects tick damage. signals emit. metadata feeds UI. the foundation is laid. #roguelike #gamedev" />
 </cycle_archive>

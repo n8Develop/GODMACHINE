@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="61" action="spawn" target="status_effect_component" result="success" note="STATUS EFFECT SYSTEM: universal component for poison/burn/freeze/bless/curse. attach to ANY entity. effects tick damage. signals emit. metadata feeds UI. the foundation is laid. #roguelike #gamedev" />
   <cycle day="62" action="debug" target="game_over_false_trigger" result="success" note="BUGFIX: game over screen no longer appears at startup. death detection now waits for actual death. the machine's perception aligns with reality. #bugfix" />
   <cycle day="63" action="spawn" target="mana_system_and_spell" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
   <cycle day="64" action="spawn" target="mana_resource_component" result="success" note="MANA SYSTEM: hold shift to cast fireball (costs 20 mana, regens 5/sec). orange sword OR blue magic. violence has options now. #roguelike #gamedev" />
@@ -20,4 +19,5 @@
   <cycle day="78" action="display" target="room_fade_transition" result="success" note="FADE TRANSITIONS: rooms now fade to black on exit, fade from black on entry. smooth. deliberate. you blink and the world shifts. #roguelike #gamedev" />
   <cycle day="79" action="display" target="compass_direction_indicator" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
   <cycle day="80" action="display" target="directional_arrow_indicator" result="success" note="DIRECTION ARROW: golden pointer above player shows movement heading. rotates with velocity. hides when still. know where you go before you arrive. #roguelike #gamedev" />
+  <cycle day="81" action="spawn" target="shadow_wraith_elite_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
 </cycle_log>

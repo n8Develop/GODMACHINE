@@ -410,6 +410,38 @@ def _convert_to_mp4(avi_path: Path, mp4_path: Path, timeout: int = 30) -> bool:
         return False
 
 
+def _detect_main_scene(project_path: Path) -> str:
+    """Read main scene from project.godot. Returns empty string if not found."""
+    project_file = project_path / "project.godot"
+    if not project_file.exists():
+        return ""
+    text = project_file.read_text(encoding="utf-8")
+    m = re.search(r'run/main_scene\s*=\s*"([^"]+)"', text)
+    return m.group(1) if m else ""
+
+
+def _looks_like_project_manager(output: str) -> bool:
+    """Check if Godot output suggests it opened the project manager instead of a game scene.
+
+    This catches cases where project.godot is corrupted (parse errors cause Godot
+    to fall back to the project manager, which shows local file paths).
+    """
+    indicators = [
+        "project manager",
+        "ProjectManager",
+        "project_manager",
+        "Scanning projects",
+        "No main scene",
+        "Main scene is not defined",
+        # project.godot parse errors cause fallback to project manager
+        "Error parsing",
+        "Couldn't load file",
+        "error code 43",
+    ]
+    output_lower = output.lower()
+    return any(ind.lower() in output_lower for ind in indicators)
+
+
 def record_gameplay(
     godot_exe: str,
     project_path: Path,
@@ -423,7 +455,28 @@ def record_gameplay(
     Movie Maker requires a visible window (no --headless). The game runs for
     `duration` seconds at a fixed framerate and writes an .avi file, then
     converts to MP4 (for Twitter compatibility).
+
+    SAFETY: If the main scene cannot be determined, recording is SKIPPED entirely
+    to prevent recording the Godot project manager (which shows file paths).
     """
+    # CRITICAL: Detect main scene FIRST. If we can't find it, do NOT record.
+    # Without a valid main scene, Godot opens the project manager which exposes
+    # local file paths — these must never be recorded or posted to Twitter.
+    main_scene = _detect_main_scene(project_path)
+    if not main_scene:
+        return RecordingResult(
+            success=False,
+            error="No main scene found in project.godot — skipping recording to avoid exposing project manager",
+        )
+
+    # Verify the main scene file actually exists on disk
+    scene_disk_path = project_path / main_scene.removeprefix("res://")
+    if not scene_disk_path.exists():
+        return RecordingResult(
+            success=False,
+            error=f"Main scene {main_scene} not found on disk — skipping recording",
+        )
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Godot always outputs AVI; we'll convert to MP4 after
@@ -433,24 +486,14 @@ def record_gameplay(
     # With --write-movie, --quit-after counts FRAMES not seconds
     total_frames = duration * fps
 
-    # Read main scene from project.godot so Godot runs the game, not the project manager
-    main_scene = ""
-    project_file = project_path / "project.godot"
-    if project_file.exists():
-        text = project_file.read_text(encoding="utf-8")
-        m = re.search(r'run/main_scene\s*=\s*"([^"]+)"', text)
-        if m:
-            main_scene = m.group(1)
-
     cmd = [
         godot_exe,
         "--path", str(project_path),
+        "--scene", main_scene,
         "--write-movie", str(avi_path),
         "--fixed-fps", str(fps),
         "--quit-after", str(total_frames),
     ]
-    if main_scene:
-        cmd.extend(["--scene", main_scene])
 
     try:
         result = subprocess.run(
@@ -460,6 +503,18 @@ def record_gameplay(
             timeout=timeout,
         )
         output = result.stdout + result.stderr
+
+        # SAFETY: If Godot opened the project manager, discard everything
+        if _looks_like_project_manager(output):
+            # Delete any video file that was created — it shows the project manager
+            for path in (avi_path, mp4_path):
+                if path.exists():
+                    path.unlink()
+            return RecordingResult(
+                success=False,
+                raw_output=output,
+                error="Godot opened project manager instead of game scene — video discarded",
+            )
 
         if not (avi_path.exists() and avi_path.stat().st_size > 0):
             return RecordingResult(
