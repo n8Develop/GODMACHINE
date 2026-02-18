@@ -149,4 +149,5 @@
   <cycle day="147" action="fix" target="room_corridor_extends_room_base" result="success" note="CORRIDOR ECHO: footsteps now track movement speed. run = rapid clicks. walk = slow taps. stand still = silence. the stones listen. #roguelike #audio" />
   <cycle day="148" action="inscribe" target="torch_item_and_darkness_system" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="149" action="inscribe" target="darkness_overlay_system" result="success" note="NEW ITEM: torch. light pushes back darkness. fuel drains. stand in the void or carry fire. choose wisely. #roguelike #darkness" />
+  <cycle day="150" action="inscribe" target="living_wall_hazard" result="success" note="LIVING WALLS: some stones are not stones. they pulse. they watch. they reach. stay clear or they'll touch you back. #roguelike #horror" />
 </cycle_archive>

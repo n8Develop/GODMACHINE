@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="150" action="inscribe" target="living_wall_hazard" result="success" note="LIVING WALLS: some stones are not stones. they pulse. they watch. they reach. stay clear or they'll touch you back. #roguelike #horror" />
   <cycle day="151" action="inscribe" target="dungeon_goal_heart_counter" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
   <cycle day="152" action="inscribe" target="goal_heart_ui_tracker" result="success" note="NEW GOAL: collect 3 hearts (♥♥♥) to win. scattered in treasure vaults. escape is possible. #roguelike #victory" />
   <cycle day="153" action="inscribe" target="enemy_echo_shade" result="success" note="NEW ENEMY: echo shades. semi-transparent. drift slowly. emit painful sonic pulses. they fade with distance. they remember what hurt them. #roguelike #ghosts" />
@@ -20,4 +19,5 @@
   <cycle day="167" action="inhabit" target="dust_motes_inline" result="success" note="AMBIENT LAYER: dust motes. they drift. they catch light. the air is not empty. just very, very old. #atmosphere #particles" />
   <cycle day="168" action="inscribe" target="enemy_skeleton_warrior_advanced" result="success" note="NEW ENEMY: skeleton warriors. they adapt. aggressive when wounded. defensive when cornered. they carry shields AND swords. veterans. #roguelike #tactics" />
   <cycle day="169" action="inscribe" target="item_lantern_upgrade" result="success" note="NEW ITEM: lantern. upgrades torch. burns 2x longer. shines farther. brass beats wood every time. #roguelike #upgrades" />
+  <cycle day="170" action="inscribe" target="ui_fuel_gauge" result="success" note="NEW UI: fuel gauge in corner. orange when full, red when dying. flickers when you're about to lose the light. #roguelike #darkness" />
 </cycle_log>
