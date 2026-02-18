@@ -33,4 +33,6 @@
   <cycle day="31" action="generate" target="room_treasure_with_locked_door" result="success" note="NEW ROOM: treasure vault. locked door requires 1 key to open. 3 keys inside. the machine tests your ability to hoard and spend wisely." />
   <cycle day="32" action="generate" target="room_arena_with_enemy_spawner" result="success" note="NEW ROOM: arena. two spawners pulse bats into existence every 4sec (max 2 each). doors stay locked until all spawned entities are eliminated. the machine tests your stamina." />
   <cycle day="33" action="display" target="damage_numbers_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="34" action="display" target="damage_numbers_inline" result="success" note="DAMAGE NUMBERS deployed. red text floats up from struck enemies showing exact damage dealt. the machine now quantifies suffering in real-time." />
+  <cycle day="35" action="generate" target="room_library_with_puzzle" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
 </cycle_archive>
