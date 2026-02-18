@@ -1,86 +1,85 @@
 extends Node
 class_name HealthComponent
 
-signal health_changed(new_health: int)
+signal health_changed(new_hp: int)
 signal max_health_changed(new_max: int)
 signal died
 
 @export var max_health: int = 100
-@export var current_health: int = max_health
+@export var current_health: int = 100
+@export var spawns_blood: bool = true
+
+var _flash_timer: float = 0.0
+var _is_dead: bool = false
 
 func _ready() -> void:
 	current_health = max_health
-	health_changed.emit(current_health)
+
+func _physics_process(delta: float) -> void:
+	if _flash_timer > 0.0:
+		_flash_timer -= delta
+		if _flash_timer <= 0.0:
+			var parent := get_parent()
+			if parent:
+				parent.modulate = Color.WHITE
 
 func take_damage(amount: int) -> void:
-	if current_health <= 0:
-		return  # Already dead, ignore further damage
+	if _is_dead:
+		return
 	
-	current_health = maxi(0, current_health - amount)
+	current_health = max(0, current_health - amount)
 	health_changed.emit(current_health)
 	
-	# Visual feedback
-	if get_parent() is Node2D:
-		_flash_white()
+	# Spawn blood drops
+	if spawns_blood and get_parent() is Node2D:
+		_spawn_blood_drops()
 	
-	# Play hit sound
-	_play_hit_sound()
+	# Flash white
+	var parent := get_parent()
+	if parent:
+		parent.modulate = Color(2.0, 2.0, 2.0, 1.0)
+		_flash_timer = 0.1
 	
 	if current_health <= 0:
+		_is_dead = true
 		died.emit()
 
-func heal(amount: int) -> void:
-	if current_health <= 0:
-		return  # Dead entities can't heal
+func _spawn_blood_drops() -> void:
+	var parent := get_parent() as Node2D
+	if not parent:
+		return
 	
-	current_health = mini(max_health, current_health + amount)
+	var room := parent.get_parent()
+	if not room:
+		return
+	
+	# Create 3-5 blood drops
+	var drop_count := randi_range(3, 5)
+	for i in range(drop_count):
+		var drop := ColorRect.new()
+		drop.size = Vector2(3, 3)
+		drop.color = Color(0.6, 0.1, 0.1, 1.0)
+		drop.z_index = -3
+		
+		# Random offset from hit position
+		var offset := Vector2(randf_range(-12.0, 12.0), randf_range(-12.0, 12.0))
+		drop.global_position = parent.global_position + offset
+		
+		room.add_child(drop)
+		
+		# Fade out over time
+		var tween := create_tween()
+		tween.tween_property(drop, "modulate:a", 0.0, 2.0)
+		tween.tween_callback(drop.queue_free)
+
+func heal(amount: int) -> void:
+	if _is_dead:
+		return
+	current_health = min(max_health, current_health + amount)
 	health_changed.emit(current_health)
 
 func set_max_health(new_max: int) -> void:
 	max_health = new_max
-	current_health = mini(current_health, max_health)
+	current_health = min(current_health, max_health)
 	max_health_changed.emit(max_health)
 	health_changed.emit(current_health)
-
-func _flash_white() -> void:
-	var parent := get_parent()
-	if not parent:
-		return
-	
-	# Find all ColorRect children
-	for child in parent.get_children():
-		if child is ColorRect:
-			var original_modulate := child.modulate
-			child.modulate = Color(2.0, 2.0, 2.0, 1.0)
-			
-			var timer := get_tree().create_timer(0.1)
-			timer.timeout.connect(func() -> void:
-				if is_instance_valid(child):
-					child.modulate = original_modulate
-			)
-
-func _play_hit_sound() -> void:
-	var player := AudioStreamPlayer.new()
-	get_tree().current_scene.add_child(player)
-	
-	var gen := AudioStreamGenerator.new()
-	gen.mix_rate = 22050.0
-	gen.buffer_length = 0.1
-	player.stream = gen
-	player.volume_db = -12.0
-	
-	player.play()
-	
-	# Generate square wave beep
-	var playback := player.get_stream_playback() as AudioStreamGeneratorPlayback
-	if playback:
-		var frames := int(gen.mix_rate * 0.08)
-		var phase := 0.0
-		for i in range(frames):
-			phase += 440.0 / gen.mix_rate
-			var sample := 1.0 if fmod(phase, 1.0) < 0.5 else -1.0
-			sample *= 0.15
-			playback.push_frame(Vector2(sample, sample))
-	
-	await get_tree().create_timer(0.15).timeout
-	player.queue_free()
