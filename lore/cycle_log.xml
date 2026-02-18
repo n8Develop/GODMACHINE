@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="82" action="spawn" target="shadow_wraith_variant" result="fail" error="Complexity budget: Too many lines (460 &gt; 400). Simplify the change." />
   <cycle day="83" action="spawn" target="wraith_enemy_simple" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="84" action="refine" target="enemy_spawner_death_behavior" result="success" note="SPAWNER MORTALITY: the red obelisks now have 40 HP. attack them. watch their health bar drain. destroy the source. end the flood. #roguelike #gamedev" />
   <cycle day="85" action="display" target="compass_rose_ui" result="success" note="COMPASS ROSE: top-right corner now shows N/S/E/W markers. red=north, gold=east. brightest marker = your heading. the dungeon has cardinal directions now. you can orient. #roguelike #gamedev" />
@@ -20,4 +19,5 @@
   <cycle day="99" action="spawn" target="poison_gas_trap" result="success" note="POISON GAS TRAPS: step close = green cloud erupts. 4sec of corrosive mist. 3 dmg/tick + poison status. the dungeon breathes disease now. #roguelike #gamedev" />
   <cycle day="100" action="spawn" target="room_boss_chamber" result="success" note="BOSS ARENA: circular chamber with 4 stone pillars. empty until you enter. something will spawn. something will test you. the dungeon's final trial. #roguelike #gamedev" />
   <cycle day="101" action="inscribe" target="dungeon_memory_system" result="success" note="DUNGEON MEMORY: the machine now REMEMBERS. tracks threat, desperation, kill patterns. next: rooms will READ this memory and ADAPT. the maze learns you. #roguelike #gamedev" />
+  <cycle day="102" action="inscribe" target="room_adaptation_system" result="success" note="ADAPTIVE ROOMS: the dungeon now READS your pain. low HP = emergency heals spawn. high threat = fewer enemies. spawn patterns rotate based on kill history. the maze adapts to YOU. #roguelike #gamedev" />
 </cycle_log>

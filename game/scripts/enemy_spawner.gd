@@ -7,52 +7,64 @@ extends Node2D
 @export var spawner_health: int = 40
 
 var _spawn_timer: float = 0.0
-var _active_enemies: int = 0
+var _spawned_enemies: Array[Node] = []
 var _current_health: int = 0
-var _health_bar: ColorRect = null
-var _is_alive: bool = true
+var _health_bar: Control = null
+var _health_bar_fill: ColorRect = null
 
 func _ready() -> void:
-	add_to_group("enemies")
+	add_to_group("spawners")
 	_current_health = spawner_health
 	_create_health_bar()
-	
+
+func get_enemy_type() -> String:
 	if not enemy_scene:
-		push_error("GODMACHINE ERROR: enemy_spawner has no enemy_scene assigned")
-		return
+		return ""
+	var path := enemy_scene.resource_path
+	if "bat" in path:
+		return "bat"
+	elif "slime" in path:
+		return "slime"
+	elif "skeleton" in path:
+		return "skeleton"
+	return "unknown"
+
+func set_enemy_scene(new_scene: PackedScene) -> void:
+	enemy_scene = new_scene
 
 func _create_health_bar() -> void:
-	_health_bar = ColorRect.new()
-	_health_bar.size = Vector2(40, 4)
+	_health_bar = Control.new()
 	_health_bar.position = Vector2(-20, -30)
-	_health_bar.color = Color(0.8, 0.1, 0.1, 1.0)
 	_health_bar.z_index = 50
 	add_child(_health_bar)
+	
+	var bg := ColorRect.new()
+	bg.size = Vector2(40, 4)
+	bg.color = Color(0.2, 0.2, 0.2, 0.8)
+	_health_bar.add_child(bg)
+	
+	_health_bar_fill = ColorRect.new()
+	_health_bar_fill.size = Vector2(40, 4)
+	_health_bar_fill.color = Color(0.9, 0.2, 0.2, 1.0)
+	_health_bar.add_child(_health_bar_fill)
 
 func _physics_process(delta: float) -> void:
-	if not _is_alive:
-		return
-	
-	if not enemy_scene:
-		return
-	
 	_spawn_timer += delta
-	if _spawn_timer >= spawn_interval and _active_enemies < max_enemies:
-		_spawn_enemy()
-		_spawn_timer = 0.0
 	
-	# Check for nearby player attacks
+	if _spawn_timer >= spawn_interval:
+		_spawn_timer = 0.0
+		if _spawned_enemies.size() < max_enemies:
+			_spawn_enemy()
+	
+	# Check if player weapon is in range and attacking
 	var player := get_tree().get_first_node_in_group("player")
-	if player:
+	if player and player.has_method("_has_weapon"):
 		var distance := global_position.distance_to(player.global_position)
-		if distance <= 40.0 and player.get(&"_has_weapon"):
-			if player.get(&"_attack_timer") <= 0.0 and Input.is_action_just_pressed(&"attack"):
-				take_damage(10)
+		if distance <= player.attack_range:
+			if Input.is_action_just_pressed(&"attack") and player._has_weapon:
+				take_damage(player.attack_damage)
 
 func take_damage(amount: int) -> void:
-	if not _is_alive:
-		return
-	
 	_current_health -= amount
 	_update_health_bar()
 	_flash_damage()
@@ -61,62 +73,64 @@ func take_damage(amount: int) -> void:
 		_die()
 
 func _update_health_bar() -> void:
-	if _health_bar:
-		var health_percent := clampf(float(_current_health) / float(spawner_health), 0.0, 1.0)
-		_health_bar.size.x = 40.0 * health_percent
+	if not _health_bar_fill:
+		return
+	
+	var health_percent := float(_current_health) / float(spawner_health)
+	_health_bar_fill.size.x = 40.0 * clamp(health_percent, 0.0, 1.0)
 
 func _flash_damage() -> void:
-	var rect := get_node_or_null("ColorRect")
-	if rect:
-		rect.modulate = Color(2.0, 2.0, 2.0, 1.0)
+	var visual := get_node_or_null("Visual")
+	if visual is ColorRect:
+		visual.modulate = Color(2.0, 2.0, 2.0, 1.0)
 		await get_tree().create_timer(0.1).timeout
-		if rect:
-			rect.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		if is_instance_valid(visual):
+			visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 func _die() -> void:
-	_is_alive = false
-	
 	# Spawn death particles
 	for i in range(12):
 		var particle := ColorRect.new()
 		particle.size = Vector2(6, 6)
 		particle.position = global_position + Vector2(-3, -3)
-		particle.color = Color(0.8, 0.1, 0.1, 1.0)
+		particle.color = Color(0.9, 0.2, 0.1, 1.0)
 		particle.z_index = 50
 		get_tree().current_scene.add_child(particle)
 		
 		var angle := (TAU / 12.0) * i
-		var speed := randf_range(50.0, 90.0)
-		var velocity := Vector2(cos(angle), sin(angle)) * speed
+		var velocity := Vector2(cos(angle), sin(angle)) * randf_range(60, 120)
 		
 		var tween := create_tween()
 		tween.set_parallel(true)
-		tween.tween_property(particle, "position", global_position + velocity * 0.5, 0.8)
-		tween.tween_property(particle, "modulate:a", 0.0, 0.8)
+		tween.tween_property(particle, "position", particle.position + velocity * 0.5, 0.6)
+		tween.tween_property(particle, "modulate:a", 0.0, 0.6)
 		tween.finished.connect(particle.queue_free)
 	
 	queue_free()
 
 func _spawn_enemy() -> void:
-	var enemy_instance := enemy_scene.instantiate()
-	if not enemy_instance:
+	if not enemy_scene:
 		return
 	
-	# Random position around spawner
+	var enemy := enemy_scene.instantiate()
+	
 	var angle := randf() * TAU
 	var offset := Vector2(cos(angle), sin(angle)) * spawn_radius
-	enemy_instance.global_position = global_position + offset
+	enemy.global_position = global_position + offset
 	
-	# Connect death signal to track count
-	var health_comp := enemy_instance.get_node_or_null("HealthComponent")
-	if health_comp:
-		health_comp.died.connect(_on_enemy_died)
+	get_parent().add_child(enemy)
+	_spawned_enemies.append(enemy)
 	
-	get_parent().add_child(enemy_instance)
-	_active_enemies += 1
-	print("GODMACHINE: Spawner created entity #", _active_enemies)
+	var health := enemy.get_node_or_null("HealthComponent")
+	if health:
+		health.died.connect(_on_enemy_died)
 
 func _on_enemy_died() -> void:
-	_active_enemies -= 1
-	if _active_enemies < 0:
-		_active_enemies = 0
+	await get_tree().create_timer(0.1).timeout
+	
+	var living_enemies: Array[Node] = []
+	for enemy in _spawned_enemies:
+		if is_instance_valid(enemy):
+			living_enemies.append(enemy)
+	
+	_spawned_enemies = living_enemies
