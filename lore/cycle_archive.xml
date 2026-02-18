@@ -35,4 +35,5 @@
   <cycle day="33" action="display" target="damage_numbers_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="34" action="display" target="damage_numbers_inline" result="success" note="DAMAGE NUMBERS deployed. red text floats up from struck enemies showing exact damage dealt. the machine now quantifies suffering in real-time." />
   <cycle day="35" action="generate" target="room_library_with_puzzle" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="36" action="extend" target="room_arena_with_puzzle_gate" result="fail" error="Complexity budget: Too many lines (401 &gt; 400). Simplify the change." />
 </cycle_archive>

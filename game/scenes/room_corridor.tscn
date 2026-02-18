@@ -1,111 +1,124 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/door_locked.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/trap_spike.tscn" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
 size = Vector2(40, 20)
 
 [node name="RoomCorridor" type="Node2D"]
 script = ExtResource("1")
-room_id = "room_corridor"
+room_id = "corridor_01"
 
 [node name="Walls" type="StaticBody2D" parent="."]
 collision_layer = 1
 collision_mask = 0
 
-[node name="WallTop" type="ColorRect" parent="Walls"]
+[node name="TopWall" type="ColorRect" parent="Walls"]
+offset_left = 0.0
 offset_top = 0.0
 offset_right = 640.0
-offset_bottom = 20.0
-color = Color(0.3, 0.3, 0.35, 1)
+offset_bottom = 80.0
+color = Color(0.15, 0.15, 0.18, 1)
 
-[node name="CollisionTop" type="CollisionShape2D" parent="Walls"]
-position = Vector2(320, 10)
-shape = SubResource("RectangleShape2D_door")
-scale = Vector2(16, 1)
+[node name="TopCollision" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(0, 0, 640, 0, 640, 80, 0, 80)
 
-[node name="WallBottom" type="ColorRect" parent="Walls"]
-offset_top = 460.0
+[node name="BottomWall" type="ColorRect" parent="Walls"]
+offset_left = 0.0
+offset_top = 400.0
 offset_right = 640.0
 offset_bottom = 480.0
-color = Color(0.3, 0.3, 0.35, 1)
+color = Color(0.15, 0.15, 0.18, 1)
 
-[node name="CollisionBottom" type="CollisionShape2D" parent="Walls"]
-position = Vector2(320, 470)
-shape = SubResource("RectangleShape2D_door")
-scale = Vector2(16, 1)
+[node name="BottomCollision" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(0, 400, 640, 400, 640, 480, 0, 480)
 
-[node name="WallLeft" type="ColorRect" parent="Walls"]
+[node name="LeftWall" type="ColorRect" parent="Walls"]
 offset_left = 0.0
-offset_top = 20.0
-offset_right = 20.0
-offset_bottom = 460.0
-color = Color(0.3, 0.3, 0.35, 1)
+offset_top = 80.0
+offset_right = 100.0
+offset_bottom = 200.0
+color = Color(0.15, 0.15, 0.18, 1)
 
-[node name="CollisionLeft" type="CollisionShape2D" parent="Walls"]
-position = Vector2(10, 240)
-shape = SubResource("RectangleShape2D_door")
-scale = Vector2(1, 11)
+[node name="LeftCollision" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(0, 80, 100, 80, 100, 200, 0, 200)
 
-[node name="WallRight" type="ColorRect" parent="Walls"]
-offset_left = 620.0
-offset_top = 20.0
+[node name="LeftWall2" type="ColorRect" parent="Walls"]
+offset_left = 0.0
+offset_top = 280.0
+offset_right = 100.0
+offset_bottom = 400.0
+color = Color(0.15, 0.15, 0.18, 1)
+
+[node name="LeftCollision2" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(0, 280, 100, 280, 100, 400, 0, 400)
+
+[node name="RightWall" type="ColorRect" parent="Walls"]
+offset_left = 540.0
+offset_top = 80.0
 offset_right = 640.0
-offset_bottom = 460.0
-color = Color(0.3, 0.3, 0.35, 1)
+offset_bottom = 200.0
+color = Color(0.15, 0.15, 0.18, 1)
 
-[node name="CollisionRight" type="CollisionShape2D" parent="Walls"]
-position = Vector2(630, 240)
-shape = SubResource("RectangleShape2D_door")
-scale = Vector2(1, 11)
+[node name="RightCollision" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(540, 80, 640, 80, 640, 200, 540, 200)
+
+[node name="RightWall2" type="ColorRect" parent="Walls"]
+offset_left = 540.0
+offset_top = 280.0
+offset_right = 640.0
+offset_bottom = 400.0
+color = Color(0.15, 0.15, 0.18, 1)
+
+[node name="RightCollision2" type="CollisionPolygon2D" parent="Walls"]
+polygon = PackedVector2Array(540, 280, 640, 280, 640, 400, 540, 400)
 
 [node name="Doors" type="Node2D" parent="."]
 
-[node name="DoorNorth" type="Area2D" parent="Doors"]
-position = Vector2(320, 20)
+[node name="DoorLeft" type="Area2D" parent="Doors"]
+position = Vector2(50, 240)
 collision_layer = 4
 collision_mask = 2
-script = ExtResource("2")
-required_keys = 0
-target_room_id = "room_treasure"
 
-[node name="Visual" type="ColorRect" parent="Doors/DoorNorth"]
+[node name="Visual" type="ColorRect" parent="Doors/DoorLeft"]
 offset_left = -20.0
-offset_top = -10.0
+offset_top = -40.0
 offset_right = 20.0
-offset_bottom = 10.0
-color = Color(0.5, 0.5, 0.6, 1)
+offset_bottom = 40.0
+color = Color(0.3, 0.5, 0.8, 1)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorNorth"]
+[node name="Collision" type="CollisionShape2D" parent="Doors/DoorLeft"]
 shape = SubResource("RectangleShape2D_door")
 
-[node name="Label" type="Label" parent="Doors/DoorNorth"]
-offset_left = -30.0
-offset_top = 10.0
-offset_right = 30.0
-offset_bottom = 30.0
-theme_override_colors/font_color = Color(0.2, 0.9, 0.3, 1)
-theme_override_font_sizes/font_size = 10
-text = "OPEN"
-horizontal_alignment = 1
-
-[node name="DoorSouth" type="Area2D" parent="Doors"]
-position = Vector2(320, 460)
+[node name="DoorRight" type="Area2D" parent="Doors"]
+position = Vector2(590, 240)
 collision_layer = 4
 collision_mask = 2
-metadata/target_room = "room_start"
 
-[node name="Visual" type="ColorRect" parent="Doors/DoorSouth"]
+[node name="Visual" type="ColorRect" parent="Doors/DoorRight"]
 offset_left = -20.0
-offset_top = -10.0
+offset_top = -40.0
 offset_right = 20.0
-offset_bottom = 10.0
-color = Color(0.5, 0.5, 0.6, 1)
+offset_bottom = 40.0
+color = Color(0.3, 0.5, 0.8, 1)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorSouth"]
+[node name="Collision" type="CollisionShape2D" parent="Doors/DoorRight"]
 shape = SubResource("RectangleShape2D_door")
+
+[node name="Enemies" type="Node2D" parent="."]
 
 [node name="Pickups" type="Node2D" parent="."]
 
-[node name="Enemies" type="Node2D" parent="."]
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="TrapSpike" parent="Traps" instance=ExtResource("2")]
+position = Vector2(200, 240)
+
+[node name="TrapSpike2" parent="Traps" instance=ExtResource("2")]
+position = Vector2(320, 180)
+trigger_interval = 2.5
+
+[node name="TrapSpike3" parent="Traps" instance=ExtResource("2")]
+position = Vector2(440, 300)
+trigger_interval = 1.5

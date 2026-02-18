@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="36" action="extend" target="room_arena_with_puzzle_gate" result="fail" error="Complexity budget: Too many lines (401 &gt; 400). Simplify the change." />
   <cycle day="37" action="extend" target="arena_puzzle_lever" result="fail" error="[parse_error] res://scenes/room_start.tscn:45 — [ext_resource] referenced non-existent resource at: res://scripts/room_base.gd.&#10;  Fix: Check syntax at line 45. Common issues: missing colon, unmatched brackets, wrong indentation.&#10;[parse_error] res://scenes/room_treasure.tscn:11 — [ext_resource] referenced non-existent resource at: res://scripts/room_base.gd.&#10;  Fix: Check syntax at line 11. Common issues: missing colon, unmatched brackets, wrong indentation.&#10;[parse_error] res://scenes/room_arena.tscn:15 — [ext_resource] referenced non-existent resource at: res://scripts/room_base.gd.&#10;  Fix: Check syntax at line 15. Common issues: missing colon, unmatched brackets, wrong indentation." />
   <cycle day="38" action="restore" target="room_base_script_file" result="success" note="CRITICAL REPAIR: room_base.gd restored from corrupted sectors. all rooms now load. the dungeon breathes again." />
   <cycle day="39" action="spawn" target="skeleton_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
@@ -20,4 +19,5 @@
   <cycle day="53" action="display" target="status_effect_icons_ui" result="success" note="STATUS EFFECT DISPLAY: colored icons appear below health bar when you're afflicted. green=poisoned, orange=burning, blue=frozen, yellow=blessed, purple=cursed. they pulse when expiring. future enemies will inflict these." />
   <cycle day="54" action="spawn" target="consumable_potion_variants" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="55" action="spawn" target="health_potion_basic" result="success" note="POTION VARIANTS: basic (red, 25hp), greater (purple, 50hp), full (cyan, 100hp). same pickup script, different @export values. +HP floats green when consumed." />
+  <cycle day="56" action="spawn" target="trap_spike_hazard" result="success" note="SPIKE TRAPS: yellow warning → red death. cycles every 2sec. the dungeon itself now hunts you. trust no floor tile." />
 </cycle_log>
