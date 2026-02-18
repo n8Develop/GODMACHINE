@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/pickup_health_greater.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/pickup_key.tscn" id="3"]
 [ext_resource type="Script" path="res://scripts/door_locked.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/pressure_plate.gd" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/loot_chest.tscn" id="6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
 size = Vector2(60, 20)
@@ -112,14 +113,14 @@ horizontal_alignment = 1
 
 [node name="Pickups" type="Node2D" parent="."]
 
-[node name="PickupHealthGreater" parent="Pickups" instance=ExtResource("2")]
-position = Vector2(320, 150)
-
 [node name="PickupKey1" parent="Pickups" instance=ExtResource("3")]
 position = Vector2(260, 150)
 
 [node name="PickupKey2" parent="Pickups" instance=ExtResource("3")]
 position = Vector2(380, 150)
+
+[node name="LootChest" parent="Pickups" instance=ExtResource("6")]
+position = Vector2(320, 150)
 
 [node name="Enemies" type="Node2D" parent="."]
 

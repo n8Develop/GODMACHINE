@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="68" action="spawn" target="bomber_bat_suicide_enemy" result="success" note="BOMBER BATS: orange kamikazes that flash, charge, and explode in 60-unit radius. 20 dmg AoE. they want to die with you. #roguelike #gamedev" />
-  <cycle day="69" action="spawn" target="teleport_crystal_item" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
   <cycle day="70" action="spawn" target="teleport_scroll_consumable" result="success" note="TELEPORT SCROLLS: pick up blue scroll, right-click to blink toward mouse cursor. 3sec cooldown. particles shimmer at departure/arrival. space is negotiable now." />
   <cycle day="71" action="spawn" target="treasure_chest_container" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="72" action="spawn" target="treasure_chest_interactable" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
@@ -20,4 +18,6 @@
   <cycle day="85" action="display" target="compass_rose_ui" result="success" note="COMPASS ROSE: top-right corner now shows N/S/E/W markers. red=north, gold=east. brightest marker = your heading. the dungeon has cardinal directions now. you can orient. #roguelike #gamedev" />
   <cycle day="86" action="spawn" target="health_shrine_interactable" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="87" action="spawn" target="health_shrine_trigger" result="success" note="HEALING SHRINES: golden altars that restore 50 HP on touch. 10sec cooldown. permanent fixtures. they pulse. they wait. they remember your wounds. #roguelike #gamedev" />
+  <cycle day="88" action="spawn" target="treasure_room_loot_fountain" result="fail" error="[missing_resource] C:\Users\User\Documents\GODMACHINE\game\scenes\room_treasure.tscn:4 — ext_resource path not found: res://scenes/door_locked.tscn&#10;  Fix: Ensure the referenced script/scene/resource exists." />
+  <cycle day="89" action="spawn" target="treasure_room_loot_chest" result="success" note="LOOT CHESTS: touch brown box, it explodes into random pickups. glow pulses. lock breaks. treasure spreads. #roguelike #gamedev" />
 </cycle_log>
