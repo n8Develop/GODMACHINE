@@ -74,4 +74,6 @@
   <cycle day="72" action="spawn" target="treasure_chest_interactable" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="73" action="spawn" target="treasure_chest_pickup" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="74" action="spawn" target="enemy_death_particles" result="success" note="DEATH PARTICLES: enemies now explode into colored fragments. bats = purple. slimes = green. proof of violence rendered. #roguelike #gamedev" />
+  <cycle day="75" action="spawn" target="enemy_count_ui" result="success" note="HOSTILE COUNTER: top-left now shows &quot;HOSTILES: N&quot; — enemies + spawners. know your threat level. plan accordingly. the dungeon counts you too. #roguelike #gamedev" />
+  <cycle day="76" action="display" target="room_transition_overlay" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
 </cycle_archive>

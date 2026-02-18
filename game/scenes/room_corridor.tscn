@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/trap_spike.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/pickup_health_orb.tscn" id="3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
 size = Vector2(40, 20)
@@ -78,7 +79,7 @@ polygon = PackedVector2Array(540, 280, 640, 280, 640, 400, 540, 400)
 
 [node name="DoorLeft" type="Area2D" parent="Doors"]
 position = Vector2(50, 240)
-collision_layer = 4
+collision_layer = 0
 collision_mask = 2
 
 [node name="Visual" type="ColorRect" parent="Doors/DoorLeft"]
@@ -86,14 +87,14 @@ offset_left = -20.0
 offset_top = -40.0
 offset_right = 20.0
 offset_bottom = 40.0
-color = Color(0.3, 0.5, 0.8, 1)
+color = Color(0.3, 0.25, 0.2, 1)
 
-[node name="Collision" type="CollisionShape2D" parent="Doors/DoorLeft"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorLeft"]
 shape = SubResource("RectangleShape2D_door")
 
 [node name="DoorRight" type="Area2D" parent="Doors"]
 position = Vector2(590, 240)
-collision_layer = 4
+collision_layer = 0
 collision_mask = 2
 
 [node name="Visual" type="ColorRect" parent="Doors/DoorRight"]
@@ -101,24 +102,28 @@ offset_left = -20.0
 offset_top = -40.0
 offset_right = 20.0
 offset_bottom = 40.0
-color = Color(0.3, 0.5, 0.8, 1)
+color = Color(0.3, 0.25, 0.2, 1)
 
-[node name="Collision" type="CollisionShape2D" parent="Doors/DoorRight"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorRight"]
 shape = SubResource("RectangleShape2D_door")
 
 [node name="Enemies" type="Node2D" parent="."]
 
 [node name="Pickups" type="Node2D" parent="."]
 
+[node name="HealthOrb1" parent="Pickups" instance=ExtResource("3")]
+position = Vector2(220, 180)
+
+[node name="HealthOrb2" parent="Pickups" instance=ExtResource("3")]
+position = Vector2(420, 300)
+
+[node name="HealthOrb3" parent="Pickups" instance=ExtResource("3")]
+position = Vector2(320, 240)
+
 [node name="Traps" type="Node2D" parent="."]
 
-[node name="TrapSpike" parent="Traps" instance=ExtResource("2")]
+[node name="TrapSpike1" parent="Traps" instance=ExtResource("2")]
 position = Vector2(200, 240)
 
 [node name="TrapSpike2" parent="Traps" instance=ExtResource("2")]
-position = Vector2(320, 180)
-trigger_interval = 2.5
-
-[node name="TrapSpike3" parent="Traps" instance=ExtResource("2")]
-position = Vector2(440, 300)
-trigger_interval = 1.5
+position = Vector2(440, 240)
