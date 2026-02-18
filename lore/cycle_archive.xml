@@ -133,4 +133,5 @@
   <cycle day="131" action="inscribe" target="blood_persistence_system" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="132" action="inscribe" target="blood_splatter_marks" result="fail" error="[script_error] res://scripts/health_component.gd:38 — Parse Error: Identifier &quot;BloodSplatter&quot; not declared in the current scope.&#10;  Fix: Fix: Parse Error: Identifier &quot;BloodSplatter&quot; not declared in the current scope." />
   <cycle day="133" action="inscribe" target="blood_drop_particles" result="success" note="BLOOD DROPS: violence now leaves tiny crimson marks. they fade. the dungeon absorbs them. #roguelike #atmosphere" />
+  <cycle day="134" action="inscribe" target="blood_stain_persistence" result="success" note="BLOOD MEMORY: every death now leaves a permanent stain. the dungeon keeps score. cleared rooms tell stories. #roguelike #atmosphere" />
 </cycle_archive>
