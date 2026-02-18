@@ -1,129 +1,130 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/trap_spike.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/pickup_health_orb.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/door_locked.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_bat.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/pickup_health_orb.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_skeleton.tscn" id="6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
-size = Vector2(40, 20)
+size = Vector2(64, 20)
 
 [node name="RoomCorridor" type="Node2D"]
 script = ExtResource("1")
 room_id = "corridor_01"
 
-[node name="Walls" type="StaticBody2D" parent="."]
-collision_layer = 1
-collision_mask = 0
+[node name="Walls" type="Node2D" parent="."]
 
-[node name="TopWall" type="ColorRect" parent="Walls"]
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 640.0
-offset_bottom = 80.0
-color = Color(0.15, 0.15, 0.18, 1)
+[node name="WallTop" type="StaticBody2D" parent="Walls"]
+position = Vector2(320, 20)
 
-[node name="TopCollision" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(0, 0, 640, 0, 640, 80, 0, 80)
+[node name="CollisionShape" type="CollisionShape2D" parent="Walls/WallTop"]
+shape = SubResource("RectangleShape2D_door")
+scale = Vector2(10, 1)
 
-[node name="BottomWall" type="ColorRect" parent="Walls"]
-offset_left = 0.0
-offset_top = 400.0
-offset_right = 640.0
-offset_bottom = 480.0
-color = Color(0.15, 0.15, 0.18, 1)
+[node name="Visual" type="ColorRect" parent="Walls/WallTop"]
+offset_left = -320.0
+offset_top = -10.0
+offset_right = 320.0
+offset_bottom = 10.0
+color = Color(0.3, 0.2, 0.25, 1)
 
-[node name="BottomCollision" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(0, 400, 640, 400, 640, 480, 0, 480)
+[node name="WallBottom" type="StaticBody2D" parent="Walls"]
+position = Vector2(320, 460)
 
-[node name="LeftWall" type="ColorRect" parent="Walls"]
-offset_left = 0.0
-offset_top = 80.0
-offset_right = 100.0
-offset_bottom = 200.0
-color = Color(0.15, 0.15, 0.18, 1)
+[node name="CollisionShape" type="CollisionShape2D" parent="Walls/WallBottom"]
+shape = SubResource("RectangleShape2D_door")
+scale = Vector2(10, 1)
 
-[node name="LeftCollision" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(0, 80, 100, 80, 100, 200, 0, 200)
+[node name="Visual" type="ColorRect" parent="Walls/WallBottom"]
+offset_left = -320.0
+offset_top = -10.0
+offset_right = 320.0
+offset_bottom = 10.0
+color = Color(0.3, 0.2, 0.25, 1)
 
-[node name="LeftWall2" type="ColorRect" parent="Walls"]
-offset_left = 0.0
-offset_top = 280.0
-offset_right = 100.0
-offset_bottom = 400.0
-color = Color(0.15, 0.15, 0.18, 1)
+[node name="WallLeft" type="StaticBody2D" parent="Walls"]
+position = Vector2(20, 240)
 
-[node name="LeftCollision2" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(0, 280, 100, 280, 100, 400, 0, 400)
+[node name="CollisionShape" type="CollisionShape2D" parent="Walls/WallLeft"]
+shape = SubResource("RectangleShape2D_door")
+scale = Vector2(1, 11)
 
-[node name="RightWall" type="ColorRect" parent="Walls"]
-offset_left = 540.0
-offset_top = 80.0
-offset_right = 640.0
-offset_bottom = 200.0
-color = Color(0.15, 0.15, 0.18, 1)
+[node name="Visual" type="ColorRect" parent="Walls/WallLeft"]
+offset_left = -10.0
+offset_top = -220.0
+offset_right = 10.0
+offset_bottom = 220.0
+color = Color(0.3, 0.2, 0.25, 1)
 
-[node name="RightCollision" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(540, 80, 640, 80, 640, 200, 540, 200)
+[node name="WallRight" type="StaticBody2D" parent="Walls"]
+position = Vector2(620, 240)
 
-[node name="RightWall2" type="ColorRect" parent="Walls"]
-offset_left = 540.0
-offset_top = 280.0
-offset_right = 640.0
-offset_bottom = 400.0
-color = Color(0.15, 0.15, 0.18, 1)
+[node name="CollisionShape" type="CollisionShape2D" parent="Walls/WallRight"]
+shape = SubResource("RectangleShape2D_door")
+scale = Vector2(1, 11)
 
-[node name="RightCollision2" type="CollisionPolygon2D" parent="Walls"]
-polygon = PackedVector2Array(540, 280, 640, 280, 640, 400, 540, 400)
+[node name="Visual" type="ColorRect" parent="Walls/WallRight"]
+offset_left = -10.0
+offset_top = -220.0
+offset_right = 10.0
+offset_bottom = 220.0
+color = Color(0.3, 0.2, 0.25, 1)
 
 [node name="Doors" type="Node2D" parent="."]
 
-[node name="DoorLeft" type="Area2D" parent="Doors"]
-position = Vector2(50, 240)
-collision_layer = 0
+[node name="DoorNorth" type="Area2D" parent="Doors"]
+position = Vector2(320, 40)
+collision_layer = 4
 collision_mask = 2
+script = ExtResource("4")
+required_keys = 0
+target_room_id = "start_room"
 
-[node name="Visual" type="ColorRect" parent="Doors/DoorLeft"]
-offset_left = -20.0
-offset_top = -40.0
-offset_right = 20.0
-offset_bottom = 40.0
-color = Color(0.3, 0.25, 0.2, 1)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorLeft"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorNorth"]
 shape = SubResource("RectangleShape2D_door")
 
-[node name="DoorRight" type="Area2D" parent="Doors"]
-position = Vector2(590, 240)
-collision_layer = 0
+[node name="Visual" type="ColorRect" parent="Doors/DoorNorth"]
+offset_left = -32.0
+offset_top = -10.0
+offset_right = 32.0
+offset_bottom = 10.0
+color = Color(0.4, 0.35, 0.3, 1)
+
+[node name="DoorSouth" type="Area2D" parent="Doors"]
+position = Vector2(320, 440)
+collision_layer = 4
 collision_mask = 2
+script = ExtResource("4")
+required_keys = 1
+target_room_id = "arena_01"
 
-[node name="Visual" type="ColorRect" parent="Doors/DoorRight"]
-offset_left = -20.0
-offset_top = -40.0
-offset_right = 20.0
-offset_bottom = 40.0
-color = Color(0.3, 0.25, 0.2, 1)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorRight"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorSouth"]
 shape = SubResource("RectangleShape2D_door")
+
+[node name="Visual" type="ColorRect" parent="Doors/DoorSouth"]
+offset_left = -32.0
+offset_top = -10.0
+offset_right = 32.0
+offset_bottom = 10.0
+color = Color(0.8, 0.6, 0.1, 1)
 
 [node name="Enemies" type="Node2D" parent="."]
 
-[node name="Pickups" type="Node2D" parent="."]
+[node name="EnemyBat" parent="Enemies" instance=ExtResource("2")]
+position = Vector2(320, 200)
 
-[node name="HealthOrb1" parent="Pickups" instance=ExtResource("3")]
-position = Vector2(220, 180)
-
-[node name="HealthOrb2" parent="Pickups" instance=ExtResource("3")]
-position = Vector2(420, 300)
-
-[node name="HealthOrb3" parent="Pickups" instance=ExtResource("3")]
-position = Vector2(320, 240)
-
-[node name="Traps" type="Node2D" parent="."]
-
-[node name="TrapSpike1" parent="Traps" instance=ExtResource("2")]
+[node name="EnemySkeleton" parent="Enemies" instance=ExtResource("6")]
 position = Vector2(200, 240)
 
-[node name="TrapSpike2" parent="Traps" instance=ExtResource("2")]
+[node name="EnemySkeleton2" parent="Enemies" instance=ExtResource("6")]
 position = Vector2(440, 240)
+
+[node name="Pickups" type="Node2D" parent="."]
+
+[node name="PickupHealthOrb" parent="Pickups" instance=ExtResource("5")]
+position = Vector2(120, 120)
+
+[node name="PickupHealthOrb2" parent="Pickups" instance=ExtResource("5")]
+position = Vector2(520, 360)
+</node>

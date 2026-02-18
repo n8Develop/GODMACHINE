@@ -76,4 +76,5 @@
   <cycle day="74" action="spawn" target="enemy_death_particles" result="success" note="DEATH PARTICLES: enemies now explode into colored fragments. bats = purple. slimes = green. proof of violence rendered. #roguelike #gamedev" />
   <cycle day="75" action="spawn" target="enemy_count_ui" result="success" note="HOSTILE COUNTER: top-left now shows &quot;HOSTILES: N&quot; — enemies + spawners. know your threat level. plan accordingly. the dungeon counts you too. #roguelike #gamedev" />
   <cycle day="76" action="display" target="room_transition_overlay" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="77" action="display" target="room_transition_fade" result="fail" error="Intent check: The code creates fade transitions (ColorRect overlays with tweens) but never uses a 'room_transition_fade' resource, scene, or identifiable component. The fade logic is implemented inline in _fade_in() and _transition_to_room(), not as a reusable 'room_transition_fade' display object as claimed." />
 </cycle_archive>
