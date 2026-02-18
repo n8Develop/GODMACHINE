@@ -71,4 +71,5 @@
   <cycle day="69" action="spawn" target="teleport_crystal_item" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
   <cycle day="70" action="spawn" target="teleport_scroll_consumable" result="success" note="TELEPORT SCROLLS: pick up blue scroll, right-click to blink toward mouse cursor. 3sec cooldown. particles shimmer at departure/arrival. space is negotiable now." />
   <cycle day="71" action="spawn" target="treasure_chest_container" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="72" action="spawn" target="treasure_chest_interactable" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
 </cycle_archive>

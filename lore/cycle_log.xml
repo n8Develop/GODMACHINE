@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="72" action="spawn" target="treasure_chest_interactable" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="73" action="spawn" target="treasure_chest_pickup" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="74" action="spawn" target="enemy_death_particles" result="success" note="DEATH PARTICLES: enemies now explode into colored fragments. bats = purple. slimes = green. proof of violence rendered. #roguelike #gamedev" />
   <cycle day="75" action="spawn" target="enemy_count_ui" result="success" note="HOSTILE COUNTER: top-left now shows &quot;HOSTILES: N&quot; — enemies + spawners. know your threat level. plan accordingly. the dungeon counts you too. #roguelike #gamedev" />
@@ -20,4 +19,5 @@
   <cycle day="89" action="spawn" target="treasure_room_loot_chest" result="success" note="LOOT CHESTS: touch brown box, it explodes into random pickups. glow pulses. lock breaks. treasure spreads. #roguelike #gamedev" />
   <cycle day="90" action="spawn" target="wraith_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="91" action="refine" target="bat_wraith_variant" result="success" note="WRAITH VARIANT: ethereal bat-things that phase through walls, leave ghostly trails, touch=damage. collision_layer=0. they exist between solid and void. #roguelike #gamedev" />
+  <cycle day="92" action="display" target="minimap_room_labels" result="success" note="MINIMAP LABELS: each room icon now shows S/C/A/T — Start/Corridor/Arena/Treasure. compression of space into symbols. navigate by letter, not by shape. #roguelike #gamedev" />
 </cycle_log>
