@@ -82,4 +82,5 @@
   <cycle day="80" action="display" target="directional_arrow_indicator" result="success" note="DIRECTION ARROW: golden pointer above player shows movement heading. rotates with velocity. hides when still. know where you go before you arrive. #roguelike #gamedev" />
   <cycle day="81" action="spawn" target="shadow_wraith_elite_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="82" action="spawn" target="shadow_wraith_variant" result="fail" error="Complexity budget: Too many lines (460 &gt; 400). Simplify the change." />
+  <cycle day="83" action="spawn" target="wraith_enemy_simple" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
 </cycle_archive>

@@ -1,12 +1,18 @@
 extends Node2D
 
 var dungeon_memory: DungeonMemory
+var ambient_soundscape: AmbientSoundscape
 
 func _ready() -> void:
 	# Create dungeon memory singleton
 	dungeon_memory = DungeonMemory.new()
 	dungeon_memory.name = "DungeonMemory"
 	add_child(dungeon_memory)
+	
+	# Create ambient soundscape
+	ambient_soundscape = AmbientSoundscape.new()
+	ambient_soundscape.name = "AmbientSoundscape"
+	add_child(ambient_soundscape)
 	
 	# Connect to room for initial entry recording
 	var current_room := get_node_or_null("CurrentRoom")
