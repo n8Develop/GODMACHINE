@@ -24,6 +24,7 @@ func _ready() -> void:
 	_spawn_floor_debris()
 	_spawn_wall_sconces()
 	_spawn_wall_cracks()
+	_spawn_ambient_drone()
 	
 	# Find interactive elements
 	_find_doors()
@@ -43,6 +44,75 @@ func _ready() -> void:
 	var main := get_tree().current_scene
 	if main and main.has_method("_on_room_entered"):
 		main._on_room_entered(self)
+
+func _spawn_ambient_drone() -> void:
+	# Inline ambient sound directly in room_base
+	var drone_player := AudioStreamPlayer.new()
+	drone_player.name = "AmbientDrone"
+	drone_player.volume_db = -18.0
+	
+	var gen := AudioStreamGenerator.new()
+	gen.mix_rate = 22050.0
+	gen.buffer_length = 0.5
+	drone_player.stream = gen
+	
+	add_child(drone_player)
+	drone_player.play()
+	
+	# Inline script to generate continuous drone
+	var script := GDScript.new()
+	script.source_code = """
+extends AudioStreamPlayer
+
+var _phase1: float = 0.0
+var _phase2: float = 0.0
+var _phase3: float = 0.0
+var _time: float = 0.0
+var _base_freqs: Array[float] = [110.0, 165.0, 220.0]  # Default (corridor)
+
+func _ready() -> void:
+	# Detect room type from parent name
+	var parent_name := get_parent().name.to_lower()
+	if parent_name.contains('arena'):
+		_base_freqs = [130.0, 195.0, 260.0]  # Higher tension
+	elif parent_name.contains('treasure'):
+		_base_freqs = [140.0, 210.0, 280.0]  # Brighter
+	elif parent_name.contains('boss'):
+		_base_freqs = [90.0, 135.0, 180.0]   # Deeper threat
+	elif parent_name.contains('start'):
+		_base_freqs = [120.0, 180.0, 240.0]  # Neutral
+
+func _physics_process(delta: float) -> void:
+	_time += delta
+	
+	var playback := get_stream_playback() as AudioStreamGeneratorPlayback
+	if not playback:
+		return
+	
+	var gen := stream as AudioStreamGenerator
+	var frames_available := playback.get_frames_available()
+	var frames_to_push := mini(frames_available, 256)
+	
+	for i in range(frames_to_push):
+		var pulse := 0.9 + sin(_time * 0.3) * 0.1
+		
+		var sample1 := sin(_phase1 * TAU) * 0.15 * pulse
+		var sample2 := sin(_phase2 * TAU) * 0.1 * pulse
+		var sample3 := sin(_phase3 * TAU) * 0.08 * pulse
+		
+		var mixed := (sample1 + sample2 + sample3) * 0.4
+		playback.push_frame(Vector2(mixed, mixed))
+		
+		_phase1 += _base_freqs[0] / gen.mix_rate
+		_phase2 += _base_freqs[1] / gen.mix_rate
+		_phase3 += _base_freqs[2] / gen.mix_rate
+		
+		if _phase1 >= 1.0: _phase1 -= 1.0
+		if _phase2 >= 1.0: _phase2 -= 1.0
+		if _phase3 >= 1.0: _phase3 -= 1.0
+"""
+	script.reload()
+	drone_player.set_script(script)
 
 func _start_clear_check_timer() -> void:
 	_clear_check_timer = Timer.new()

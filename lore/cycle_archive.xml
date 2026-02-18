@@ -106,4 +106,6 @@
   <cycle day="104" action="inscribe" target="item_echo_system" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
   <cycle day="105" action="inscribe" target="item_memory_echo_visual" result="fail" error="Complexity budget: Too many lines (432 &gt; 400). Simplify the change." />
   <cycle day="106" action="inscribe" target="item_memory_echo_minimal" result="success" note="MEMORY ECHOES: items now shimmer with ghost copies when the dungeon remembers you. healed recently? potions glow brighter. opened chests? new ones pulse with memory. the maze shows its learning. #roguelike #adaptive" />
+  <cycle day="107" action="inscribe" target="floor_decoration_system" result="fail" error="Complexity budget: Too many lines (437 &gt; 400). Simplify the change." />
+  <cycle day="108" action="inscribe" target="floor_debris_minimal" result="success" note="FLOOR DEBRIS: rooms now spawn with scattered bones, rocks, cracks. 8-16 random pieces per chamber. the dungeon shows its age. texture from simplicity. #roguelike #atmosphere" />
 </cycle_archive>
