@@ -8,6 +8,10 @@ extends CharacterBody2D
 @export var is_ghost: bool = false
 @export var phase_interval: float = 3.0
 @export var is_boss: bool = false
+@export var is_archer: bool = false
+@export var shoot_cooldown: float = 2.0
+@export var arrow_speed: float = 200.0
+@export var arrow_damage: int = 8
 
 @onready var health: HealthComponent = $HealthComponent
 
@@ -16,6 +20,7 @@ var _swoop_timer: float = 0.0
 var _swoop_target: Vector2 = Vector2.ZERO
 var _phase_timer: float = 0.0
 var _is_solid: bool = true
+var _shoot_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemies")
@@ -24,6 +29,7 @@ func _ready() -> void:
 	if health:
 		health.died.connect(_on_died)
 	_phase_timer = phase_interval
+	_shoot_timer = randf_range(0.0, shoot_cooldown)
 
 func _physics_process(delta: float) -> void:
 	var player := get_tree().get_first_node_in_group("player")
@@ -41,7 +47,13 @@ func _physics_process(delta: float) -> void:
 			_update_collision_state()
 			_update_visual_phase()
 	
-	# State machine
+	# Archer behavior overrides normal bat AI
+	if is_archer:
+		_archer_behavior(delta, player, distance)
+		move_and_slide()
+		return
+	
+	# Normal bat state machine
 	match _state:
 		"patrol":
 			_patrol_movement(delta)
@@ -68,6 +80,87 @@ func _physics_process(delta: float) -> void:
 	
 	move_and_slide()
 
+func _archer_behavior(delta: float, player: Node2D, distance: float) -> void:
+	_shoot_timer -= delta
+	
+	# Keep distance (kiting behavior)
+	var ideal_distance := 150.0
+	var dir := global_position.direction_to(player.global_position)
+	
+	if distance < ideal_distance:
+		# Too close, back away
+		velocity = -dir * fly_speed
+	elif distance > ideal_distance * 1.5:
+		# Too far, move closer
+		velocity = dir * fly_speed * 0.5
+	else:
+		# Good range, strafe
+		var time := Time.get_ticks_msec() / 1000.0
+		var strafe := Vector2(-dir.y, dir.x) * sin(time * 2.0)
+		velocity = strafe * fly_speed * 0.6
+	
+	# Shoot arrow
+	if _shoot_timer <= 0.0 and distance <= detection_range:
+		_spawn_arrow(player.global_position)
+		_shoot_timer = shoot_cooldown
+
+func _spawn_arrow(target_pos: Vector2) -> void:
+	var arrow := Area2D.new()
+	arrow.collision_layer = 0
+	arrow.collision_mask = 2  # Hit player
+	arrow.global_position = global_position
+	
+	# Visual
+	var sprite := ColorRect.new()
+	sprite.size = Vector2(8, 2)
+	sprite.color = Color(0.8, 0.7, 0.3, 1.0)
+	sprite.position = Vector2(-4, -1)
+	arrow.add_child(sprite)
+	
+	# Collision
+	var shape := CollisionShape2D.new()
+	var rect := RectangleShape2D.new()
+	rect.size = Vector2(8, 2)
+	shape.shape = rect
+	arrow.add_child(shape)
+	
+	# Script (inline)
+	var script_code := """
+extends Area2D
+
+var velocity := Vector2.ZERO
+var damage := 0
+var lifetime := 3.0
+
+func _ready() -> void:
+	body_entered.connect(_on_body_entered)
+
+func _physics_process(delta: float) -> void:
+	global_position += velocity * delta
+	lifetime -= delta
+	if lifetime <= 0.0:
+		queue_free()
+
+func _on_body_entered(body: Node2D) -> void:
+	if body.is_in_group('player'):
+		var health := body.get_node_or_null('HealthComponent')
+		if health:
+			health.take_damage(damage)
+		queue_free()
+"""
+	var gd_script := GDScript.new()
+	gd_script.source_code = script_code
+	gd_script.reload()
+	arrow.set_script(gd_script)
+	
+	# Set arrow properties
+	var dir := global_position.direction_to(target_pos)
+	arrow.velocity = dir * arrow_speed
+	arrow.damage = arrow_damage
+	arrow.rotation = dir.angle()
+	
+	get_parent().add_child(arrow)
+
 func _patrol_movement(delta: float) -> void:
 	var time := Time.get_ticks_msec() / 1000.0
 	var offset_x := sin(time * 1.2) * 30.0
@@ -85,11 +178,11 @@ func _update_collision_state() -> void:
 		collision_mask = 0
 
 func _update_visual_phase() -> void:
-	var sprite := get_node_or_null("ColorRect")
+	var sprite := get_node_or_null("Body")
 	if sprite:
 		if _is_solid:
 			sprite.modulate.a = 1.0
-			sprite.color = Color(0.6, 0.8, 1.0, 1.0)
+			sprite.color = Color(0.6, 0.8, 1.0, 1.0) if is_ghost else Color(0.4, 0.2, 0.5, 1.0)
 		else:
 			sprite.modulate.a = 0.4
 			sprite.color = Color(0.4, 0.6, 0.9, 0.4)
