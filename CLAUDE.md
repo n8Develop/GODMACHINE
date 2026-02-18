@@ -16,6 +16,9 @@ The game is never finished. The art project IS the process.
 - **Video recording**: Godot Movie Maker → FFmpeg AVI→MP4 → Twitter upload, with autopilot gameplay
 - **Prompt caching**: System prompt cached via Anthropic API (90% input cost reduction on cached portion)
 - **Exact token counting**: Pre-flight `count_tokens()` API call replaces rough `len//4` estimate
+- **Soul system**: Persistent BDI inner state (`lore/soul.md`) — LLM reads/writes beliefs, desires, intentions each cycle. Narrative coherence check (Haiku) validates output against soul.
+- **Baseline error filtering**: Pre-existing Godot errors captured before LLM changes, filtered from test results so only new errors fail the test
+- **Enhanced error parsing**: Two-pass block parser catches Godot 4.6 `SCRIPT ERROR:` + `Failed to load script` formats
 
 ## Philosophy
 - **Hands-off**: Let the LLM figure things out. Don't over-restrict its creativity.
@@ -51,21 +54,23 @@ GODMACHINE/
 │   ├── whispers.md         # Persistent human-editable hints injected into the prompt
 │   ├── oracle_question.md  # GODMACHINE's question to the Oracle (temp, cleared after answer)
 │   ├── oracle_answer.md    # Oracle's response (temp, injected into next eligible cycle)
+│   ├── soul.md             # Persistent BDI inner state — beliefs, desires, intentions, aesthetic
 │   └── .last_failed_diff   # Temp: git diff from last failed cycle (for retry context)
 └── output/clips/           # Gameplay recordings (MP4, posted to Twitter)
 ```
 
 ## How the Orchestrator Loop Works
-1. Read `world_state.xml`, `cycle_log.xml`, `learnings.md`, `whispers.md`, scan `game/` for codebase summary
+1. Read `world_state.xml`, `cycle_log.xml`, `learnings.md`, `whispers.md`, `soul.md`, scan `game/` for codebase summary
 2. **Scan capabilities** — discover existing enemies, items, rooms, mechanics, autoloads
-3. Determine strategy (explore/retry/pivot) with **domain nudges**, **dependency warnings**, and **error pattern analysis**
+3. **Read soul** — extract intentions for strategy influence
+4. Determine strategy (explore/retry/pivot) with **domain nudges**, **dependency warnings**, **error pattern analysis**, and **soul intentions**
 4. Build **tiered prompt** (full source for focus domain, signatures for related, filenames for rest)
 5. **Inject learnings** — accumulated technical knowledge from past cycles
 6. **Inject Oracle answer** — if the Oracle responded to a previous question
 7. **Inject whispers** — persistent human-editable hints from `lore/whispers.md`
 8. **Token budget** — exact count via `count_tokens()` API, progressively truncate file contents if over budget
 9. Call Claude via Anthropic SDK (with **prompt caching** on system prompt, model and max_tokens configurable)
-10. Parse response (structured XML tags: `<action>`, `<target>`, `<files>`, `<lore_entry>`, `<patch_notes>`, `<learning>`, `<oracle_question>`)
+10. Parse response (structured XML tags: `<action>`, `<target>`, `<files>`, `<lore_entry>`, `<patch_notes>`, `<learning>`, `<oracle_question>`, `<soul_update>`)
 11. **Complexity budget** — reject if >3 files, >400 lines, or >75% new files
 12. Write files to disk
 13. **Pre-validation** — check bracket balance, preload paths, scene ext_resource refs
@@ -73,7 +78,8 @@ GODMACHINE/
 15. **Structured error parsing** — regex patterns categorize errors with actionable suggestions. Test FAILS if any errors parsed, even with exit code 0.
 16. Optional **smoke test** — temp GDScript checks main scene loads + autoloads present
 17. **Intent verification** — cheap Haiku call checks if code matches stated action/target
-18. If PASS: git commit, update lore, **save learning**, clean up saved diff, log success, **record gameplay video**, **post to Twitter with video**
+18. **Narrative coherence check** — cheap Haiku call checks if output is coherent with the soul (non-blocking)
+19. If PASS: git commit, update lore, **save learning**, **update soul** (if `<soul_update>` present), clean up saved diff, log success, **record gameplay video**, **post to Twitter with video**
 19. If FAIL: **save learning**, **save diff** for next retry, git rollback, log structured error
 20. **Oracle consultation** (try/finally) — if eligible cycle and GODMACHINE asked a question, consult the Oracle
 21. Sleep, repeat
@@ -82,13 +88,15 @@ GODMACHINE/
 
 ### `main.py`
 - Core loop with `run_cycle()` and `main()`
-- `parse_response()`: extracts `<action>`, `<target>`, `<files>`, `<lore_entry>`, `<patch_notes>`, `<learning>`, `<oracle_question>`, `<curated_learnings>`
+- `parse_response()`: extracts `<action>`, `<target>`, `<files>`, `<lore_entry>`, `<patch_notes>`, `<learning>`, `<oracle_question>`, `<soul_update>`, `<curated_learnings>`
 - `apply_files()`: writes LLM-generated files to disk
 - `check_complexity_budget()`: rejects over-scoped changes
 - `read_learnings()` / `append_learning()` / `replace_learnings()`: read/write/curate `lore/learnings.md`, auto-trims to last 50 entries
 - `git_commit()` / `git_rollback()`: version control safety
 - `_maybe_consult_oracle()`: runs in try/finally at cycle end, consults Oracle if eligible
+- Soul read/write/parse: `_seed_soul()`, `_update_soul()`, `_extract_intentions()`
 - Oracle answer injection, whispers injection, curated learnings handling
+- Narrative coherence check (Haiku, non-blocking) after intent verification
 - Video recording on success, Twitter posting with video (when configured)
 
 ### `codebase_summarizer.py`
@@ -101,11 +109,12 @@ GODMACHINE/
 ### `godot_runner.py`
 - **`GodotError`** dataclass: `category`, `file`, `line`, `message`, `suggestion`
 - **`TestResult`** / **`RecordingResult`** dataclasses
-- **`parse_godot_errors(output)`**: 6 regex patterns (parse_error, missing_node, null_access, scene_error, method_error, missing_resource)
+- **`parse_godot_errors(output)`**: 7 regex patterns (parse_error, missing_node, null_access, scene_error, method_error, missing_resource, script_load_error) + two-pass `SCRIPT ERROR:` block parser
 - **`pre_validate_gdscript(path)`**: bracket/paren balancing, preload path existence
 - **`validate_scene_refs(game_path, files_written)`**: checks ext_resource paths exist on disk
 - **`run_smoke_test(godot_exe, project_path)`**: writes temp `_smoke_test.gd`, checks main scene + autoloads
-- **`test_headless(..., quit_after=2)`**: fails if exit code != 0 OR if any errors are parsed (no silent failures)
+- **`capture_baseline_errors(godot_exe, project_path)`**: runs Godot before LLM changes, captures pre-existing errors for filtering
+- **`test_headless(..., quit_after=2, baseline_errors=None)`**: fails if exit code != 0 OR if any **new** errors are parsed (pre-existing baseline errors filtered out)
 - **`record_gameplay(...)`**: Godot Movie Maker mode with `--scene` flag. Safety: mandatory main scene detection, scene file existence check, project manager output detection (discards video if detected). Converts AVI→MP4 via FFmpeg.
 - **`_detect_main_scene()`**: reads `run/main_scene` from project.godot
 - **`_looks_like_project_manager()`**: scans Godot output for project manager / parse error indicators
@@ -122,13 +131,14 @@ GODMACHINE/
 - **`FEATURE_DEPENDENCIES`**: e.g. boss→enemies, shop→items, inventory→items
 - **`check_dependencies(feature, capabilities)`**: returns missing prerequisites
 - **Domain cooldown**: `get_recent_domains()`, `suggest_underrepresented_domain()` — nudges toward neglected domains
-- **`determine_strategy(cycles, capabilities)`**: enhanced with domain nudges + dependency warnings
+- **`determine_strategy(cycles, capabilities, soul_intentions="")`**: enhanced with domain nudges + dependency warnings + soul intention whispers
 
 ### `llm.py`
 - **Composable system prompt**: `SYSTEM_PROMPT` (base rules + `<learning>` + `<oracle_question>` tags) + optional `FEW_SHOT_EXAMPLES` + optional `GODOT_CHEAT_SHEET` — assembled by `get_system_prompt(config)`
 - **`count_tokens(messages, model, system)`**: exact token count via Anthropic `count_tokens()` API, falls back to `len//4` on error
 - **`estimate_tokens(text)`**: rough `len(text) // 4` (kept for quick previews)
-- **`build_cycle_prompt(...)`**: accepts `capabilities_summary`, `last_diff`, `learnings`, `oracle_context`, `oracle_available`, `whispers`, `token_budget` — progressively trims on overflow
+- **`build_cycle_prompt(...)`**: accepts `capabilities_summary`, `last_diff`, `learnings`, `oracle_context`, `oracle_available`, `whispers`, `soul_state`, `token_budget` — progressively trims on overflow
+- **`check_narrative_coherence(soul_state, action, target, lore_entry, patch_notes)`**: cheap Haiku call checking narrative coherence with soul
 - **`call_llm(prompt, config=config)`**: **prompt caching** on system prompt (`cache_control: ephemeral`, 90% input savings on cached portion), exact pre-flight token count, cache performance logging, retries up to 3x with exponential backoff on transient failures (429, 529, connection, timeout errors)
 - **`verify_intent(action, target, files_written)`**: cheap Haiku call to check if code matches stated intent
 - **First-cycle hint**: when `cycle_num == 1`, explore mode nudges the AI to start with foundational systems
@@ -150,6 +160,7 @@ validation:
   smoke_test: false            # Optional post-test scene validation
   extended_quit_after: 5       # Longer Godot run when smoke testing
   intent_check: true           # Cheap Haiku call to verify code matches intent
+  narrative_check: true        # Cheap Haiku call to check narrative coherence with soul
 prompt:
   few_shot_examples: true      # Include example cycle in system prompt
   godot_cheat_sheet: true      # Include 4.6 API reference
@@ -174,7 +185,7 @@ learnings:
 complexity:
   max_files_touched: 3         # Reject if LLM produces too many files
   max_total_lines: 400         # Reject if total output too large
-  max_new_file_ratio: 0.75     # Reject if too many new vs edited files
+  max_new_file_ratio: 1.0      # Reject if too many new vs edited files (raised from 0.75 to unblock .gd+.tscn pairs)
 ```
 
 ## Key Design Principles
@@ -211,7 +222,7 @@ complexity:
 - `.claude/settings.local.json` is gitignored — it contained a leaked key that was rotated
 - Anthropic client is recreated every call (works but wasteful)
 - Config is hot-reloaded each cycle — edit `config.yaml` while running to change settings
-- The headless test error parser doesn't catch `SCRIPT ERROR:` format errors (only `res://file:line - Error:` format) — some game-breaking script errors pass silently
+- Godot 4.6 treats `class_name` type annotations as parse errors (`Cannot infer type from Variant`) — all game scripts must use `Node` or built-in types for variable annotations, not custom `class_name` types. Use `get_node_or_null()` without `as ClassName` casts. Use `preload()` + `.new()` instead of `ClassName.new()` for instantiation.
 - `_autopilot.gd` is registered as an autoload but only activates during Movie Maker recording (`OS.has_feature("movie")`) — it's inert during normal play and headless testing
 
 ## What's Not Built Yet

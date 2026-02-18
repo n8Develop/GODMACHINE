@@ -3,7 +3,7 @@ godot:
 
 cycle:
   interval_seconds: 10
-  max_cycles: 10  # set to -1 for unlimited
+  max_cycles: 50  # set to -1 for unlimited
 
 paths:
   game: "game"
