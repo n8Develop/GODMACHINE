@@ -24,6 +24,7 @@ validation:
   extended_quit_after: 5
   intent_check: true
   intent_check_model: "claude-haiku-4-5-20251001"
+  narrative_check: true    # Cheap Haiku call to check narrative coherence with soul
 
 prompt:
   few_shot_examples: true

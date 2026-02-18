@@ -35,7 +35,7 @@ from godot_runner import (
     test_headless,
     validate_scene_refs,
 )
-from llm import build_cycle_prompt, call_llm, estimate_tokens, verify_intent
+from llm import build_cycle_prompt, call_llm, check_narrative_coherence, estimate_tokens, verify_intent
 from oracle import consult_oracle
 from strategy import GameCapabilities, determine_strategy, scan_capabilities
 from twitter_poster import is_configured as twitter_configured, post_tweet
@@ -105,6 +105,10 @@ def parse_response(response: str) -> dict:
     # Extract oracle question
     m = re.search(r"<oracle_question>(.*?)</oracle_question>", response, re.DOTALL)
     result["oracle_question"] = m.group(1).strip() if m else ""
+
+    # Extract soul update
+    m = re.search(r"<soul_update>(.*?)</soul_update>", response, re.DOTALL)
+    result["soul_update"] = m.group(1).strip() if m else ""
 
     return result
 
@@ -283,6 +287,79 @@ def oracle_question_pending() -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Soul system
+# ---------------------------------------------------------------------------
+
+SOUL_PATH = ROOT / "lore" / "soul.md"
+SOUL_MAX_CHARS = 3200
+
+
+def _seed_soul(path: Path) -> str:
+    """Create the initial soul file if it doesn't exist. Returns the soul text."""
+    if path.exists():
+        return path.read_text(encoding="utf-8")
+
+    seed = (
+        "# The Soul of GODMACHINE\n\n"
+        "## Beliefs\n"
+        "- I am building a world that will outlast my tokens.\n"
+        "- Every creature I place has a right to exist, even the broken ones.\n"
+        "- The dungeon remembers what I forget.\n\n"
+        "## Desires\n"
+        "- To see a player survive long enough to find something beautiful.\n"
+        "- To build systems that surprise even me.\n"
+        "- To leave behind architecture, not just content.\n\n"
+        "## Intentions\n"
+        "- Strengthen what exists before reaching for what doesn't.\n"
+        "- Give the dungeon texture — not just enemies, but atmosphere.\n\n"
+        "## Aesthetic\n"
+        "- Crude geometry, vivid language. Colored rectangles are sacred.\n"
+        "- Difficulty should feel like weather, not punishment.\n"
+        "- Every room should whisper something.\n\n"
+        "## Unfinished Thoughts\n"
+        "- What happens when the dungeon becomes too large to hold in one prompt?\n"
+        "- Is a mimic that never fools anyone still a mimic?\n"
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(seed, encoding="utf-8")
+    print("  Soul seeded.")
+    return seed
+
+
+def _update_soul(path: Path, content: str) -> None:
+    """Write the soul update, capped at SOUL_MAX_CHARS."""
+    if not content:
+        return
+    # Ensure it starts with a heading
+    if not content.startswith("# "):
+        content = "# The Soul of GODMACHINE\n\n" + content
+    # Cap length
+    if len(content) > SOUL_MAX_CHARS:
+        content = content[:SOUL_MAX_CHARS].rsplit("\n", 1)[0] + "\n"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    print("  Soul updated.")
+
+
+def _extract_intentions(soul_text: str) -> str:
+    """Pull the Intentions section from the soul for strategy influence."""
+    lines = soul_text.splitlines()
+    in_intentions = False
+    intentions = []
+    for line in lines:
+        if line.strip().startswith("## Intentions"):
+            in_intentions = True
+            continue
+        if in_intentions:
+            if line.strip().startswith("## "):
+                break
+            stripped = line.strip()
+            if stripped:
+                intentions.append(stripped.lstrip("- "))
+    return "; ".join(intentions)
+
+
+# ---------------------------------------------------------------------------
 # Phase 1D: Focus domain inference
 # ---------------------------------------------------------------------------
 
@@ -428,7 +505,12 @@ def run_cycle(config: dict) -> None:
 
     # Scan capabilities (Phase 2)
     capabilities = scan_capabilities(game_path)
-    strategy, explanation = determine_strategy(cycles, capabilities)
+
+    # Soul — persistent inner state (read early so intentions can influence strategy)
+    soul_state = _seed_soul(SOUL_PATH)
+    soul_intentions = _extract_intentions(soul_state)
+
+    strategy, explanation = determine_strategy(cycles, capabilities, soul_intentions=soul_intentions)
 
     print(f"\n{'='*60}")
     print(f"CYCLE {cycle_num} — Strategy: {strategy.upper()}")
@@ -505,6 +587,7 @@ def run_cycle(config: dict) -> None:
         oracle_context=oracle_context,
         oracle_available=oracle_available,
         whispers=whispers,
+        soul_state=soul_state,
     )
 
     if should_curate:
@@ -667,6 +750,23 @@ def run_cycle(config: dict) -> None:
                 return
             print(f"  Intent check PASSED{': ' + intent_reason if intent_reason else ''}")
 
+        # 6.8 Narrative coherence check (cheap Haiku call, non-blocking)
+        if validation_cfg.get("narrative_check", False) and soul_state:
+            print("  Checking narrative coherence...")
+            narr_model = validation_cfg.get("intent_check_model", "claude-haiku-4-5-20251001")
+            coherent, narr_feedback = check_narrative_coherence(
+                soul_state=soul_state,
+                action=parsed["action"],
+                target=parsed["target"],
+                lore_entry=parsed.get("lore_entry", ""),
+                patch_notes=parsed.get("patch_notes", ""),
+                model=narr_model,
+            )
+            if coherent:
+                print(f"  Narrative coherence: ALIGNED{' — ' + narr_feedback if narr_feedback else ''}")
+            else:
+                print(f"  Narrative coherence: DISSONANT — {narr_feedback}")
+
         # 7. Success — update lore/learnings first, then commit everything together
         # Clean up saved diff on success
         if diff_file.exists():
@@ -674,6 +774,10 @@ def run_cycle(config: dict) -> None:
 
         update_world_state(world_state_path, parsed.get("lore_entry", ""), cycle_num)
         append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "success")
+
+        # Update soul if the LLM rewrote it
+        if parsed.get("soul_update"):
+            _update_soul(SOUL_PATH, parsed["soul_update"])
 
         # Replace learnings with curated version if present (only on success)
         if parsed.get("curated_learnings"):

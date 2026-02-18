@@ -208,6 +208,7 @@ _ERROR_PATTERN_ADVICE: dict[str, str] = {
 def determine_strategy(
     cycles: list[dict],
     capabilities: GameCapabilities | None = None,
+    soul_intentions: str = "",
 ) -> tuple[str, str]:
     """Return (strategy, explanation) based on recent cycle history."""
     if not cycles:
@@ -237,6 +238,10 @@ def determine_strategy(
         # Even after success, warn if there's a recurring error pattern
         if pattern_advice:
             explanation += f" {pattern_advice}"
+
+        # Soul influence — subtle, not a hard constraint
+        if soul_intentions:
+            explanation += f" Your soul whispers: {soul_intentions[:200]}"
 
         return "explore", explanation
 

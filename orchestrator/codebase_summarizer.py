@@ -144,7 +144,7 @@ def _is_related_domain(domain: str, focus_domains: list[str]) -> bool:
 # ---------------------------------------------------------------------------
 
 def compress_world_state(xml_text: str, max_entries: int = 10) -> str:
-    """Keep last N chronicle entries verbatim, summarize older ones in batches of 5."""
+    """Keep last N chronicle entries verbatim, summarize older ones in batches of 3."""
     if not xml_text.strip():
         return xml_text
 
@@ -169,13 +169,13 @@ def compress_world_state(xml_text: str, max_entries: int = 10) -> str:
     for e in list(chronicle):
         chronicle.remove(e)
 
-    # Summarize old entries in batches of 5
-    for i in range(0, len(old_entries), 5):
-        batch = old_entries[i : i + 5]
+    # Summarize old entries in batches of 3
+    for i in range(0, len(old_entries), 3):
+        batch = old_entries[i : i + 3]
         days = [e.get("day", "?") for e in batch]
         day_range = f"{days[0]}-{days[-1]}"
         summary_text = "; ".join(
-            (e.text or "").strip()[:60] + "..." if len((e.text or "").strip()) > 60 else (e.text or "").strip()
+            (e.text or "").strip()[:120] + "..." if len((e.text or "").strip()) > 120 else (e.text or "").strip()
             for e in batch
         )
         summary_el = ET.SubElement(chronicle, "summary", days=day_range)
