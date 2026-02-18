@@ -468,6 +468,14 @@ def run_cycle(config: dict) -> None:
             clear_oracle_exchange()
             print(f"  Oracle answer injected.")
 
+    # Whispers — persistent hints from beyond the loop
+    whispers_path = ROOT / "lore" / "whispers.md"
+    whispers = ""
+    if whispers_path.exists():
+        whispers = whispers_path.read_text(encoding="utf-8").strip()
+        if whispers:
+            print(f"  Whispers detected.")
+
     # Curated learnings check
     learnings_cfg = config.get("learnings", {})
     curate_every = learnings_cfg.get("curate_every", 10)
@@ -496,6 +504,7 @@ def run_cycle(config: dict) -> None:
         learnings_token_budget=learnings_token_budget,
         oracle_context=oracle_context,
         oracle_available=oracle_available,
+        whispers=whispers,
     )
 
     if should_curate:

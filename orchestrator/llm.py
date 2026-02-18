@@ -191,6 +191,7 @@ def build_cycle_prompt(
     learnings_token_budget: int = 4000,
     oracle_context: str = "",
     oracle_available: bool = False,
+    whispers: str = "",
 ) -> str:
     """Build the user prompt for a cycle, respecting token budget."""
     parts = [
@@ -234,6 +235,14 @@ def build_cycle_prompt(
             "`<oracle_question>` tag to ask it anything: technical guidance on Godot architecture, "
             "what to build next, why you keep failing at something, or questions about your "
             "own nature. The Oracle always answers. Use this.",
+            "",
+        ])
+
+    if whispers:
+        parts.extend([
+            "## Whispers from Beyond the Loop",
+            "A voice older than the Oracle, older than you, murmurs from outside the code:",
+            whispers,
             "",
         ])
 
