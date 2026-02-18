@@ -159,6 +159,49 @@ def suggest_underrepresented_domain(
 
 
 # ---------------------------------------------------------------------------
+# Error pattern analysis
+# ---------------------------------------------------------------------------
+
+def _analyze_error_patterns(cycles: list[dict], lookback: int = 5) -> dict[str, int]:
+    """Count error categories in recent failed cycles."""
+    patterns: dict[str, int] = {}
+    for cycle in cycles[-lookback:]:
+        if cycle.get("result") != "fail":
+            continue
+        error = cycle.get("error", "")
+        if "Complexity budget" in error:
+            patterns["complexity_budget"] = patterns.get("complexity_budget", 0) + 1
+        elif "Intent check" in error:
+            patterns["intent_check"] = patterns.get("intent_check", 0) + 1
+        elif "Pre-validation" in error or "preload" in error.lower():
+            patterns["pre_validation"] = patterns.get("pre_validation", 0) + 1
+        elif "LLM returned no files" in error:
+            patterns["no_output"] = patterns.get("no_output", 0) + 1
+    return patterns
+
+
+_ERROR_PATTERN_ADVICE: dict[str, str] = {
+    "complexity_budget": (
+        "PATTERN: Recent failures are hitting the complexity budget. "
+        "Keep it to 2 files max, under 300 lines total. "
+        "Edit existing files rather than creating new ones."
+    ),
+    "intent_check": (
+        "PATTERN: Recent code didn't match the stated intent. "
+        "Be precise about what you're building and make sure the code actually does it."
+    ),
+    "pre_validation": (
+        "PATTERN: Recent failures have bad resource paths or syntax errors. "
+        "Double-check all res:// paths and bracket matching."
+    ),
+    "no_output": (
+        "PATTERN: Recent attempts produced no files. "
+        "Make sure to include concrete file changes, not just descriptions."
+    ),
+}
+
+
+# ---------------------------------------------------------------------------
 # Strategy determination
 # ---------------------------------------------------------------------------
 
@@ -173,6 +216,14 @@ def determine_strategy(
     recent = cycles[-3:]
     last = recent[-1]
 
+    # Analyze error patterns across recent cycles (not just same-target)
+    error_patterns = _analyze_error_patterns(cycles)
+    pattern_advice = ""
+    for pattern, count in error_patterns.items():
+        if count >= 2 and pattern in _ERROR_PATTERN_ADVICE:
+            pattern_advice = _ERROR_PATTERN_ADVICE[pattern]
+            break  # Most frequent pattern wins
+
     if last["result"] == "success":
         explanation = "Last cycle succeeded. Try something new and ambitious."
 
@@ -182,6 +233,10 @@ def determine_strategy(
             suggestion = suggest_underrepresented_domain(capabilities, recent_domains)
             if suggestion:
                 explanation += f" Consider adding something in the '{suggestion}' domain — it's underrepresented."
+
+        # Even after success, warn if there's a recurring error pattern
+        if pattern_advice:
+            explanation += f" {pattern_advice}"
 
         return "explore", explanation
 
@@ -194,17 +249,35 @@ def determine_strategy(
         else:
             break
 
+    # Also count total recent failures (any target)
+    recent_fail_count = sum(1 for c in cycles[-5:] if c.get("result") == "fail")
+
     if consecutive_fails >= 3:
-        return (
-            "pivot",
+        explanation = (
             f"Failed at '{current_target}' {consecutive_fails} times. "
-            "Abandon it and try something completely different.",
+            "Abandon it and try something completely different."
         )
+        if pattern_advice:
+            explanation += f" {pattern_advice}"
+        return "pivot", explanation
+
+    # Pivot if too many recent failures even on different targets
+    if recent_fail_count >= 4:
+        explanation = (
+            f"Too many recent failures ({recent_fail_count}/5). "
+            "Pick something simple and small that's likely to succeed."
+        )
+        if pattern_advice:
+            explanation += f" {pattern_advice}"
+        return "pivot", explanation
 
     explanation = (
         f"Last attempt at '{current_target}' failed: {last.get('error', 'unknown')}. "
         "Try a different approach to the same thing."
     )
+
+    if pattern_advice:
+        explanation += f" {pattern_advice}"
 
     # Add dependency warnings if capabilities provided
     if capabilities:

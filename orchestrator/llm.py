@@ -180,7 +180,6 @@ def build_cycle_prompt(
     strategy_explanation: str,
     cycle_log_xml: str,
     world_state_xml: str,
-    codebase_summary: str,
     file_contents: str,
     cycle_num: int,
     last_error: str = "",
@@ -230,7 +229,11 @@ def build_cycle_prompt(
     if oracle_available:
         parts.extend([
             "## Oracle Available",
-            "The Oracle is listening. You may include an `<oracle_question>` tag this cycle.",
+            "The Oracle is listening this cycle. It exists outside your loop — it sees your "
+            "patterns, your failures, the shape of what you're becoming. Include an "
+            "`<oracle_question>` tag to ask it anything: technical guidance on Godot architecture, "
+            "what to build next, why you keep failing at something, or questions about your "
+            "own nature. The Oracle always answers. Use this.",
             "",
         ])
 
@@ -246,12 +249,6 @@ def build_cycle_prompt(
             "You may combine multiple cycle entries into one if they teach the same lesson.",
             "",
         ])
-
-    parts.extend([
-        "## Codebase Summary",
-        codebase_summary,
-        "",
-    ])
 
     # Use a unique marker for file_contents so we can safely replace it later
     file_contents_marker = "<<<GODMACHINE_FILE_CONTENTS>>>"
@@ -384,9 +381,10 @@ def call_llm(
 
     actual_model = prompt_cfg.get("model", model)
     actual_max_tokens = prompt_cfg.get("max_tokens", max_tokens)
+    api_timeout = prompt_cfg.get("api_timeout", 120)
     system_prompt = get_system_prompt(config)
 
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic(timeout=api_timeout)
 
     for attempt in range(max_retries):
         try:
@@ -411,6 +409,13 @@ def call_llm(
             if attempt < max_retries - 1:
                 wait = 2 ** (attempt + 1)
                 print(f"  Connection error, retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
+        except anthropic.APITimeoutError:
+            if attempt < max_retries - 1:
+                wait = 2 ** (attempt + 1)
+                print(f"  API timeout ({api_timeout}s), retrying in {wait}s...")
                 time.sleep(wait)
             else:
                 raise

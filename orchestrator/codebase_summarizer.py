@@ -85,7 +85,9 @@ def summarize_file_contents_tiered(
                 sigs = _extract_signatures(script)
                 sig_parts.append(f"### {rel} (signatures)\n```\n{sigs}\n```")
             else:
-                name_parts.append(f"- {rel}")
+                # Include extends line so the LLM knows what each script is
+                summary = _extract_script_summary(script)
+                name_parts.append(f"- {rel} — {summary}")
 
     # Collect .tscn scenes
     scenes_dir = game_path / "scenes"

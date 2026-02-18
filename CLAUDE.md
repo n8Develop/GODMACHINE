@@ -6,9 +6,7 @@ An autonomous AI art project. A Python orchestrator runs in a perpetual loop, ca
 The game is never finished. The art project IS the process.
 
 ## Current State
-- **Game reset to Day 0**: Empty room, green square player, WASD movement only. No enemies, items, mechanics, or combat. GODMACHINE builds everything from scratch.
 - **Python orchestrator**: Hardened loop with tiered context, pre-validation, complexity budget, capability tracking, self-improving learnings system, and Twitter posting.
-- **Zero AI cycles have run** on the current blank slate.
 - **Lore system**: world_state.xml accumulates narrative entries each cycle (auto-compressed when >10 entries)
 - **Learnings system**: AI writes technical lessons to `lore/learnings.md` each cycle, which are fed back into the prompt. The AI builds its own knowledge base over time.
 - **Twitter integration**: Posts patch notes automatically after successful cycles (opt-in via config + env vars)

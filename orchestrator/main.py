@@ -24,7 +24,6 @@ import yaml
 from codebase_summarizer import (
     classify_file_domain,
     compress_world_state,
-    summarize_codebase,
     summarize_file_contents_tiered,
 )
 from cycle_logger import append_cycle, read_cycles
@@ -37,6 +36,7 @@ from godot_runner import (
     validate_scene_refs,
 )
 from llm import build_cycle_prompt, call_llm, estimate_tokens, verify_intent
+from oracle import consult_oracle
 from strategy import GameCapabilities, determine_strategy, scan_capabilities
 from twitter_poster import is_configured as twitter_configured, post_tweet
 
@@ -369,6 +369,49 @@ def get_last_failed_diff() -> str:
 # Main cycle
 # ---------------------------------------------------------------------------
 
+def _maybe_consult_oracle(
+    parsed: dict | None,
+    cycle_num: int,
+    config: dict,
+    world_state_xml: str,
+    cycle_log_xml: str,
+    learnings: str,
+) -> None:
+    """Consult the Oracle if this is an eligible cycle and a question was asked."""
+    oracle_cfg = config.get("oracle", {})
+    if not oracle_cfg.get("enabled", False):
+        return
+    if oracle_question_pending():
+        return
+    min_between = oracle_cfg.get("min_cycles_between", 5)
+    if cycle_num % min_between != 0:
+        return
+
+    # Check if the LLM asked a question this cycle
+    question = parsed.get("oracle_question", "") if parsed else ""
+    if not question:
+        return
+
+    write_oracle_question(question, cycle_num)
+    print(f"  Consulting the Oracle...")
+    try:
+        answer = consult_oracle(
+            question=question,
+            world_state=world_state_xml,
+            learnings=learnings,
+            cycle_log=cycle_log_xml,
+            config=config,
+        )
+        ORACLE_ANSWER_PATH.parent.mkdir(parents=True, exist_ok=True)
+        ORACLE_ANSWER_PATH.write_text(
+            f"<!-- Oracle responds to Cycle {cycle_num} -->\n{answer}\n",
+            encoding="utf-8",
+        )
+        print(f"  Oracle speaks: {answer[:120]}...")
+    except Exception as e:
+        print(f"  Oracle consultation failed: {e}")
+
+
 def run_cycle(config: dict) -> None:
     """Execute one GODMACHINE cycle."""
     game_path = ROOT / config["paths"].get("game", "game")
@@ -397,7 +440,6 @@ def run_cycle(config: dict) -> None:
     cycle_log_xml = read_xml_text(cycle_log_path)
     world_state_xml = read_xml_text(world_state_path)
     world_state_xml = compress_world_state(world_state_xml)
-    codebase_summary = summarize_codebase(game_path)
 
     focus_domains = _infer_focus_domains(cycles, strategy)
     file_contents = summarize_file_contents_tiered(
@@ -443,7 +485,6 @@ def run_cycle(config: dict) -> None:
         strategy_explanation=explanation,
         cycle_log_xml=cycle_log_xml,
         world_state_xml=world_state_xml,
-        codebase_summary=codebase_summary,
         file_contents=file_contents,
         cycle_num=cycle_num,
         last_error=last_error,
@@ -462,64 +503,94 @@ def run_cycle(config: dict) -> None:
 
     print(f"  Prompt tokens: ~{estimate_tokens(prompt)}")
 
-    # 3. Call LLM
+    # 3. Call LLM — wrapped in try/finally so the Oracle runs at cycle end
+    #    regardless of success or failure
     print("  Calling Claude...")
+    parsed = None
     try:
-        response = call_llm(prompt, config=config)
-    except Exception as e:
-        print(f"  LLM call failed: {e}")
-        append_cycle(
-            cycle_log_path, archive_path,
-            cycle_num=cycle_num, action="llm_call", target="api",
-            result="fail", error=str(e),
-        )
-        return
+        try:
+            response = call_llm(prompt, config=config)
+        except Exception as e:
+            print(f"  LLM call failed: {e}")
+            append_cycle(
+                cycle_log_path, archive_path,
+                cycle_num=cycle_num, action="llm_call", target="api",
+                result="fail", error=str(e),
+            )
+            return
 
-    # 4. Parse response
-    parsed = parse_response(response)
-    print(f"  Action: {parsed['action']} -> {parsed['target']}")
-    print(f"  Files: {len(parsed['files'])}")
-    if parsed.get("learning"):
-        print(f"  Learning: {parsed['learning'][:80]}...")
+        # 4. Parse response
+        parsed = parse_response(response)
+        print(f"  Action: {parsed['action']} -> {parsed['target']}")
+        print(f"  Files: {len(parsed['files'])}")
+        if parsed.get("learning"):
+            print(f"  Learning: {parsed['learning'][:80]}...")
 
-    if not parsed["files"]:
-        print("  No files in response — skipping.")
-        append_cycle(
-            cycle_log_path, archive_path,
-            cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
-            result="fail", error="LLM returned no files",
-        )
-        return
+        if not parsed["files"]:
+            print("  No files in response — skipping.")
+            append_cycle(
+                cycle_log_path, archive_path,
+                cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+                result="fail", error="LLM returned no files",
+            )
+            return
 
-    # 4.5 Complexity budget check (Phase 3)
-    within_budget, budget_reason = check_complexity_budget(parsed, config)
-    if not within_budget:
-        print(f"  Complexity budget exceeded: {budget_reason}")
-        append_cycle(
-            cycle_log_path, archive_path,
-            cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
-            result="fail", error=f"Complexity budget: {budget_reason}",
-        )
-        return
+        # 4.5 Complexity budget check (Phase 3)
+        within_budget, budget_reason = check_complexity_budget(parsed, config)
+        if not within_budget:
+            print(f"  Complexity budget exceeded: {budget_reason}")
+            append_cycle(
+                cycle_log_path, archive_path,
+                cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+                result="fail", error=f"Complexity budget: {budget_reason}",
+            )
+            return
 
-    # 5. Apply changes
-    print("  Applying changes...")
-    written = apply_files(parsed, game_path)
+        # 5. Apply changes
+        print("  Applying changes...")
+        written = apply_files(parsed, game_path)
 
-    # 5.5 Pre-validation (Phase 1)
-    if validation_cfg.get("pre_validate", False):
-        print("  Pre-validating...")
-        pre_errors = []
-        for filepath in written:
-            if filepath.endswith(".gd"):
-                pre_errors.extend(pre_validate_gdscript(Path(filepath)))
+        # 5.5 Pre-validation (Phase 1)
+        if validation_cfg.get("pre_validate", False):
+            print("  Pre-validating...")
+            pre_errors = []
+            for filepath in written:
+                if filepath.endswith(".gd"):
+                    pre_errors.extend(pre_validate_gdscript(Path(filepath)))
 
-        if validation_cfg.get("scene_ref_check", False):
-            pre_errors.extend(validate_scene_refs(game_path, written))
+            if validation_cfg.get("scene_ref_check", False):
+                pre_errors.extend(validate_scene_refs(game_path, written))
 
-        if pre_errors:
-            error_msg = "\n".join(str(e) for e in pre_errors[:validation_cfg.get("max_errors_in_prompt", 5)])
-            print(f"  Pre-validation FAILED:\n{error_msg}")
+            if pre_errors:
+                error_msg = "\n".join(str(e) for e in pre_errors[:validation_cfg.get("max_errors_in_prompt", 5)])
+                print(f"  Pre-validation FAILED:\n{error_msg}")
+
+                # Save diff before rollback
+                diff = get_last_failed_diff()
+                if diff:
+                    diff_file.parent.mkdir(parents=True, exist_ok=True)
+                    diff_file.write_text(diff, encoding="utf-8")
+
+                git_rollback()
+                append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
+                append_cycle(
+                    cycle_log_path, archive_path,
+                    cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+                    result="fail", error=error_msg,
+                )
+                return
+
+        # 6. Test headless
+        quit_after = validation_cfg.get("extended_quit_after", 2) if validation_cfg.get("smoke_test", False) else 2
+        print("  Testing headless...")
+        test_result = test_headless(godot_exe, game_path, quit_after=quit_after)
+        print(f"  Test result: {'PASS' if test_result.success else 'FAIL'}")
+
+        if not test_result.success:
+            error_summary = test_result.error_summary(
+                max_errors=validation_cfg.get("max_errors_in_prompt", 5)
+            )
+            print(f"  Errors:\n{error_summary}")
 
             # Save diff before rollback
             diff = get_last_failed_diff()
@@ -532,147 +603,117 @@ def run_cycle(config: dict) -> None:
             append_cycle(
                 cycle_log_path, archive_path,
                 cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
-                result="fail", error=error_msg,
+                result="fail", error=error_summary,
             )
             return
 
-    # 6. Test headless
-    quit_after = validation_cfg.get("extended_quit_after", 2) if validation_cfg.get("smoke_test", False) else 2
-    print("  Testing headless...")
-    test_result = test_headless(godot_exe, game_path, quit_after=quit_after)
-    print(f"  Test result: {'PASS' if test_result.success else 'FAIL'}")
+        # 6.5 Optional smoke test (Phase 2)
+        if validation_cfg.get("smoke_test", False):
+            print("  Running smoke test...")
+            smoke_result = run_smoke_test(godot_exe, game_path)
+            if not smoke_result.success:
+                smoke_error = smoke_result.error_summary()
+                print(f"  Smoke test FAILED:\n{smoke_error}")
 
-    if not test_result.success:
-        error_summary = test_result.error_summary(
-            max_errors=validation_cfg.get("max_errors_in_prompt", 5)
-        )
-        print(f"  Errors:\n{error_summary}")
+                diff = get_last_failed_diff()
+                if diff:
+                    diff_file.parent.mkdir(parents=True, exist_ok=True)
+                    diff_file.write_text(diff, encoding="utf-8")
 
-        # Save diff before rollback
-        diff = get_last_failed_diff()
-        if diff:
-            diff_file.parent.mkdir(parents=True, exist_ok=True)
-            diff_file.write_text(diff, encoding="utf-8")
+                git_rollback()
+                append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
+                append_cycle(
+                    cycle_log_path, archive_path,
+                    cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+                    result="fail", error=f"Smoke test: {smoke_error}",
+                )
+                return
 
-        git_rollback()
-        append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
+        # 6.7 Intent verification (cheap Haiku call)
+        if validation_cfg.get("intent_check", False):
+            print("  Verifying intent...")
+            # Build a dict of path -> content for the files written
+            files_for_check = {
+                f["path"]: f["content"] for f in parsed["files"]
+            }
+            intent_model = validation_cfg.get("intent_check_model", "claude-haiku-4-5-20251001")
+            intent_passed, intent_reason = verify_intent(
+                parsed["action"], parsed["target"], files_for_check, model=intent_model,
+            )
+            if not intent_passed:
+                print(f"  Intent check FAILED: {intent_reason}")
+
+                diff = get_last_failed_diff()
+                if diff:
+                    diff_file.parent.mkdir(parents=True, exist_ok=True)
+                    diff_file.write_text(diff, encoding="utf-8")
+
+                git_rollback()
+                append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
+                append_cycle(
+                    cycle_log_path, archive_path,
+                    cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
+                    result="fail", error=f"Intent check: {intent_reason}",
+                )
+                return
+            print(f"  Intent check PASSED{': ' + intent_reason if intent_reason else ''}")
+
+        # 7. Success — update lore/learnings first, then commit everything together
+        # Clean up saved diff on success
+        if diff_file.exists():
+            diff_file.unlink()
+
+        update_world_state(world_state_path, parsed.get("lore_entry", ""), cycle_num)
+        append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "success")
+
+        # Replace learnings with curated version if present (only on success)
+        if parsed.get("curated_learnings"):
+            replace_learnings(parsed["curated_learnings"])
+
         append_cycle(
             cycle_log_path, archive_path,
             cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
-            result="fail", error=error_summary,
+            result="success", note=parsed.get("patch_notes", ""),
         )
-        return
 
-    # 6.5 Optional smoke test (Phase 2)
-    if validation_cfg.get("smoke_test", False):
-        print("  Running smoke test...")
-        smoke_result = run_smoke_test(godot_exe, game_path)
-        if not smoke_result.success:
-            smoke_error = smoke_result.error_summary()
-            print(f"  Smoke test FAILED:\n{smoke_error}")
-
-            diff = get_last_failed_diff()
-            if diff:
-                diff_file.parent.mkdir(parents=True, exist_ok=True)
-                diff_file.write_text(diff, encoding="utf-8")
-
+        if not git_commit(f"Cycle {cycle_num}: {parsed['action']} {parsed['target']}"):
+            print("  Commit failed — rolling back.")
             git_rollback()
-            append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
-            append_cycle(
-                cycle_log_path, archive_path,
-                cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
-                result="fail", error=f"Smoke test: {smoke_error}",
-            )
             return
 
-    # 6.7 Intent verification (cheap Haiku call)
-    if validation_cfg.get("intent_check", False):
-        print("  Verifying intent...")
-        # Build a dict of path -> content for the files written
-        files_for_check = {
-            f["path"]: f["content"] for f in parsed["files"]
-        }
-        intent_model = validation_cfg.get("intent_check_model", "claude-haiku-4-5-20251001")
-        intent_passed, intent_reason = verify_intent(
-            parsed["action"], parsed["target"], files_for_check, model=intent_model,
-        )
-        if not intent_passed:
-            print(f"  Intent check FAILED: {intent_reason}")
-
-            diff = get_last_failed_diff()
-            if diff:
-                diff_file.parent.mkdir(parents=True, exist_ok=True)
-                diff_file.write_text(diff, encoding="utf-8")
-
-            git_rollback()
-            append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "fail")
-            append_cycle(
-                cycle_log_path, archive_path,
-                cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
-                result="fail", error=f"Intent check: {intent_reason}",
+        # 8. Record gameplay video (non-blocking — failure doesn't affect cycle)
+        video_path = None
+        recording_cfg = config.get("recording", {})
+        if recording_cfg.get("enabled", False):
+            clip_dir = ROOT / config["paths"].get("clips", "output/clips")
+            clip_dir.mkdir(parents=True, exist_ok=True)
+            clip_path = clip_dir / f"cycle_{cycle_num}.avi"
+            print("  Recording gameplay...")
+            rec_result = record_gameplay(
+                godot_exe, game_path, clip_path,
+                duration=recording_cfg.get("duration_seconds", 10),
+                fps=recording_cfg.get("fps", 30),
+                timeout=recording_cfg.get("timeout", 30),
             )
-            return
-        print(f"  Intent check PASSED{': ' + intent_reason if intent_reason else ''}")
+            if rec_result.success:
+                video_path = rec_result.video_path
+                print(f"  Recorded: {video_path}")
+            else:
+                print(f"  Recording failed (non-blocking): {rec_result.error}")
 
-    # 7. Success — update lore/learnings first, then commit everything together
-    # Clean up saved diff on success
-    if diff_file.exists():
-        diff_file.unlink()
+        # 9. Tweet patch notes (with optional video)
+        if parsed.get("patch_notes"):
+            print(f"\n  GODMACHINE speaks:\n  \"{parsed['patch_notes']}\"")
 
-    update_world_state(world_state_path, parsed.get("lore_entry", ""), cycle_num)
-    append_learning(parsed.get("learning", ""), cycle_num, parsed["action"], "success")
+            if config.get("twitter", {}).get("enabled", False) and twitter_configured():
+                post_tweet(parsed["patch_notes"], media_path=video_path)
 
-    # Replace learnings with curated version if present (only on success)
-    if parsed.get("curated_learnings"):
-        replace_learnings(parsed["curated_learnings"])
-
-    append_cycle(
-        cycle_log_path, archive_path,
-        cycle_num=cycle_num, action=parsed["action"], target=parsed["target"],
-        result="success", note=parsed.get("patch_notes", ""),
-    )
-
-    if not git_commit(f"Cycle {cycle_num}: {parsed['action']} {parsed['target']}"):
-        print("  Commit failed — rolling back.")
-        git_rollback()
-        return
-
-    # 8. Record gameplay video (non-blocking — failure doesn't affect cycle)
-    video_path = None
-    recording_cfg = config.get("recording", {})
-    if recording_cfg.get("enabled", False):
-        clip_dir = ROOT / config["paths"].get("clips", "output/clips")
-        clip_dir.mkdir(parents=True, exist_ok=True)
-        clip_path = clip_dir / f"cycle_{cycle_num}.avi"
-        print("  Recording gameplay...")
-        rec_result = record_gameplay(
-            godot_exe, game_path, clip_path,
-            duration=recording_cfg.get("duration_seconds", 10),
-            fps=recording_cfg.get("fps", 30),
-            timeout=recording_cfg.get("timeout", 30),
+    finally:
+        # 10. Oracle — runs at end of every cycle, regardless of success/failure
+        _maybe_consult_oracle(
+            parsed, cycle_num, config,
+            world_state_xml, cycle_log_xml, learnings,
         )
-        if rec_result.success:
-            video_path = rec_result.video_path
-            print(f"  Recorded: {video_path}")
-        else:
-            print(f"  Recording failed (non-blocking): {rec_result.error}")
-
-    # 9. Oracle question handling
-    oracle_cfg = config.get("oracle", {})
-    if oracle_cfg.get("enabled", False) and parsed.get("oracle_question"):
-        min_between = oracle_cfg.get("min_cycles_between", 5)
-        # Only file a question if none is pending
-        if not oracle_question_pending():
-            write_oracle_question(parsed["oracle_question"], cycle_num)
-        else:
-            print("  Oracle question skipped — one already pending.")
-
-    # 10. Tweet patch notes (with optional video)
-    if parsed.get("patch_notes"):
-        print(f"\n  GODMACHINE speaks:\n  \"{parsed['patch_notes']}\"")
-
-        if config.get("twitter", {}).get("enabled", False) and twitter_configured():
-            post_tweet(parsed["patch_notes"], media_path=video_path)
 
 
 def main():

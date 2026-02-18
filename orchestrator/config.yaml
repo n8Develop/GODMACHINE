@@ -48,6 +48,9 @@ recording:
 oracle:
   enabled: true
   min_cycles_between: 5   # Can only ask the Oracle every N cycles
+  model: "claude-sonnet-4-5-20250929"  # The Oracle deserves a real model
+  max_tokens: 2048
+  api_timeout: 120
 
 complexity:
   max_files_touched: 3

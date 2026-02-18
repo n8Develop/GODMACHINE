@@ -78,10 +78,18 @@ def post_tweet(text: str, media_path: str | None = None) -> dict | None:
         api_v1 = _get_api_v1()
         if api_v1:
             try:
-                media = api_v1.media_upload(filename=media_path)
+                is_video = media_path.lower().endswith((".mp4", ".mov"))
+                if is_video:
+                    media = api_v1.media_upload(
+                        filename=media_path,
+                        chunked=True,
+                        media_category="tweet_video",
+                    )
+                else:
+                    media = api_v1.media_upload(filename=media_path)
                 media_ids = [media.media_id]
             except Exception as e:
-                print(f"[Twitter] Media upload failed: {e}")
+                print(f"[Twitter] Media upload failed: {e} — posting text only.")
 
     try:
         response = client.create_tweet(text=text, media_ids=media_ids)
@@ -89,6 +97,17 @@ def post_tweet(text: str, media_path: str | None = None) -> dict | None:
         print(f"[Twitter] Posted: {text[:60]}{'...' if len(text) > 60 else ''} (id: {tweet_id})")
         return {"id": tweet_id, "text": text}
     except Exception as e:
+        # If media IDs caused the failure, retry without media
+        if media_ids:
+            print(f"[Twitter] Post with media failed: {e} — retrying text only.")
+            try:
+                response = client.create_tweet(text=text)
+                tweet_id = response.data["id"]
+                print(f"[Twitter] Posted (text only): {text[:60]}{'...' if len(text) > 60 else ''} (id: {tweet_id})")
+                return {"id": tweet_id, "text": text}
+            except Exception as e2:
+                print(f"[Twitter] Text-only post also failed: {e2}")
+                return None
         print(f"[Twitter] Post failed: {e}")
         return None
 

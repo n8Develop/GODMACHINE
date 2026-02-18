@@ -1,6 +1,7 @@
 """Run Godot headless to test the project, with structured error parsing and video recording."""
 
 import re
+import shutil
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -384,6 +385,31 @@ def test_headless(
 # Video recording (Godot Movie Maker)
 # ---------------------------------------------------------------------------
 
+def _convert_to_mp4(avi_path: Path, mp4_path: Path, timeout: int = 30) -> bool:
+    """Convert AVI to MP4 using FFmpeg. Returns True on success."""
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        print("  FFmpeg not found — skipping AVI→MP4 conversion.")
+        return False
+
+    cmd = [
+        ffmpeg, "-y",
+        "-i", str(avi_path),
+        "-c:v", "libx264",
+        "-preset", "fast",
+        "-crf", "23",
+        "-pix_fmt", "yuv420p",
+        "-an",  # No audio (Godot Movie Maker doesn't record audio)
+        str(mp4_path),
+    ]
+    try:
+        subprocess.run(cmd, capture_output=True, timeout=timeout, check=True)
+        return mp4_path.exists() and mp4_path.stat().st_size > 0
+    except Exception as e:
+        print(f"  FFmpeg conversion failed: {e}")
+        return False
+
+
 def record_gameplay(
     godot_exe: str,
     project_path: Path,
@@ -395,9 +421,14 @@ def record_gameplay(
     """Record gameplay using Godot's Movie Maker mode.
 
     Movie Maker requires a visible window (no --headless). The game runs for
-    `duration` seconds at a fixed framerate and writes an .avi file.
+    `duration` seconds at a fixed framerate and writes an .avi file, then
+    converts to MP4 (for Twitter compatibility).
     """
     output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Godot always outputs AVI; we'll convert to MP4 after
+    avi_path = output_path.with_suffix(".avi")
+    mp4_path = output_path.with_suffix(".mp4")
 
     # With --write-movie, --quit-after counts FRAMES not seconds
     total_frames = duration * fps
@@ -414,7 +445,7 @@ def record_gameplay(
     cmd = [
         godot_exe,
         "--path", str(project_path),
-        "--write-movie", str(output_path),
+        "--write-movie", str(avi_path),
         "--fixed-fps", str(fps),
         "--quit-after", str(total_frames),
     ]
@@ -430,25 +461,41 @@ def record_gameplay(
         )
         output = result.stdout + result.stderr
 
-        if output_path.exists() and output_path.stat().st_size > 0:
-            return RecordingResult(
-                success=True,
-                video_path=str(output_path),
-                raw_output=output,
-            )
-        else:
+        if not (avi_path.exists() and avi_path.stat().st_size > 0):
             return RecordingResult(
                 success=False,
                 raw_output=output,
-                error=f"Recording finished but no video file at {output_path}",
+                error=f"Recording finished but no video file at {avi_path}",
+            )
+
+        # Convert AVI → MP4 for Twitter compatibility
+        if _convert_to_mp4(avi_path, mp4_path):
+            avi_path.unlink()  # Clean up AVI
+            return RecordingResult(
+                success=True,
+                video_path=str(mp4_path),
+                raw_output=output,
+            )
+        else:
+            # Fall back to AVI if conversion fails
+            return RecordingResult(
+                success=True,
+                video_path=str(avi_path),
+                raw_output=output,
             )
 
     except subprocess.TimeoutExpired:
-        # Check if a partial file was written
-        if output_path.exists() and output_path.stat().st_size > 0:
+        if avi_path.exists() and avi_path.stat().st_size > 0:
+            if _convert_to_mp4(avi_path, mp4_path):
+                avi_path.unlink()
+                return RecordingResult(
+                    success=True,
+                    video_path=str(mp4_path),
+                    raw_output=f"Timed out after {timeout}s but video file exists",
+                )
             return RecordingResult(
                 success=True,
-                video_path=str(output_path),
+                video_path=str(avi_path),
                 raw_output=f"Timed out after {timeout}s but video file exists",
             )
         return RecordingResult(
