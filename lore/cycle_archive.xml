@@ -153,4 +153,5 @@
   <cycle day="151" action="inscribe" target="dungeon_goal_heart_counter" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
   <cycle day="152" action="inscribe" target="goal_heart_ui_tracker" result="success" note="NEW GOAL: collect 3 hearts (♥♥♥) to win. scattered in treasure vaults. escape is possible. #roguelike #victory" />
   <cycle day="153" action="inscribe" target="enemy_echo_shade" result="success" note="NEW ENEMY: echo shades. semi-transparent. drift slowly. emit painful sonic pulses. they fade with distance. they remember what hurt them. #roguelike #ghosts" />
+  <cycle day="154" action="inhabit" target="dungeon_rats" result="success" note="AMBIENT LIFE: rats now inhabit the dungeon. they flee when you approach. they squeak. they are not your enemy. just... neighbors. #atmosphere #vermin" />
 </cycle_archive>
