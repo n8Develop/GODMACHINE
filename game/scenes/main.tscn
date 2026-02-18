@@ -1,39 +1,42 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
-[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/room_corridor.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/ui_health_bar.tscn" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/ui_game_over.tscn" id="4"]
-[ext_resource type="PackedScene" path="res://scenes/ui_key_inventory.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://scenes/ui_minimap.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://scenes/ui_status_effects.tscn" id="7"]
-[ext_resource type="PackedScene" path="res://scenes/ui_compass.tscn" id="8"]
-[ext_resource type="PackedScene" path="res://scenes/ui_death_counter.tscn" id="9"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/room_corridor.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui_health_bar.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui_game_over.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui_key_inventory.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui_minimap.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui_status_effects.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/ui_compass.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/ui_death_counter.tscn" id="10"]
 
 [node name="Main" type="Node2D"]
+script = ExtResource("1")
 
-[node name="CurrentRoom" parent="." instance=ExtResource("2")]
+[node name="CurrentRoom" parent="." instance=ExtResource("3")]
 
-[node name="Player" parent="." instance=ExtResource("1")]
+[node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(320, 400)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="UIHealthBar" parent="CanvasLayer" instance=ExtResource("3")]
+[node name="UIHealthBar" parent="CanvasLayer" instance=ExtResource("4")]
 offset_left = 20.0
 offset_top = 20.0
 offset_right = 200.0
 offset_bottom = 60.0
 
-[node name="UIKeyInventory" parent="CanvasLayer" instance=ExtResource("5")]
+[node name="UIKeyInventory" parent="CanvasLayer" instance=ExtResource("6")]
 
-[node name="UIMinimap" parent="CanvasLayer" instance=ExtResource("6")]
+[node name="UIMinimap" parent="CanvasLayer" instance=ExtResource("7")]
 
-[node name="UIStatusEffects" parent="CanvasLayer" instance=ExtResource("7")]
+[node name="UIStatusEffects" parent="CanvasLayer" instance=ExtResource("8")]
 
-[node name="UICompass" parent="CanvasLayer" instance=ExtResource("8")]
+[node name="UICompass" parent="CanvasLayer" instance=ExtResource("9")]
 
-[node name="UIDeathCounter" parent="CanvasLayer" instance=ExtResource("9")]
+[node name="UIDeathCounter" parent="CanvasLayer" instance=ExtResource("10")]
 
-[node name="UIGameOver" parent="CanvasLayer" instance=ExtResource("4")]
+[node name="UIGameOver" parent="CanvasLayer" instance=ExtResource("5")]
 </node>
+```
