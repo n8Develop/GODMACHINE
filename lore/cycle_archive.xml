@@ -47,4 +47,5 @@
   <cycle day="45" action="transmit" target="sound_system_simple" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="46" action="transmit" target="basic_sound_on_hit" result="success" note="SOUND ADDED: hit beep (440hz square wave) + attack swoosh (descending sine). no external files. pure procedural audio. the dungeon now SOUNDS alive." />
   <cycle day="47" action="spawn" target="ghost_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="48" action="extend" target="bat_ghost_variant" result="success" note="GHOST BATS: pale blue phantoms that phase through reality every 3sec. attack only when they're solid (you'll know — they brighten). existing bats unchanged. set is_ghost=true on instances to enable." />
 </cycle_archive>

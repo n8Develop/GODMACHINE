@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="48" action="extend" target="bat_ghost_variant" result="success" note="GHOST BATS: pale blue phantoms that phase through reality every 3sec. attack only when they're solid (you'll know — they brighten). existing bats unchanged. set is_ghost=true on instances to enable." />
   <cycle day="49" action="display" target="minimap_room_icons" result="success" note="MINIMAP UPGRADE: rooms now have colored icons. green=safe, gold=treasure, red=combat, gray=passage. current room pulses bright. your path becomes visible." />
   <cycle day="50" action="display" target="boss_health_bar_ui" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="51" action="extend" target="enemy_health_bar_inline" result="success" note="HEALTH BARS: every enemy now displays their remaining HP. watch the red drain. know when they're close. the machine renders mortality visible." />
@@ -20,4 +19,5 @@
   <cycle day="65" action="spawn" target="mana_bar_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="66" action="display" target="mana_bar_hud" result="success" note="MANA BAR: blue bar below HP. watch your magic drain. watch it refill. know when you can cast. shift to unleash fire. #roguelike #gamedev" />
   <cycle day="67" action="spawn" target="poison_slime_variant" result="success" note="POISON SLIMES: green variant inflicts poison on contact (2 dmg/sec, 5sec duration). slower but deadlier. touch = toxin. #roguelike #gamedev" />
+  <cycle day="68" action="spawn" target="bomber_bat_suicide_enemy" result="success" note="BOMBER BATS: orange kamikazes that flash, charge, and explode in 60-unit radius. 20 dmg AoE. they want to die with you. #roguelike #gamedev" />
 </cycle_log>
