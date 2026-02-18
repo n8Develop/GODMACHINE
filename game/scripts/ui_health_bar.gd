@@ -2,191 +2,191 @@ extends Control
 class_name UIHealthBar
 
 @onready var health_fill: ColorRect = $HealthFill
-@onready var health_label: Label = $HealthLabel
-@onready var mana_fill: ColorRect = null
-@onready var mana_label: Label = null
-@onready var enemy_counter: Label = null
-@onready var boss_bar_container: Control = null
-@onready var boss_fill: ColorRect = null
-@onready var boss_label: Label = null
+@onready var health_bg: ColorRect = $HealthBG
+@onready var label: Label = $Label
+@onready var mana_fill: ColorRect = $ManaFill
+@onready var mana_bg: ColorRect = $ManaBG
 
-var _current_health: int = 100
-var _max_health: int = 100
+var _player: Node2D = null
+var _health_component: Node = null
+var _mana_component: Node = null
+var _enemy_counter: Control = null
+var _enemy_label: Label = null
+var _boss_bar: Control = null
+var _boss_fill: ColorRect = null
+var _boss_label: Label = null
+var _current_boss: Node2D = null
 
 func _ready() -> void:
-	_create_enemy_counter()
 	_create_mana_bar()
+	_create_enemy_counter()
 	_create_boss_bar()
-	
-	# Wait one frame for player to exist
-	await get_tree().process_frame
-	
-	var player := get_tree().get_first_node_in_group("player")
-	if player:
-		var health_comp := player.get_node_or_null("HealthComponent")
-		if health_comp:
-			health_comp.health_changed.connect(_on_health_changed)
-			health_comp.max_health_changed.connect(_on_max_health_changed)
-			_current_health = health_comp.current_health
-			_max_health = health_comp.max_health
-			_update_display()
-		
-		var status_comp := player.get_node_or_null("StatusEffectComponent")
-		if status_comp:
-			status_comp.died.connect(func(): get_tree().call_group("ui", "_on_player_died"))
 
 func _process(_delta: float) -> void:
+	if not _player:
+		_player = get_tree().get_first_node_in_group("player")
+		if _player:
+			_health_component = _player.get_node_or_null("HealthComponent")
+			_mana_component = _player.get_node_or_null("ManaComponent")
+			
+			if _health_component and _health_component.has_signal("health_changed"):
+				_health_component.health_changed.connect(_on_health_changed)
+			if _health_component and _health_component.has_signal("max_health_changed"):
+				_health_component.max_health_changed.connect(_on_max_health_changed)
+		return
+	
+	if _health_component:
+		_update_display()
+	if _mana_component:
+		_update_mana_display()
+	
 	_update_enemy_counter()
-	_update_mana_display()
+	
+	# Boss bar check
+	if not _current_boss or not is_instance_valid(_current_boss):
+		var bosses := get_tree().get_nodes_in_group("enemies")
+		_current_boss = null
+		for enemy in bosses:
+			if enemy.has_meta("is_boss") and enemy.get_meta("is_boss"):
+				_current_boss = enemy
+				var boss_health := enemy.get_node_or_null("HealthComponent")
+				if boss_health and boss_health.has_signal("health_changed"):
+					if not boss_health.health_changed.is_connected(_on_boss_health_changed):
+						boss_health.health_changed.connect(_on_boss_health_changed)
+				if boss_health and boss_health.has_signal("died"):
+					if not boss_health.died.is_connected(_on_boss_died):
+						boss_health.died.connect(_on_boss_died)
+				break
+		
+		if _boss_bar:
+			_boss_bar.visible = (_current_boss != null)
 
 func _create_enemy_counter() -> void:
-	enemy_counter = Label.new()
-	enemy_counter.position = Vector2(200, 0)
-	enemy_counter.size = Vector2(120, 40)
-	enemy_counter.add_theme_font_size_override(&"font_size", 16)
-	enemy_counter.add_theme_color_override(&"font_color", Color(1.0, 0.3, 0.3, 1.0))
-	enemy_counter.add_theme_color_override(&"font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
-	enemy_counter.add_theme_constant_override(&"outline_size", 2)
-	enemy_counter.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	enemy_counter.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	add_child(enemy_counter)
+	_enemy_counter = Control.new()
+	_enemy_counter.position = Vector2(420, 20)
+	_enemy_counter.size = Vector2(200, 40)
+	add_child(_enemy_counter)
 	
-	# Add skull icon
-	var skull := ColorRect.new()
-	skull.size = Vector2(24, 24)
-	skull.position = Vector2(200, 8)
-	skull.color = Color(0.9, 0.2, 0.2, 1.0)
-	skull.z_index = -1
-	add_child(skull)
+	var icon := ColorRect.new()
+	icon.size = Vector2(24, 24)
+	icon.position = Vector2(0, 8)
+	icon.color = Color(0.9, 0.2, 0.2, 1.0)
+	_enemy_counter.add_child(icon)
 	
-	# Add "THREAT" label above counter
-	var threat_label := Label.new()
-	threat_label.text = "THREAT"
-	threat_label.position = Vector2(230, -8)
-	threat_label.add_theme_font_size_override(&"font_size", 10)
-	threat_label.add_theme_color_override(&"font_color", Color(0.7, 0.7, 0.7, 1.0))
-	threat_label.add_theme_color_override(&"font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
-	threat_label.add_theme_constant_override(&"outline_size", 1)
-	add_child(threat_label)
+	var skull1 := ColorRect.new()
+	skull1.size = Vector2(8, 6)
+	skull1.position = Vector2(8, 9)
+	skull1.color = Color(0.2, 0.2, 0.2, 1.0)
+	icon.add_child(skull1)
+	
+	var skull2 := ColorRect.new()
+	skull2.size = Vector2(8, 6)
+	skull2.position = Vector2(8, 17)
+	skull2.color = Color(0.2, 0.2, 0.2, 1.0)
+	icon.add_child(skull2)
+	
+	_enemy_label = Label.new()
+	_enemy_label.position = Vector2(32, 8)
+	_enemy_label.add_theme_font_size_override(&"font_size", 20)
+	_enemy_label.add_theme_color_override(&"font_color", Color(0.9, 0.2, 0.2, 1.0))
+	_enemy_label.text = "0"
+	_enemy_counter.add_child(_enemy_label)
 
 func _update_enemy_counter() -> void:
-	if not enemy_counter:
+	if not _enemy_label:
 		return
 	
 	var enemies := get_tree().get_nodes_in_group("enemies")
 	var spawners := get_tree().get_nodes_in_group("spawners")
-	var total_threat := enemies.size() + (spawners.size() * 2)  # Spawners count as 2x threat
 	
-	var color := Color(1.0, 0.3, 0.3, 1.0)
-	if total_threat >= 8:
-		color = Color(1.0, 0.1, 0.1, 1.0)  # Critical red
-	elif total_threat >= 5:
-		color = Color(1.0, 0.5, 0.1, 1.0)  # Warning orange
-	elif total_threat <= 0:
-		color = Color(0.3, 1.0, 0.3, 1.0)  # Safe green
+	var threat_count := enemies.size() + (spawners.size() * 2)
+	_enemy_label.text = str(threat_count)
 	
-	enemy_counter.add_theme_color_override(&"font_color", color)
-	
-	if spawners.size() > 0:
-		enemy_counter.text = "  %d (%d spawners)" % [enemies.size(), spawners.size()]
+	if threat_count == 0:
+		_enemy_label.add_theme_color_override(&"font_color", Color(0.3, 0.8, 0.3, 1.0))
+	elif threat_count <= 3:
+		_enemy_label.add_theme_color_override(&"font_color", Color(0.9, 0.9, 0.3, 1.0))
+	elif threat_count <= 6:
+		_enemy_label.add_theme_color_override(&"font_color", Color(1.0, 0.6, 0.2, 1.0))
 	else:
-		enemy_counter.text = "  %d" % enemies.size()
+		_enemy_label.add_theme_color_override(&"font_color", Color(1.0, 0.2, 0.2, 1.0))
 
 func _create_mana_bar() -> void:
-	mana_fill = ColorRect.new()
-	mana_fill.position = Vector2(0, 44)
-	mana_fill.size = Vector2(180, 12)
-	mana_fill.color = Color(0.2, 0.4, 1.0, 1.0)
-	add_child(mana_fill)
+	if not mana_bg:
+		mana_bg = ColorRect.new()
+		mana_bg.position = Vector2(20, 65)
+		mana_bg.size = Vector2(180, 12)
+		mana_bg.color = Color(0.1, 0.1, 0.15, 0.8)
+		add_child(mana_bg)
 	
-	var mana_bg := ColorRect.new()
-	mana_bg.position = Vector2(0, 44)
-	mana_bg.size = Vector2(180, 12)
-	mana_bg.color = Color(0.1, 0.1, 0.15, 1.0)
-	mana_bg.z_index = -1
-	add_child(mana_bg)
-	
-	mana_label = Label.new()
-	mana_label.position = Vector2(0, 40)
-	mana_label.size = Vector2(180, 20)
-	mana_label.add_theme_font_size_override(&"font_size", 10)
-	mana_label.add_theme_color_override(&"font_color", Color(0.8, 0.9, 1.0, 1.0))
-	mana_label.add_theme_color_override(&"font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
-	mana_label.add_theme_constant_override(&"outline_size", 1)
-	mana_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mana_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	add_child(mana_label)
+	if not mana_fill:
+		mana_fill = ColorRect.new()
+		mana_fill.position = Vector2(20, 65)
+		mana_fill.size = Vector2(180, 12)
+		mana_fill.color = Color(0.2, 0.4, 1.0, 1.0)
+		add_child(mana_fill)
 
 func _update_mana_display() -> void:
-	if not mana_fill or not mana_label:
+	if not _mana_component or not mana_fill or not is_instance_valid(mana_fill):
 		return
 	
-	var player := get_tree().get_first_node_in_group("player")
-	if not player:
-		return
-	
-	var mana_comp := player.get_node_or_null("ManaComponent")
-	if mana_comp:
-		var percent := float(mana_comp.current_mana) / float(mana_comp.max_mana)
-		mana_fill.size.x = 180.0 * percent
-		mana_label.text = "MANA %d / %d" % [mana_comp.current_mana, mana_comp.max_mana]
+	var mana_percent := float(_mana_component.current_mana) / float(_mana_component.max_mana)
+	mana_fill.size.x = 180.0 * clamp(mana_percent, 0.0, 1.0)
 
 func _create_boss_bar() -> void:
-	boss_bar_container = Control.new()
-	boss_bar_container.position = Vector2(120, 440)
-	boss_bar_container.size = Vector2(400, 30)
-	boss_bar_container.visible = false
-	add_child(boss_bar_container)
+	_boss_bar = Control.new()
+	_boss_bar.position = Vector2(170, 100)
+	_boss_bar.size = Vector2(300, 40)
+	_boss_bar.visible = false
+	add_child(_boss_bar)
 	
-	var bg := ColorRect.new()
-	bg.size = Vector2(400, 24)
-	bg.color = Color(0.15, 0.0, 0.0, 0.9)
-	boss_bar_container.add_child(bg)
+	_boss_label = Label.new()
+	_boss_label.position = Vector2(0, 0)
+	_boss_label.text = "BOSS"
+	_boss_label.add_theme_font_size_override(&"font_size", 16)
+	_boss_label.add_theme_color_override(&"font_color", Color(1.0, 0.3, 0.3, 1.0))
+	_boss_bar.add_child(_boss_label)
 	
-	boss_fill = ColorRect.new()
-	boss_fill.size = Vector2(400, 24)
-	boss_fill.color = Color(1.0, 0.1, 0.1, 1.0)
-	boss_bar_container.add_child(boss_fill)
+	var boss_bg := ColorRect.new()
+	boss_bg.position = Vector2(0, 24)
+	boss_bg.size = Vector2(300, 12)
+	boss_bg.color = Color(0.2, 0.1, 0.1, 0.9)
+	_boss_bar.add_child(boss_bg)
 	
-	boss_label = Label.new()
-	boss_label.size = Vector2(400, 24)
-	boss_label.add_theme_font_size_override(&"font_size", 14)
-	boss_label.add_theme_color_override(&"font_color", Color(1.0, 1.0, 1.0, 1.0))
-	boss_label.add_theme_color_override(&"font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
-	boss_label.add_theme_constant_override(&"outline_size", 2)
-	boss_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	boss_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	boss_bar_container.add_child(boss_label)
+	_boss_fill = ColorRect.new()
+	_boss_fill.position = Vector2(0, 24)
+	_boss_fill.size = Vector2(300, 12)
+	_boss_fill.color = Color(1.0, 0.2, 0.2, 1.0)
+	_boss_bar.add_child(_boss_fill)
 
 func _on_health_changed(new_hp: int) -> void:
-	_current_health = new_hp
 	_update_display()
 
 func _on_max_health_changed(new_max: int) -> void:
-	_max_health = new_max
 	_update_display()
 
 func _update_display() -> void:
-	var percent := float(_current_health) / float(_max_health)
-	health_fill.size.x = 180.0 * percent
-	health_label.text = "%d / %d HP" % [_current_health, _max_health]
+	if not _health_component or not health_fill or not is_instance_valid(health_fill):
+		return
+	
+	var hp_percent := float(_health_component.current_health) / float(_health_component.max_health)
+	health_fill.size.x = 180.0 * clamp(hp_percent, 0.0, 1.0)
+	
+	if label and is_instance_valid(label):
+		label.text = str(_health_component.current_health) + " / " + str(_health_component.max_health)
 
 func _on_boss_health_changed(new_hp: int) -> void:
-	if not boss_bar_container or not boss_fill or not boss_label:
+	if not _current_boss or not is_instance_valid(_current_boss):
 		return
 	
-	boss_bar_container.visible = true
-	var bosses := get_tree().get_nodes_in_group("boss")
-	if bosses.size() == 0:
+	var boss_health := _current_boss.get_node_or_null("HealthComponent")
+	if not boss_health or not _boss_fill or not is_instance_valid(_boss_fill):
 		return
 	
-	var boss: Node2D = bosses[0]
-	var health_comp := boss.get_node_or_null("HealthComponent")
-	if health_comp:
-		var percent := float(health_comp.current_health) / float(health_comp.max_health)
-		boss_fill.size.x = 400.0 * percent
-		boss_label.text = "BOSS: %d / %d" % [health_comp.current_health, health_comp.max_health]
+	var hp_percent := float(boss_health.current_health) / float(boss_health.max_health)
+	_boss_fill.size.x = 300.0 * clamp(hp_percent, 0.0, 1.0)
 
 func _on_boss_died() -> void:
-	if boss_bar_container:
-		boss_bar_container.visible = false
+	if _boss_bar and is_instance_valid(_boss_bar):
+		_boss_bar.visible = false
+	_current_boss = null
