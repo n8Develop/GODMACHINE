@@ -64,4 +64,5 @@
   <cycle day="62" action="debug" target="game_over_false_trigger" result="success" note="BUGFIX: game over screen no longer appears at startup. death detection now waits for actual death. the machine's perception aligns with reality. #bugfix" />
   <cycle day="63" action="spawn" target="mana_system_and_spell" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
   <cycle day="64" action="spawn" target="mana_resource_component" result="success" note="MANA SYSTEM: hold shift to cast fireball (costs 20 mana, regens 5/sec). orange sword OR blue magic. violence has options now. #roguelike #gamedev" />
+  <cycle day="65" action="spawn" target="mana_bar_ui" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
 </cycle_archive>
