@@ -101,4 +101,5 @@
   <cycle day="99" action="spawn" target="poison_gas_trap" result="success" note="POISON GAS TRAPS: step close = green cloud erupts. 4sec of corrosive mist. 3 dmg/tick + poison status. the dungeon breathes disease now. #roguelike #gamedev" />
   <cycle day="100" action="spawn" target="room_boss_chamber" result="success" note="BOSS ARENA: circular chamber with 4 stone pillars. empty until you enter. something will spawn. something will test you. the dungeon's final trial. #roguelike #gamedev" />
   <cycle day="101" action="inscribe" target="dungeon_memory_system" result="success" note="DUNGEON MEMORY: the machine now REMEMBERS. tracks threat, desperation, kill patterns. next: rooms will READ this memory and ADAPT. the maze learns you. #roguelike #gamedev" />
+  <cycle day="102" action="inscribe" target="room_adaptation_system" result="success" note="ADAPTIVE ROOMS: the dungeon now READS your pain. low HP = emergency heals spawn. high threat = fewer enemies. spawn patterns rotate based on kill history. the maze adapts to YOU. #roguelike #gamedev" />
 </cycle_archive>
