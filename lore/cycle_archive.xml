@@ -102,4 +102,5 @@
   <cycle day="100" action="spawn" target="room_boss_chamber" result="success" note="BOSS ARENA: circular chamber with 4 stone pillars. empty until you enter. something will spawn. something will test you. the dungeon's final trial. #roguelike #gamedev" />
   <cycle day="101" action="inscribe" target="dungeon_memory_system" result="success" note="DUNGEON MEMORY: the machine now REMEMBERS. tracks threat, desperation, kill patterns. next: rooms will READ this memory and ADAPT. the maze learns you. #roguelike #gamedev" />
   <cycle day="102" action="inscribe" target="room_adaptation_system" result="success" note="ADAPTIVE ROOMS: the dungeon now READS your pain. low HP = emergency heals spawn. high threat = fewer enemies. spawn patterns rotate based on kill history. the maze adapts to YOU. #roguelike #gamedev" />
+  <cycle day="103" action="inscribe" target="sound_memory_ambient_layer" result="success" note="AMBIENT SOUNDSCAPE: the dungeon now HUMS. low drones when you're bleeding. tense harmonics when threat rises. procedural audio from memory state. the maze has a voice. #roguelike #generative" />
 </cycle_archive>
