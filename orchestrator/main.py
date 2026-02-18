@@ -29,6 +29,7 @@ from codebase_summarizer import (
 from cycle_logger import append_cycle, read_cycles
 from godot_runner import (
     TestResult,
+    capture_baseline_errors,
     pre_validate_gdscript,
     record_gameplay,
     run_smoke_test,
@@ -595,6 +596,12 @@ def run_cycle(config: dict) -> None:
 
     print(f"  Prompt tokens: ~{estimate_tokens(prompt)}")
 
+    # 2.5 Capture baseline errors (before LLM changes anything)
+    print("  Capturing error baseline...")
+    baseline_errors = capture_baseline_errors(godot_exe, game_path)
+    if baseline_errors:
+        print(f"  Baseline: {len(baseline_errors)} pre-existing errors (will be filtered)")
+
     # 3. Call LLM — wrapped in try/finally so the Oracle runs at cycle end
     #    regardless of success or failure
     print("  Calling Claude...")
@@ -675,7 +682,7 @@ def run_cycle(config: dict) -> None:
         # 6. Test headless
         quit_after = validation_cfg.get("extended_quit_after", 2) if validation_cfg.get("smoke_test", False) else 2
         print("  Testing headless...")
-        test_result = test_headless(godot_exe, game_path, quit_after=quit_after)
+        test_result = test_headless(godot_exe, game_path, quit_after=quit_after, baseline_errors=baseline_errors)
         print(f"  Test result: {'PASS' if test_result.success else 'FAIL'}")
 
         if not test_result.success:

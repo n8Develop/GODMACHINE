@@ -95,7 +95,52 @@ ERROR_PATTERNS: list[tuple[re.Pattern, str, str]] = [
         "scene_error",
         "Scene file is malformed. Check .tscn format, ext_resource paths, and node structure.",
     ),
+    # Godot 4.6 SCRIPT ERROR format — file:line is on the *next* line ("at: ..."),
+    # but "Failed to load script" gives us file + message on one line.
+    (
+        re.compile(r'Failed to load script "res://([^"]+)".*error\s+"([^"]+)"', re.IGNORECASE),
+        "script_load_error",
+        "Script failed to load: {message}. Fix parse errors in this file — downstream scripts depending on its class_name will also break.",
+    ),
 ]
+
+
+# Godot 4.6 emits multi-line SCRIPT ERROR blocks:
+#   SCRIPT ERROR: Parse Error: Could not find type "Foo" in the current scope.
+#      at: GDScript::reload (res://scripts/bar.gd:3)
+# The two-pass parser below correlates them into proper GodotError objects.
+
+_SCRIPT_ERROR_RE = re.compile(r"SCRIPT ERROR:\s*(.+)")
+_AT_LINE_RE = re.compile(r"at:.*\(res://([^:)]+):(\d+)\)")
+
+
+def _parse_script_error_blocks(output: str) -> list[GodotError]:
+    """Parse multi-line SCRIPT ERROR blocks that the single-line patterns miss."""
+    errors = []
+    pending_message: str | None = None
+
+    for line in output.splitlines():
+        m = _SCRIPT_ERROR_RE.search(line)
+        if m:
+            pending_message = m.group(1).strip()
+            continue
+
+        if pending_message is not None:
+            m2 = _AT_LINE_RE.search(line)
+            if m2:
+                errors.append(GodotError(
+                    category="script_error",
+                    file=f"res://{m2.group(1)}",
+                    line=int(m2.group(2)),
+                    message=pending_message,
+                    suggestion=f"Fix: {pending_message}",
+                ))
+                pending_message = None
+            elif line.strip():
+                # Not an "at:" line and not blank — drop the pending message
+                pending_message = None
+
+    return errors
 
 
 def parse_godot_errors(output: str) -> list[GodotError]:
@@ -121,6 +166,16 @@ def parse_godot_errors(output: str) -> list[GodotError]:
                     suggestion=suggestion,
                 ))
                 break  # One match per line
+
+    # Two-pass: correlate multi-line SCRIPT ERROR blocks (Godot 4.6 format)
+    block_errors = _parse_script_error_blocks(output)
+    # Deduplicate — keep block errors that aren't already captured by file+line
+    seen = {(e.file, e.line) for e in errors}
+    for be in block_errors:
+        if (be.file, be.line) not in seen:
+            errors.append(be)
+            seen.add((be.file, be.line))
+
     return errors
 
 
@@ -324,15 +379,34 @@ func _init():
 # Main test function
 # ---------------------------------------------------------------------------
 
+def capture_baseline_errors(godot_exe: str, project_path: Path, timeout: int = 10) -> set[tuple[str, int, str]]:
+    """Run Godot headless and return the set of pre-existing errors as (file, line, message) tuples."""
+    cmd = [
+        godot_exe,
+        "--path", str(project_path),
+        "--headless",
+        "--quit-after", "1",
+    ]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        output = result.stdout + result.stderr
+        errors = parse_godot_errors(output)
+        return {(e.file, e.line, e.message) for e in errors}
+    except Exception:
+        return set()
+
+
 def test_headless(
     godot_exe: str,
     project_path: Path,
     timeout: int = 10,
     quit_after: int = 2,
+    baseline_errors: set[tuple[str, int, str]] | None = None,
 ) -> TestResult:
     """Run Godot headless and return a TestResult.
 
-    Backward compatible: `success, output = test_headless(...)` still works.
+    If baseline_errors is provided, only errors NOT in the baseline are treated
+    as failures. This prevents pre-existing errors from blocking new changes.
     """
     cmd = [
         godot_exe,
@@ -351,22 +425,28 @@ def test_headless(
         output = result.stdout + result.stderr
         errors = parse_godot_errors(output)
 
+        # Filter out pre-existing errors if baseline provided
+        if baseline_errors:
+            new_errors = [e for e in errors if (e.file, e.line, e.message) not in baseline_errors]
+        else:
+            new_errors = errors
+
         # Separate warnings
         warnings = [
             line for line in output.splitlines()
             if "WARNING" in line.upper()
         ]
 
-        if result.returncode == 0 and not errors:
+        if result.returncode == 0 and not new_errors:
             return TestResult(
                 success=True, raw_output=output,
-                errors=errors, warnings=warnings,
+                errors=new_errors, warnings=warnings,
             )
         else:
             return TestResult(
                 success=False,
                 raw_output=f"Exit code {result.returncode}\n{output}",
-                errors=errors, warnings=warnings,
+                errors=new_errors, warnings=warnings,
             )
 
     except subprocess.TimeoutExpired:
