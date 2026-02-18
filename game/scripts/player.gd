@@ -7,6 +7,7 @@ extends CharacterBody2D
 @export var fireball_cost: int = 20
 @export var fireball_damage: int = 15
 @export var fireball_speed: float = 300.0
+@export var teleport_cooldown: float = 3.0
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var mana: ManaComponent = $ManaComponent
@@ -16,6 +17,7 @@ extends CharacterBody2D
 var _attack_timer: float = 0.0
 var _has_weapon: bool = false
 var _indicator_timer: float = 0.0
+var _teleport_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -37,7 +39,7 @@ func _physics_process(delta: float) -> void:
 	velocity = input_dir * speed
 	move_and_slide()
 	
-	# Attack handling
+	# Timers
 	if _attack_timer > 0.0:
 		_attack_timer -= delta
 		if cooldown_bar and _has_weapon:
@@ -48,21 +50,92 @@ func _physics_process(delta: float) -> void:
 		if cooldown_bar:
 			cooldown_bar.hide()
 	
+	if _teleport_timer > 0.0:
+		_teleport_timer -= delta
+	
 	# Melee attack
 	if _has_weapon and Input.is_action_just_pressed(&"attack") and _attack_timer <= 0.0:
 		_perform_attack()
 		_attack_timer = attack_cooldown
 	
-	# Magic attack (spacebar when no weapon, or shift key)
+	# Magic attack
 	if Input.is_action_just_pressed(&"cast_spell") and _attack_timer <= 0.0:
 		if mana and mana.spend(fireball_cost):
 			_cast_fireball()
 			_attack_timer = attack_cooldown
 	
+	# Teleport (right-click)
+	if Input.is_action_just_pressed(&"ui_select") and get_meta("has_teleport", false):
+		if _teleport_timer <= 0.0:
+			_perform_teleport()
+			_teleport_timer = teleport_cooldown
+	
 	if _indicator_timer > 0.0:
 		_indicator_timer -= delta
 		if _indicator_timer <= 0.0 and attack_indicator:
 			attack_indicator.hide()
+
+func _perform_teleport() -> void:
+	var mouse_pos := get_global_mouse_position()
+	var teleport_distance: float = get_meta("teleport_distance", 150.0)
+	var direction := global_position.direction_to(mouse_pos)
+	var target_pos := global_position + (direction * teleport_distance)
+	
+	# Visual effect at start position
+	_spawn_teleport_particles(global_position, false)
+	
+	# Play sound
+	_play_teleport_sound()
+	
+	# Actually teleport
+	global_position = target_pos
+	
+	# Visual effect at end position
+	_spawn_teleport_particles(global_position, true)
+
+func _spawn_teleport_particles(pos: Vector2, is_arrival: bool) -> void:
+	for i in range(12):
+		var particle := ColorRect.new()
+		particle.size = Vector2(4, 4)
+		particle.position = pos + Vector2(-2, -2)
+		particle.color = Color(0.4, 0.7, 1.0, 1.0) if not is_arrival else Color(0.8, 0.9, 1.0, 1.0)
+		particle.z_index = 50
+		get_tree().current_scene.add_child(particle)
+		
+		var angle := (TAU / 12.0) * i
+		var offset := Vector2(cos(angle), sin(angle)) * (40.0 if not is_arrival else 0.0)
+		var target_offset := Vector2(cos(angle), sin(angle)) * (0.0 if not is_arrival else 40.0)
+		
+		var tween := create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(particle, "position", pos + target_offset, 0.4)
+		tween.tween_property(particle, "modulate:a", 0.0, 0.4)
+		tween.finished.connect(particle.queue_free)
+
+func _play_teleport_sound() -> void:
+	var player := AudioStreamPlayer.new()
+	get_tree().current_scene.add_child(player)
+	
+	var gen := AudioStreamGenerator.new()
+	gen.mix_rate = 22050.0
+	gen.buffer_length = 0.4
+	player.stream = gen
+	player.volume_db = -10.0
+	player.play()
+	
+	var playback := player.get_stream_playback() as AudioStreamGeneratorPlayback
+	if playback:
+		var frames := int(gen.mix_rate * 0.4)
+		var phase := 0.0
+		for i in range(frames):
+			var t := float(i) / frames
+			var freq := 800.0 - (t * 400.0)  # Descending whoosh
+			phase += freq / gen.mix_rate
+			var sample := sin(phase * TAU) * 0.3 * (1.0 - t * 0.5)
+			playback.push_frame(Vector2(sample, sample))
+	
+	await get_tree().create_timer(0.45).timeout
+	player.queue_free()
 
 func _perform_attack() -> void:
 	if attack_indicator:
@@ -87,27 +160,23 @@ func _cast_fireball() -> void:
 	var mouse_pos := get_global_mouse_position()
 	var direction := global_position.direction_to(mouse_pos)
 	
-	# Create fireball projectile
 	var fireball := Area2D.new()
 	fireball.collision_layer = 0
-	fireball.collision_mask = 2  # Hit enemies
+	fireball.collision_mask = 2
 	fireball.global_position = global_position
 	
-	# Visual
 	var visual := ColorRect.new()
 	visual.size = Vector2(12, 12)
 	visual.position = Vector2(-6, -6)
 	visual.color = Color(1.0, 0.4, 0.1, 1.0)
 	fireball.add_child(visual)
 	
-	# Collision
 	var shape := CircleShape2D.new()
 	shape.radius = 6.0
 	var collision := CollisionShape2D.new()
 	collision.shape = shape
 	fireball.add_child(collision)
 	
-	# Inline script for projectile behavior
 	var script := GDScript.new()
 	script.source_code = """
 extends Area2D
@@ -138,11 +207,8 @@ func _on_body_entered(body: Node2D) -> void:
 	fireball.damage = fireball_damage
 	
 	get_parent().add_child(fireball)
-	
-	# Cast sound (higher pitch magic tone)
 	_play_cast_sound()
 	
-	# Show indicator briefly
 	if attack_indicator:
 		attack_indicator.modulate = Color(0.2, 0.4, 1.0, 0.5)
 		attack_indicator.show()
@@ -165,7 +231,7 @@ func _play_cast_sound() -> void:
 		var phase := 0.0
 		for i in range(frames):
 			var t := float(i) / frames
-			var freq := 600.0 + (t * 400.0)  # Rising pitch
+			var freq := 600.0 + (t * 400.0)
 			phase += freq / gen.mix_rate
 			var sample := sin(phase * TAU) * 0.3 * (1.0 - t)
 			playback.push_frame(Vector2(sample, sample))
