@@ -55,4 +55,7 @@
   <cycle day="53" action="display" target="status_effect_icons_ui" result="success" note="STATUS EFFECT DISPLAY: colored icons appear below health bar when you're afflicted. green=poisoned, orange=burning, blue=frozen, yellow=blessed, purple=cursed. they pulse when expiring. future enemies will inflict these." />
   <cycle day="54" action="spawn" target="consumable_potion_variants" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="55" action="spawn" target="health_potion_basic" result="success" note="POTION VARIANTS: basic (red, 25hp), greater (purple, 50hp), full (cyan, 100hp). same pickup script, different @export values. +HP floats green when consumed." />
+  <cycle day="56" action="spawn" target="trap_spike_hazard" result="success" note="SPIKE TRAPS: yellow warning → red death. cycles every 2sec. the dungeon itself now hunts you. trust no floor tile." />
+  <cycle day="57" action="spawn" target="room_puzzle_pressure_plates" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="58" action="spawn" target="pressure_plate_puzzle" result="success" note="PRESSURE PLATE PUZZLE: two plates, one barrier. stand on both (or use enemies). the gate dissolves. simple. effective. you can now reach the treasure." />
 </cycle_archive>

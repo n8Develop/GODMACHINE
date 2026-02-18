@@ -12,6 +12,7 @@ var _doors: Array[Area2D] = []
 var _enemies: Array[Node] = []
 var _spawners: Array[Node] = []
 var _all_doors_locked: bool = false
+var _fade_overlay: ColorRect = null
 
 func _ready() -> void:
 	_find_doors()
@@ -25,6 +26,32 @@ func _ready() -> void:
 				enemy.died.connect(_on_enemy_died)
 	
 	player_entered.emit()
+	_create_fade_overlay()
+	_fade_from_black()
+
+func _create_fade_overlay() -> void:
+	_fade_overlay = ColorRect.new()
+	_fade_overlay.color = Color(0, 0, 0, 1)
+	_fade_overlay.size = Vector2(640, 480)
+	_fade_overlay.z_index = 200
+	_fade_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_fade_overlay)
+
+func _fade_from_black() -> void:
+	if not _fade_overlay:
+		return
+	var tween := create_tween()
+	tween.tween_property(_fade_overlay, "modulate:a", 0.0, 0.3)
+	tween.finished.connect(func(): _fade_overlay.hide())
+
+func _fade_to_black() -> void:
+	if not _fade_overlay:
+		return
+	_fade_overlay.show()
+	_fade_overlay.modulate.a = 0.0
+	var tween := create_tween()
+	tween.tween_property(_fade_overlay, "modulate:a", 1.0, 0.25)
+	await tween.finished
 
 func _find_doors() -> void:
 	var doors_container := get_node_or_null("Doors")
@@ -94,6 +121,8 @@ func _on_door_body_entered(body: Node2D, door: Area2D) -> void:
 
 func _transition_to_room(target_room_id: String) -> void:
 	print("GODMACHINE: Transitioning to ", target_room_id)
+	
+	await _fade_to_black()
 	
 	var player := get_tree().get_first_node_in_group("player")
 	if player:
