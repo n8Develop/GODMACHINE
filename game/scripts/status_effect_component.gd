@@ -92,7 +92,7 @@ func _apply_tick_effect(effect_name: StringName, intensity: float) -> void:
 	if not parent:
 		return
 	
-	var health_comp := parent.get_node_or_null("HealthComponent") as HealthComponent
+	var health_comp := parent.get_node_or_null("HealthComponent")
 	if not health_comp:
 		return
 	

@@ -13,7 +13,7 @@ func _ready() -> void:
 	
 	# Create memory echo if loot was recently opened
 	var main := get_tree().current_scene
-	var memory := main.get_node_or_null("DungeonMemory") as DungeonMemory
+	var memory := main.get_node_or_null("DungeonMemory")
 	if memory and memory.get_meta("chests_opened", 0) > 0:
 		_create_echo_visual()
 
@@ -71,7 +71,7 @@ func _on_body_entered(body: Node2D) -> void:
 	
 	# Record chest opened
 	var main := get_tree().current_scene
-	var memory := main.get_node_or_null("DungeonMemory") as DungeonMemory
+	var memory := main.get_node_or_null("DungeonMemory")
 	if memory:
 		var count := memory.get_meta("chests_opened", 0)
 		memory.set_meta("chests_opened", count + 1)

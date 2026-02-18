@@ -10,7 +10,7 @@ func _ready() -> void:
 	
 	var player := get_tree().get_first_node_in_group("player")
 	if player:
-		var health := player.get_node_or_null("HealthComponent") as HealthComponent
+		var health := player.get_node_or_null("HealthComponent")
 		if health:
 			# Only connect if player is actually dead
 			if health.current_health <= 0:

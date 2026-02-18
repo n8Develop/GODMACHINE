@@ -70,7 +70,7 @@ func _on_body_entered(body: Node2D) -> void:
 
 func _damage_body(body: Node2D) -> void:
 	if body.is_in_group("player"):
-		var health := body.get_node_or_null("HealthComponent") as HealthComponent
+		var health := body.get_node_or_null("HealthComponent")
 		if health:
 			health.take_damage(damage)
 			print("GODMACHINE: Spike trap triggered — ", damage, " damage inflicted")

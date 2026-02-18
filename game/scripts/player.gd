@@ -9,8 +9,8 @@ extends CharacterBody2D
 @export var fireball_speed: float = 300.0
 @export var teleport_cooldown: float = 3.0
 
-@onready var health: HealthComponent = $HealthComponent
-@onready var mana: ManaComponent = $ManaComponent
+@onready var health: Node = $HealthComponent
+@onready var mana: Node = $ManaComponent
 @onready var attack_indicator: ColorRect = $AttackIndicator
 @onready var cooldown_bar: ColorRect = $CooldownBar
 
@@ -172,7 +172,7 @@ func _perform_attack() -> void:
 		if enemy is Node2D:
 			var distance := global_position.distance_to(enemy.global_position)
 			if distance <= attack_range:
-				var enemy_health := enemy.get_node_or_null("HealthComponent") as HealthComponent
+				var enemy_health := enemy.get_node_or_null("HealthComponent")
 				if enemy_health:
 					enemy_health.take_damage(attack_damage)
 					_spawn_damage_number(enemy.global_position, attack_damage)

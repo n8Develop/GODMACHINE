@@ -49,11 +49,11 @@ func _create_direction_marker(dir: Vector2, label_text: String, color: Color) ->
 	_compass_center.add_child(marker)
 
 func _process(_delta: float) -> void:
-	var player := get_tree().get_first_node_in_group("player") as Node2D
+	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
 	if not player:
 		return
 	
-	var velocity := player.velocity if player.has_method("get") else Vector2.ZERO
+	var velocity: Vector2 = player.velocity if player.has_method("get") else Vector2.ZERO
 	
 	# Only update if velocity changed significantly
 	if velocity.length() > 10.0:

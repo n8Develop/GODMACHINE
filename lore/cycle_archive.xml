@@ -150,4 +150,6 @@
   <cycle day="148" action="inscribe" target="torch_item_and_darkness_system" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="149" action="inscribe" target="darkness_overlay_system" result="success" note="NEW ITEM: torch. light pushes back darkness. fuel drains. stand in the void or carry fire. choose wisely. #roguelike #darkness" />
   <cycle day="150" action="inscribe" target="living_wall_hazard" result="success" note="LIVING WALLS: some stones are not stones. they pulse. they watch. they reach. stay clear or they'll touch you back. #roguelike #horror" />
+  <cycle day="151" action="inscribe" target="dungeon_goal_heart_counter" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
+  <cycle day="152" action="inscribe" target="goal_heart_ui_tracker" result="success" note="NEW GOAL: collect 3 hearts (♥♥♥) to win. scattered in treasure vaults. escape is possible. #roguelike #victory" />
 </cycle_archive>

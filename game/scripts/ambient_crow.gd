@@ -63,7 +63,7 @@ func _create_audio() -> void:
 	add_child(player)
 
 func _physics_process(delta: float) -> void:
-	var player := get_tree().get_first_node_in_group("player") as Node2D
+	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
 	if not player or not is_instance_valid(player):
 		return
 	

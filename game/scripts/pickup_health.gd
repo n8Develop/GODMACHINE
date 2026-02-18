@@ -41,7 +41,7 @@ func _ready() -> void:
 	
 	# Create memory echo if dungeon remembers healing
 	var main := get_tree().current_scene
-	var memory := main.get_node_or_null("DungeonMemory") as DungeonMemory
+	var memory := main.get_node_or_null("DungeonMemory")
 	if memory and memory.get_adaptive_heal_chance() > 0.5:
 		_create_echo_visual()
 
@@ -115,17 +115,16 @@ func _on_body_entered(body: Node2D) -> void:
 		_shrine_timer = shrine_cooldown
 		_play_shrine_sound()
 	
-	var health := body.get_node_or_null("HealthComponent") as HealthComponent
+	var health := body.get_node_or_null("HealthComponent")
 	if health:
-		var actual_heal := health.heal(heal_amount)
-		if actual_heal > 0:
-			_spawn_heal_text(body.global_position, actual_heal)
-			
-			# Record healing in memory
-			var main := get_tree().current_scene
-			var memory := main.get_node_or_null("DungeonMemory") as DungeonMemory
-			if memory:
-				memory.record_healing(actual_heal)
+		health.heal(heal_amount)
+		_spawn_heal_text(body.global_position, heal_amount)
+
+		# Record healing in memory
+		var main := get_tree().current_scene
+		var memory := main.get_node_or_null("DungeonMemory")
+		if memory:
+			memory.record_healing(heal_amount)
 	
 	if not is_shrine:
 		# Spawn collection particles for non-shrine pickups

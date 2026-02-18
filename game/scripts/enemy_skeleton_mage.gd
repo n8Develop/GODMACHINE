@@ -54,7 +54,7 @@ func _ready() -> void:
 	add_child(orb)
 
 func _physics_process(delta: float) -> void:
-	var player := get_tree().get_first_node_in_group("player") as Node2D
+	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
 	if not player:
 		return
 	

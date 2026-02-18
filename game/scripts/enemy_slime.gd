@@ -8,7 +8,7 @@ extends CharacterBody2D
 @export var poison_duration: float = 5.0
 @export var contact_damage: int = 5
 
-@onready var health: HealthComponent = $HealthComponent
+@onready var health: Node = $HealthComponent
 
 var _hop_timer: float = 0.0
 var _contact_area: Area2D
@@ -59,14 +59,14 @@ func _apply_contact_effects(player: Node2D) -> void:
 	if not player.is_in_group("player"):
 		return
 	
-	var player_health := player.get_node_or_null("HealthComponent") as HealthComponent
+	var player_health := player.get_node_or_null("HealthComponent")
 	if not player_health:
 		return
 	
 	player_health.take_damage(contact_damage)
 	
 	if is_poisonous:
-		var status := player.get_node_or_null("StatusEffectComponent") as StatusEffectComponent
+		var status := player.get_node_or_null("StatusEffectComponent")
 		if status:
 			status.apply_effect("poison", poison_duration, poison_damage, 1.0)
 			_spawn_poison_text(player.global_position)

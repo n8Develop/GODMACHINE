@@ -53,7 +53,7 @@ func _process(delta: float) -> void:
 				# Pulse effect when low duration
 				var icon: ColorRect = _active_effects[effect_name].icon
 				if _active_effects[effect_name].timer < 2.0:
-					var pulse := abs(sin(Time.get_ticks_msec() * 0.008))
+					var pulse: float = abs(sin(Time.get_ticks_msec() * 0.008))
 					icon.modulate.a = 0.5 + (pulse * 0.5)
 				else:
 					icon.modulate.a = 1.0

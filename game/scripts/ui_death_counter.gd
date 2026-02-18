@@ -26,7 +26,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	var player := get_tree().get_first_node_in_group("player")
 	if player:
-		var health := player.get_node_or_null("HealthComponent") as HealthComponent
+		var health := player.get_node_or_null("HealthComponent")
 		if health:
 			health.died.connect(_on_player_died)
 

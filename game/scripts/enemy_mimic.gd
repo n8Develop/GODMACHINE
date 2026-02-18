@@ -10,7 +10,7 @@ var _chomp_timer: float = 0.0
 var _is_disguised: bool = true
 var _aggro: bool = false
 
-@onready var health: HealthComponent = $HealthComponent
+@onready var health: Node = $HealthComponent
 @onready var sprite: ColorRect = $Sprite
 
 func _ready() -> void:
@@ -25,7 +25,7 @@ func _physics_process(delta: float) -> void:
 	if _chomp_timer > 0.0:
 		_chomp_timer -= delta
 	
-	var player := get_tree().get_first_node_in_group("player") as Node2D
+	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
 	if not player:
 		return
 	
@@ -66,7 +66,7 @@ func _reveal() -> void:
 	_play_reveal_sound()
 
 func _perform_chomp(player: Node2D) -> void:
-	var player_health := player.get_node_or_null("HealthComponent") as HealthComponent
+	var player_health := player.get_node_or_null("HealthComponent")
 	if player_health:
 		player_health.take_damage(chomp_damage)
 		_spawn_damage_number(player.global_position, chomp_damage)

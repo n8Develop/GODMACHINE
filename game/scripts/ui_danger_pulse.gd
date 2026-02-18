@@ -19,7 +19,7 @@ func _ready() -> void:
 	add_child(_overlay)
 
 func _process(delta: float) -> void:
-	var player := get_tree().get_first_node_in_group("player") as Node2D
+	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
 	if not player:
 		_overlay.modulate.a = 0.0
 		return

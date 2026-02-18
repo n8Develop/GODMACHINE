@@ -19,7 +19,7 @@ extends CharacterBody2D
 @export var is_wraith: bool = false
 @export var wraith_trail_interval: float = 0.15
 
-@onready var health: HealthComponent = $HealthComponent
+@onready var health: Node = $HealthComponent
 
 var _swoop_timer: float = 0.0
 var _state: String = "patrol"
@@ -82,7 +82,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			_hover_time += delta
 			var hover_offset := Vector2(cos(_hover_time * 2.0), sin(_hover_time * 3.0)) * 20.0
-			var target := player.global_position + hover_offset + Vector2(0, -60)
+			var target: Vector2 = player.global_position + hover_offset + Vector2(0, -60)
 			var direction := global_position.direction_to(target)
 			velocity = direction * fly_speed
 	
@@ -104,7 +104,7 @@ func _wraith_behavior(delta: float, player: Node2D, distance: float) -> void:
 	
 	# Deal damage on contact
 	if distance <= 16.0:
-		var player_health := player.get_node_or_null("HealthComponent") as HealthComponent
+		var player_health := player.get_node_or_null("HealthComponent")
 		if player_health and player_health.can_take_damage():
 			player_health.take_damage(5)
 			_flash_contact()
@@ -142,7 +142,7 @@ func _bomber_behavior(delta: float, player: Node2D, distance: float) -> void:
 	_flash_timer += delta
 	
 	if _charge_timer > 0.0:
-		var flash_rate := max(0.1, _charge_timer * 0.5)
+		var flash_rate: float = max(0.1, _charge_timer * 0.5)
 		if fmod(_flash_timer, flash_rate) < flash_rate * 0.5:
 			modulate = Color(1.5, 1.2, 0.8, 1.0)
 		else:
@@ -165,7 +165,7 @@ func _explode() -> void:
 		if body is Node2D:
 			var dist := global_position.distance_to(body.global_position)
 			if dist <= explode_radius:
-				var health_comp := body.get_node_or_null("HealthComponent") as HealthComponent
+				var health_comp := body.get_node_or_null("HealthComponent")
 				if health_comp:
 					health_comp.take_damage(explode_damage)
 	
