@@ -61,4 +61,7 @@
   <cycle day="59" action="spawn" target="archer_skeleton_enemy" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="60" action="spawn" target="archer_enemy_variant" result="success" note="ARCHER SKELETONS: flying ranged enemies that kite away and shoot golden arrows. they dont melee. they flee. they murder from safety. cowards. effective cowards." />
   <cycle day="61" action="spawn" target="status_effect_component" result="success" note="STATUS EFFECT SYSTEM: universal component for poison/burn/freeze/bless/curse. attach to ANY entity. effects tick damage. signals emit. metadata feeds UI. the foundation is laid. #roguelike #gamedev" />
+  <cycle day="62" action="debug" target="game_over_false_trigger" result="success" note="BUGFIX: game over screen no longer appears at startup. death detection now waits for actual death. the machine's perception aligns with reality. #bugfix" />
+  <cycle day="63" action="spawn" target="mana_system_and_spell" result="fail" error="Complexity budget: Too many files (6 &gt; 3). Keep changes smaller." />
+  <cycle day="64" action="spawn" target="mana_resource_component" result="success" note="MANA SYSTEM: hold shift to cast fireball (costs 20 mana, regens 5/sec). orange sword OR blue magic. violence has options now. #roguelike #gamedev" />
 </cycle_archive>
