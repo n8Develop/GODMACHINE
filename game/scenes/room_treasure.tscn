@@ -1,85 +1,82 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_base.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/door_locked.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/pickup_health_greater.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/pickup_key.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/door_locked.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/pressure_plate.gd" id="5"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
-size = Vector2(40, 20)
+size = Vector2(60, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_plate"]
+size = Vector2(32, 32)
 
 [node name="RoomTreasure" type="Node2D"]
 script = ExtResource("1")
-room_id = "room_treasure"
+room_id = "treasure"
 
-[node name="Walls" type="StaticBody2D" parent="."]
-collision_layer = 1
-collision_mask = 0
+[node name="Walls" type="Node2D" parent="."]
 
-[node name="WallTop" type="ColorRect" parent="Walls"]
-offset_top = 0.0
-offset_right = 640.0
-offset_bottom = 20.0
+[node name="WallTop" type="StaticBody2D" parent="Walls"]
+position = Vector2(320, 40)
+
+[node name="Visual" type="ColorRect" parent="Walls/WallTop"]
+offset_left = -320.0
+offset_top = -40.0
+offset_right = 320.0
+offset_bottom = 40.0
 color = Color(0.3, 0.3, 0.35, 1)
 
-[node name="CollisionTop" type="CollisionShape2D" parent="Walls"]
-position = Vector2(320, 10)
-shape = SubResource("RectangleShape2D_door")
-scale = Vector2(16, 1)
+[node name="WallBottom" type="StaticBody2D" parent="Walls"]
+position = Vector2(320, 440)
 
-[node name="WallBottom" type="ColorRect" parent="Walls"]
-offset_top = 460.0
-offset_right = 640.0
-offset_bottom = 480.0
+[node name="Visual" type="ColorRect" parent="Walls/WallBottom"]
+offset_left = -320.0
+offset_top = -40.0
+offset_right = 320.0
+offset_bottom = 40.0
 color = Color(0.3, 0.3, 0.35, 1)
 
-[node name="CollisionBottom" type="CollisionShape2D" parent="Walls"]
-position = Vector2(320, 470)
-shape = SubResource("RectangleShape2D_door")
-scale = Vector2(16, 1)
+[node name="WallLeft" type="StaticBody2D" parent="Walls"]
+position = Vector2(40, 240)
 
-[node name="WallLeft" type="ColorRect" parent="Walls"]
-offset_left = 0.0
-offset_top = 20.0
-offset_right = 20.0
-offset_bottom = 460.0
+[node name="Visual" type="ColorRect" parent="Walls/WallLeft"]
+offset_left = -40.0
+offset_top = -200.0
+offset_right = 40.0
+offset_bottom = 200.0
 color = Color(0.3, 0.3, 0.35, 1)
 
-[node name="CollisionLeft" type="CollisionShape2D" parent="Walls"]
-position = Vector2(10, 240)
-shape = SubResource("RectangleShape2D_door")
-scale = Vector2(1, 11)
+[node name="WallRight" type="StaticBody2D" parent="Walls"]
+position = Vector2(600, 240)
 
-[node name="WallRight" type="ColorRect" parent="Walls"]
-offset_left = 620.0
-offset_top = 20.0
-offset_right = 640.0
-offset_bottom = 460.0
+[node name="Visual" type="ColorRect" parent="Walls/WallRight"]
+offset_left = -40.0
+offset_top = -200.0
+offset_right = 40.0
+offset_bottom = 200.0
 color = Color(0.3, 0.3, 0.35, 1)
-
-[node name="CollisionRight" type="CollisionShape2D" parent="Walls"]
-position = Vector2(630, 240)
-shape = SubResource("RectangleShape2D_door")
-scale = Vector2(1, 11)
 
 [node name="Doors" type="Node2D" parent="."]
 
 [node name="DoorSouth" type="Area2D" parent="Doors"]
-position = Vector2(320, 460)
-collision_layer = 4
+position = Vector2(320, 440)
+collision_layer = 0
 collision_mask = 2
-script = ExtResource("2")
-required_keys = 1
-target_room_id = "room_corridor"
+script = ExtResource("4")
+required_keys = 3
+target_room_id = "corridor"
+
+[node name="Collision" type="CollisionShape2D" parent="Doors/DoorSouth"]
+shape = SubResource("RectangleShape2D_door")
 
 [node name="Visual" type="ColorRect" parent="Doors/DoorSouth"]
-offset_left = -20.0
+offset_left = -30.0
 offset_top = -10.0
-offset_right = 20.0
+offset_right = 30.0
 offset_bottom = 10.0
-color = Color(0.8, 0.6, 0.1, 1)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorSouth"]
-shape = SubResource("RectangleShape2D_door")
+color = Color(0.9, 0.7, 0.2, 1)
 
 [node name="Label" type="Label" parent="Doors/DoorSouth"]
 offset_left = -30.0
@@ -87,20 +84,135 @@ offset_top = -30.0
 offset_right = 30.0
 offset_bottom = -10.0
 theme_override_colors/font_color = Color(0.9, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 10
 text = "LOCKED
-1 KEY"
+3 KEYS"
+horizontal_alignment = 1
+
+[node name="PuzzleGate" type="StaticBody2D" parent="."]
+position = Vector2(320, 300)
+collision_layer = 1
+
+[node name="Visual" type="ColorRect" parent="PuzzleGate"]
+offset_left = -60.0
+offset_top = -10.0
+offset_right = 60.0
+offset_bottom = 10.0
+color = Color(0.9, 0.2, 0.2, 1)
+
+[node name="Label" type="Label" parent="PuzzleGate"]
+offset_left = -40.0
+offset_top = -30.0
+offset_right = 40.0
+offset_bottom = -10.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+text = "SEALED"
 horizontal_alignment = 1
 
 [node name="Pickups" type="Node2D" parent="."]
 
+[node name="PickupHealthGreater" parent="Pickups" instance=ExtResource("2")]
+position = Vector2(320, 150)
+
 [node name="PickupKey1" parent="Pickups" instance=ExtResource("3")]
-position = Vector2(260, 240)
+position = Vector2(260, 150)
 
 [node name="PickupKey2" parent="Pickups" instance=ExtResource("3")]
-position = Vector2(320, 180)
-
-[node name="PickupKey3" parent="Pickups" instance=ExtResource("3")]
-position = Vector2(380, 240)
+position = Vector2(380, 150)
 
 [node name="Enemies" type="Node2D" parent="."]
+
+[node name="PressurePlates" type="Node2D" parent="."]
+
+[node name="Plate1" type="Area2D" parent="PressurePlates"]
+position = Vector2(150, 360)
+collision_layer = 4
+collision_mask = 6
+script = ExtResource("5")
+plate_id = "plate_1"
+
+[node name="Collision" type="CollisionShape2D" parent="PressurePlates/Plate1"]
+shape = SubResource("RectangleShape2D_plate")
+
+[node name="Visual" type="ColorRect" parent="PressurePlates/Plate1"]
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="Indicator" type="ColorRect" parent="PressurePlates/Plate1"]
+offset_left = -8.0
+offset_top = -8.0
+offset_right = 8.0
+offset_bottom = 8.0
+color = Color(0.7, 0.7, 0.7, 0.6)
+
+[node name="Plate2" type="Area2D" parent="PressurePlates"]
+position = Vector2(490, 360)
+collision_layer = 4
+collision_mask = 6
+script = ExtResource("5")
+plate_id = "plate_2"
+
+[node name="Collision" type="CollisionShape2D" parent="PressurePlates/Plate2"]
+shape = SubResource("RectangleShape2D_plate")
+
+[node name="Visual" type="ColorRect" parent="PressurePlates/Plate2"]
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="Indicator" type="ColorRect" parent="PressurePlates/Plate2"]
+offset_left = -8.0
+offset_top = -8.0
+offset_right = 8.0
+offset_bottom = 8.0
+color = Color(0.7, 0.7, 0.7, 0.6)
+
+[node name="PuzzleController" type="Node" parent="."]
+script = SubResource("GDScript_puzzle")
+
+[sub_resource type="GDScript" id="GDScript_puzzle"]
+script/source = "extends Node
+
+@onready var plate1 := get_node(\"../PressurePlates/Plate1\")
+@onready var plate2 := get_node(\"../PressurePlates/Plate2\")
+@onready var gate := get_node(\"../PuzzleGate\")
+
+var _plate1_active: bool = false
+var _plate2_active: bool = false
+
+func _ready() -> void:
+	if plate1:
+		plate1.activated.connect(_on_plate1_activated)
+		plate1.deactivated.connect(_on_plate1_deactivated)
+	if plate2:
+		plate2.activated.connect(_on_plate2_activated)
+		plate2.deactivated.connect(_on_plate2_deactivated)
+
+func _on_plate1_activated() -> void:
+	_plate1_active = true
+	_check_puzzle()
+
+func _on_plate1_deactivated() -> void:
+	_plate1_active = false
+	_check_puzzle()
+
+func _on_plate2_activated() -> void:
+	_plate2_active = true
+	_check_puzzle()
+
+func _on_plate2_deactivated() -> void:
+	_plate2_active = false
+	_check_puzzle()
+
+func _check_puzzle() -> void:
+	if _plate1_active and _plate2_active:
+		if is_instance_valid(gate):
+			gate.queue_free()
+			print(\"GODMACHINE: Puzzle solved — barrier dissolved\")
+"
