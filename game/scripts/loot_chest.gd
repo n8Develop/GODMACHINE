@@ -5,10 +5,25 @@ extends Area2D
 @export var is_opened: bool = false
 
 var _glow_phase: float = 0.0
+var _echo_visual: ColorRect = null
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	_create_visuals()
+	
+	# Create memory echo if loot was recently opened
+	var main := get_tree().current_scene
+	var memory := main.get_node_or_null("DungeonMemory") as DungeonMemory
+	if memory and memory.get_meta("chests_opened", 0) > 0:
+		_create_echo_visual()
+
+func _create_echo_visual() -> void:
+	_echo_visual = ColorRect.new()
+	_echo_visual.size = Vector2(32, 32)
+	_echo_visual.position = Vector2(-16, -16)
+	_echo_visual.color = Color(1.0, 0.8, 0.3, 0.15)
+	_echo_visual.z_index = -1
+	add_child(_echo_visual)
 
 func _physics_process(delta: float) -> void:
 	if is_opened:
@@ -19,6 +34,12 @@ func _physics_process(delta: float) -> void:
 	if glow:
 		var pulse := 0.6 + (sin(_glow_phase * TAU) * 0.2)
 		glow.modulate.a = pulse
+	
+	# Pulse echo
+	if _echo_visual:
+		var pulse := 0.1 + (sin(Time.get_ticks_msec() * 0.003) * 0.08)
+		_echo_visual.modulate.a = pulse
+		_echo_visual.rotation += delta * 0.3
 
 func _create_visuals() -> void:
 	# Outer glow
@@ -47,6 +68,13 @@ func _on_body_entered(body: Node2D) -> void:
 	is_opened = true
 	_spawn_loot()
 	_play_open_sound()
+	
+	# Record chest opened
+	var main := get_tree().current_scene
+	var memory := main.get_node_or_null("DungeonMemory") as DungeonMemory
+	if memory:
+		var count := memory.get_meta("chests_opened", 0)
+		memory.set_meta("chests_opened", count + 1)
 	
 	# Update visuals
 	var label := get_node_or_null("Label")

@@ -26,6 +26,7 @@ var _shrine_available: bool = true
 var _shrine_visual: ColorRect = null
 var _orbit_timer: float = 0.0
 var _initial_pos: Vector2
+var _echo_visual: ColorRect = null
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
@@ -37,6 +38,21 @@ func _ready() -> void:
 	
 	if POTION_HEAL.has(potion_type):
 		heal_amount = POTION_HEAL[potion_type]
+	
+	# Create memory echo if dungeon remembers healing
+	var main := get_tree().current_scene
+	var memory := main.get_node_or_null("DungeonMemory") as DungeonMemory
+	if memory and memory.get_adaptive_heal_chance() > 0.5:
+		_create_echo_visual()
+
+func _create_echo_visual() -> void:
+	_echo_visual = ColorRect.new()
+	_echo_visual.size = Vector2(24, 24)
+	_echo_visual.position = Vector2(-12, -12)
+	_echo_visual.color = POTION_COLORS.get(potion_type, Color.WHITE)
+	_echo_visual.color.a = 0.2
+	_echo_visual.z_index = -1
+	add_child(_echo_visual)
 
 func _physics_process(delta: float) -> void:
 	if is_shrine:
@@ -52,6 +68,12 @@ func _physics_process(delta: float) -> void:
 			cos(_orbit_timer * 1.3) * 8.0
 		)
 		position = _initial_pos + offset
+	
+	# Pulse echo visual
+	if _echo_visual:
+		var pulse := 0.15 + (sin(Time.get_ticks_msec() * 0.004) * 0.1)
+		_echo_visual.modulate.a = pulse
+		_echo_visual.rotation += delta * 0.5
 
 func _create_shrine_visuals() -> void:
 	var base := ColorRect.new()
@@ -98,6 +120,12 @@ func _on_body_entered(body: Node2D) -> void:
 		var actual_heal := health.heal(heal_amount)
 		if actual_heal > 0:
 			_spawn_heal_text(body.global_position, actual_heal)
+			
+			# Record healing in memory
+			var main := get_tree().current_scene
+			var memory := main.get_node_or_null("DungeonMemory") as DungeonMemory
+			if memory:
+				memory.record_healing(actual_heal)
 	
 	if not is_shrine:
 		# Spawn collection particles for non-shrine pickups
