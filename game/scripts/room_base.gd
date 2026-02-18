@@ -20,132 +20,53 @@ func _ready() -> void:
 	_find_doors()
 	_find_enemies()
 	_find_spawners()
-	_adapt_to_memory()
 	_spawn_floor_debris()
 	
 	if _enemies.size() > 0 or _spawners.size() > 0:
 		_lock_doors()
+		_start_clear_check_timer()
 	else:
 		is_cleared = true
 	
 	_fade_from_black()
 
+func _start_clear_check_timer() -> void:
+	var timer := Timer.new()
+	timer.wait_time = 0.5
+	timer.timeout.connect(_check_clear_condition)
+	add_child(timer)
+	timer.start()
+
 func _spawn_floor_debris() -> void:
-	# Simple scattered debris — bones, rocks, cracks
 	var debris_container := Node2D.new()
 	debris_container.name = "FloorDebris"
 	debris_container.z_index = -5
 	add_child(debris_container)
 	
-	# Get room bounds from walls
-	var bounds := Rect2(0, 0, 640, 480)
-	var walls := get_node_or_null("Walls")
-	if walls:
-		for child in walls.get_children():
-			if child is CollisionShape2D:
-				var shape := child.shape as RectangleShape2D
-				if shape:
-					bounds = Rect2(child.global_position - shape.size/2, shape.size)
-					break
+	var bounds := Rect2(80, 80, 480, 320)
 	
-	# Spawn 8-16 debris pieces
 	var count := randi_range(8, 16)
 	for i in range(count):
 		var debris := ColorRect.new()
 		var debris_type := randi() % 3
 		
 		match debris_type:
-			0:  # Bone fragment
+			0:
 				debris.size = Vector2(randf_range(4, 8), randf_range(2, 4))
 				debris.color = Color(0.85, 0.82, 0.75, 0.6)
-			1:  # Rock
+			1:
 				debris.size = Vector2(randf_range(3, 6), randf_range(3, 6))
 				debris.color = Color(0.3, 0.3, 0.35, 0.5)
-			2:  # Crack/stain
+			2:
 				debris.size = Vector2(randf_range(6, 12), randf_range(1, 2))
 				debris.color = Color(0.15, 0.15, 0.18, 0.4)
 		
-		# Random position within room bounds
 		debris.position = Vector2(
-			randf_range(bounds.position.x + 40, bounds.position.x + bounds.size.x - 40),
-			randf_range(bounds.position.y + 40, bounds.position.y + bounds.size.y - 40)
+			randf_range(bounds.position.x, bounds.position.x + bounds.size.x),
+			randf_range(bounds.position.y, bounds.position.y + bounds.size.y)
 		)
 		debris.rotation = randf() * TAU
 		debris_container.add_child(debris)
-
-func _adapt_to_memory() -> void:
-	var memory := get_node_or_null("/root/Main/DungeonMemory") as DungeonMemory
-	if not memory:
-		return
-	
-	# Emergency healing when desperate
-	if memory.is_player_desperate():
-		_spawn_emergency_health()
-	
-	# Adjust enemy count based on threat
-	var adaptive_count := memory.get_adaptive_spawn_count(_enemies.size())
-	var diff := adaptive_count - _enemies.size()
-	
-	if diff > 0:
-		for i in range(diff):
-			_spawn_additional_enemy()
-	elif diff < 0:
-		for i in range(abs(diff)):
-			if _enemies.size() > 0:
-				var idx := randi() % _enemies.size()
-				_enemies[idx].queue_free()
-				_enemies.remove_at(idx)
-	
-	# Randomize spawner enemies to avoid patterns
-	for spawner in _spawners:
-		if spawner.has_method("get_enemy_type"):
-			var enemy_type := spawner.get_enemy_type()
-			if memory.should_force_variety(enemy_type):
-				_randomize_spawner_enemy(spawner)
-
-func _spawn_emergency_health() -> void:
-	var health_scene := load("res://scenes/pickup_health.tscn") as PackedScene
-	if not health_scene:
-		return
-	
-	var pickup := health_scene.instantiate()
-	pickup.position = Vector2(320, 240) + Vector2(randf_range(-50, 50), randf_range(-50, 50))
-	
-	var pickups := get_node_or_null("Pickups")
-	if pickups:
-		pickups.add_child(pickup)
-
-func _spawn_additional_enemy() -> void:
-	if _enemies.size() == 0:
-		return
-	
-	var template := _enemies[randi() % _enemies.size()]
-	var new_enemy := template.duplicate()
-	new_enemy.position = Vector2(randf_range(100, 540), randf_range(100, 380))
-	
-	var enemies_container := get_node_or_null("Enemies")
-	if enemies_container:
-		enemies_container.add_child(new_enemy)
-		_enemies.append(new_enemy)
-		
-		var health := new_enemy.get_node_or_null("HealthComponent")
-		if health and health.has_signal("died"):
-			health.died.connect(_on_enemy_died)
-
-func _randomize_spawner_enemy(spawner: Node2D) -> void:
-	if not spawner.has_method("set_enemy_scene"):
-		return
-	
-	const ENEMY_SCENES := [
-		"res://scenes/enemy_slime_poison.tscn",
-		"res://scenes/enemy_bat.tscn",
-		"res://scenes/enemy_skeleton.tscn"
-	]
-	
-	var scene_path := ENEMY_SCENES[randi() % ENEMY_SCENES.size()]
-	var new_scene := load(scene_path) as PackedScene
-	if new_scene:
-		spawner.set_enemy_scene(new_scene)
 
 func _create_fade_overlay() -> void:
 	_fade_overlay = ColorRect.new()
@@ -190,9 +111,6 @@ func _find_enemies() -> void:
 	for child in enemies_node.get_children():
 		if child.is_in_group("enemies"):
 			_enemies.append(child)
-			var health := child.get_node_or_null("HealthComponent")
-			if health and health.has_signal("died"):
-				health.died.connect(_on_enemy_died)
 
 func _find_spawners() -> void:
 	var enemies_node := get_node_or_null("Enemies")
@@ -210,14 +128,9 @@ func _unlock_doors() -> void:
 	for door in _doors:
 		door.set_meta("is_locked", false)
 
-func _on_enemy_died() -> void:
-	_check_clear_condition()
-
 func _check_clear_condition() -> void:
 	if is_cleared:
 		return
-	
-	await get_tree().create_timer(0.1).timeout
 	
 	var alive_count := 0
 	for enemy in _enemies:
