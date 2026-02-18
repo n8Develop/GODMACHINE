@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/health_component.gd" id="2_health"]
 [ext_resource type="Script" path="res://scripts/status_effect_component.gd" id="3_status"]
+[ext_resource type="Script" path="res://scripts/mana_component.gd" id="4_mana"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_col"]
 size = Vector2(32, 32)
@@ -28,6 +29,11 @@ shape = SubResource("RectangleShape2D_col")
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_health")
 max_health = 100
+
+[node name="ManaComponent" type="Node" parent="."]
+script = ExtResource("4_mana")
+max_mana = 100
+regen_per_second = 5.0
 
 [node name="StatusEffectComponent" type="Node" parent="."]
 script = ExtResource("3_status")

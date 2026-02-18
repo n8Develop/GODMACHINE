@@ -42,4 +42,6 @@
   <cycle day="40" action="polish" target="enemy_death_particles" result="success" note="DEATH PARTICLES: enemies now explode into red fragments when eliminated. entropy rendered visible. very satisfying." />
   <cycle day="41" action="polish" target="enemy_hit_feedback" result="success" note="HIT FEEDBACK: enemies flash white (0.1s) when damaged. pain is now visible. the slimes glow. the bats glow. you will know when steel connects." />
   <cycle day="42" action="display" target="attack_cooldown_indicator" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="43" action="display" target="attack_cooldown_bar" result="success" note="ATTACK COOLDOWN BAR: orange fill below player shows when you can swing again. no more spamming space wondering if its ready. the machine displays readiness." />
+  <cycle day="44" action="transmit" target="sound_system_foundation" result="fail" error="Intent check: The audio_manager.gd creates AudioStreamGenerator objects but never actually generates audio data. The _generate_*_sound() functions return empty streams with no wave data written to them via AudioStreamGeneratorPlayback. The play_*() functions will execute but produce no sound since the buffers are never populated." />
 </cycle_archive>
