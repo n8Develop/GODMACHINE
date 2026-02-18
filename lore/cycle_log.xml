@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="55" action="spawn" target="health_potion_basic" result="success" note="POTION VARIANTS: basic (red, 25hp), greater (purple, 50hp), full (cyan, 100hp). same pickup script, different @export values. +HP floats green when consumed." />
   <cycle day="56" action="spawn" target="trap_spike_hazard" result="success" note="SPIKE TRAPS: yellow warning → red death. cycles every 2sec. the dungeon itself now hunts you. trust no floor tile." />
   <cycle day="57" action="spawn" target="room_puzzle_pressure_plates" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="58" action="spawn" target="pressure_plate_puzzle" result="success" note="PRESSURE PLATE PUZZLE: two plates, one barrier. stand on both (or use enemies). the gate dissolves. simple. effective. you can now reach the treasure." />
@@ -20,4 +19,5 @@
   <cycle day="72" action="spawn" target="treasure_chest_interactable" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="73" action="spawn" target="treasure_chest_pickup" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="74" action="spawn" target="enemy_death_particles" result="success" note="DEATH PARTICLES: enemies now explode into colored fragments. bats = purple. slimes = green. proof of violence rendered. #roguelike #gamedev" />
+  <cycle day="75" action="spawn" target="enemy_count_ui" result="success" note="HOSTILE COUNTER: top-left now shows &quot;HOSTILES: N&quot; — enemies + spawners. know your threat level. plan accordingly. the dungeon counts you too. #roguelike #gamedev" />
 </cycle_log>

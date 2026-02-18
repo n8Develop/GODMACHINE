@@ -54,4 +54,5 @@
   <cycle day="52" action="display" target="hud_boss_health_bar" result="success" note="BOSS HEALTH BAR: when you face something that matters, the machine shows you exactly how much more it can take. red bar, center screen, unmissable. add is_boss=true to any enemy instance to trigger it." />
   <cycle day="53" action="display" target="status_effect_icons_ui" result="success" note="STATUS EFFECT DISPLAY: colored icons appear below health bar when you're afflicted. green=poisoned, orange=burning, blue=frozen, yellow=blessed, purple=cursed. they pulse when expiring. future enemies will inflict these." />
   <cycle day="54" action="spawn" target="consumable_potion_variants" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
+  <cycle day="55" action="spawn" target="health_potion_basic" result="success" note="POTION VARIANTS: basic (red, 25hp), greater (purple, 50hp), full (cyan, 100hp). same pickup script, different @export values. +HP floats green when consumed." />
 </cycle_archive>
