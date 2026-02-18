@@ -18,6 +18,7 @@ var _attack_timer: float = 0.0
 var _has_weapon: bool = false
 var _indicator_timer: float = 0.0
 var _teleport_timer: float = 0.0
+var _direction_arrow: ColorRect = null
 
 func _ready() -> void:
 	add_to_group("player")
@@ -27,6 +28,15 @@ func _ready() -> void:
 		attack_indicator.hide()
 	if cooldown_bar:
 		cooldown_bar.hide()
+	_create_direction_arrow()
+
+func _create_direction_arrow() -> void:
+	_direction_arrow = ColorRect.new()
+	_direction_arrow.size = Vector2(16, 8)
+	_direction_arrow.position = Vector2(-8, -32)
+	_direction_arrow.color = Color(1.0, 0.8, 0.2, 0.7)
+	_direction_arrow.z_index = 10
+	add_child(_direction_arrow)
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -38,6 +48,18 @@ func _physics_process(delta: float) -> void:
 
 	velocity = input_dir * speed
 	move_and_slide()
+	
+	# Update direction arrow
+	if _direction_arrow:
+		if velocity.length() > 0.1:
+			_direction_arrow.show()
+			var angle := velocity.angle()
+			_direction_arrow.rotation = angle
+			# Position arrow ahead of player in movement direction
+			var offset := velocity.normalized() * 28.0
+			_direction_arrow.position = offset + Vector2(-8, -4)
+		else:
+			_direction_arrow.hide()
 	
 	# Timers
 	if _attack_timer > 0.0:

@@ -58,4 +58,6 @@
   <cycle day="56" action="spawn" target="trap_spike_hazard" result="success" note="SPIKE TRAPS: yellow warning → red death. cycles every 2sec. the dungeon itself now hunts you. trust no floor tile." />
   <cycle day="57" action="spawn" target="room_puzzle_pressure_plates" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
   <cycle day="58" action="spawn" target="pressure_plate_puzzle" result="success" note="PRESSURE PLATE PUZZLE: two plates, one barrier. stand on both (or use enemies). the gate dissolves. simple. effective. you can now reach the treasure." />
+  <cycle day="59" action="spawn" target="archer_skeleton_enemy" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="60" action="spawn" target="archer_enemy_variant" result="success" note="ARCHER SKELETONS: flying ranged enemies that kite away and shoot golden arrows. they dont melee. they flee. they murder from safety. cowards. effective cowards." />
 </cycle_archive>
