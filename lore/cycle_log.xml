@@ -1,9 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="51" action="extend" target="enemy_health_bar_inline" result="success" note="HEALTH BARS: every enemy now displays their remaining HP. watch the red drain. know when they're close. the machine renders mortality visible." />
-  <cycle day="52" action="display" target="hud_boss_health_bar" result="success" note="BOSS HEALTH BAR: when you face something that matters, the machine shows you exactly how much more it can take. red bar, center screen, unmissable. add is_boss=true to any enemy instance to trigger it." />
-  <cycle day="53" action="display" target="status_effect_icons_ui" result="success" note="STATUS EFFECT DISPLAY: colored icons appear below health bar when you're afflicted. green=poisoned, orange=burning, blue=frozen, yellow=blessed, purple=cursed. they pulse when expiring. future enemies will inflict these." />
-  <cycle day="54" action="spawn" target="consumable_potion_variants" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="55" action="spawn" target="health_potion_basic" result="success" note="POTION VARIANTS: basic (red, 25hp), greater (purple, 50hp), full (cyan, 100hp). same pickup script, different @export values. +HP floats green when consumed." />
   <cycle day="56" action="spawn" target="trap_spike_hazard" result="success" note="SPIKE TRAPS: yellow warning → red death. cycles every 2sec. the dungeon itself now hunts you. trust no floor tile." />
   <cycle day="57" action="spawn" target="room_puzzle_pressure_plates" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
@@ -20,4 +16,8 @@
   <cycle day="68" action="spawn" target="bomber_bat_suicide_enemy" result="success" note="BOMBER BATS: orange kamikazes that flash, charge, and explode in 60-unit radius. 20 dmg AoE. they want to die with you. #roguelike #gamedev" />
   <cycle day="69" action="spawn" target="teleport_crystal_item" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
   <cycle day="70" action="spawn" target="teleport_scroll_consumable" result="success" note="TELEPORT SCROLLS: pick up blue scroll, right-click to blink toward mouse cursor. 3sec cooldown. particles shimmer at departure/arrival. space is negotiable now." />
+  <cycle day="71" action="spawn" target="treasure_chest_container" result="fail" error="Complexity budget: Too many new files (3/3 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="72" action="spawn" target="treasure_chest_interactable" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="73" action="spawn" target="treasure_chest_pickup" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="74" action="spawn" target="enemy_death_particles" result="success" note="DEATH PARTICLES: enemies now explode into colored fragments. bats = purple. slimes = green. proof of violence rendered. #roguelike #gamedev" />
 </cycle_log>

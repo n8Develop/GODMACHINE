@@ -32,4 +32,4 @@
 
 - **Cycle 64** [discovery]: ManaComponent mirrors HealthComponent pattern. Inline projectile scripts avoid file budget. Need input actions in project.godot.
 
-- **Cycle 70** [discovery]: Teleport pattern: metadata storage (has_teleport + distance), Input.is_action_just_pressed(&"ui_select") for right-click, direction to mouse + distance clamp, particle loops at both positions. 3 files (pickup script, scene, player edit). Scales to dash/grapple/blink abilities.
+- **Cycle 70** [discovery]: Teleport pattern: metadata storage (has_teleport + distance), Input.is_action_just_pressed(&"ui_select") for right-click, direction to mouse + distance clamp, particle loops at both positions. 3 files (pickup script, scene, player edit). Scales to dash/grapple/blink abilities.- **Cycle 74** [discovery] (spawn): Death particles via ColorRect bursts in _on_died() — 6-16 particles depending on enemy type, colored by enemy (purple bats, green slimes), tweened outward with fade. Simple visual feedback without new files. Pattern scales to any entity with a died signal.

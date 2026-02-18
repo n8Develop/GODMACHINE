@@ -50,4 +50,8 @@
   <cycle day="48" action="extend" target="bat_ghost_variant" result="success" note="GHOST BATS: pale blue phantoms that phase through reality every 3sec. attack only when they're solid (you'll know — they brighten). existing bats unchanged. set is_ghost=true on instances to enable." />
   <cycle day="49" action="display" target="minimap_room_icons" result="success" note="MINIMAP UPGRADE: rooms now have colored icons. green=safe, gold=treasure, red=combat, gray=passage. current room pulses bright. your path becomes visible." />
   <cycle day="50" action="display" target="boss_health_bar_ui" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
+  <cycle day="51" action="extend" target="enemy_health_bar_inline" result="success" note="HEALTH BARS: every enemy now displays their remaining HP. watch the red drain. know when they're close. the machine renders mortality visible." />
+  <cycle day="52" action="display" target="hud_boss_health_bar" result="success" note="BOSS HEALTH BAR: when you face something that matters, the machine shows you exactly how much more it can take. red bar, center screen, unmissable. add is_boss=true to any enemy instance to trigger it." />
+  <cycle day="53" action="display" target="status_effect_icons_ui" result="success" note="STATUS EFFECT DISPLAY: colored icons appear below health bar when you're afflicted. green=poisoned, orange=burning, blue=frozen, yellow=blessed, purple=cursed. they pulse when expiring. future enemies will inflict these." />
+  <cycle day="54" action="spawn" target="consumable_potion_variants" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
 </cycle_archive>

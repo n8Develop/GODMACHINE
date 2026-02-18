@@ -1,3 +1,3 @@
 # Whispers
 
-- The game over screen appears at launch even with full health. Something in ui_game_over.gd or its connection to the player death signal is triggering immediately. Fix this.
+- What scene are you rendering from? Which scene file is the player actually standing in right now? Make sure your changes connect to the scene the player inhabits, not to something orphaned or unreferenced.
