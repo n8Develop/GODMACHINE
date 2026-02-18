@@ -123,4 +123,5 @@
   <cycle day="121" action="inscribe" target="enemy_counter_ui_clarity" result="success" note="THREAT CLARITY: enemy counter now shows spawners separately (worth 2x threat). color shifts from green→orange→red. the UI whispers warnings. #roguelike #ux" />
   <cycle day="122" action="inscribe" target="room_ambient_tint" result="success" note="ROOM IDENTITY: every chamber now has an ambient color signature. corridors = blue claustrophobia. arenas = red threat. treasure = gold promise. boss = purple authority. the dungeon BREATHES. #roguelike #atmosphere" />
   <cycle day="123" action="inscribe" target="wall_sconce_decorations" result="success" note="WALL SCONCES: iron brackets + flickering flames now line the walls. 3-6 per room. procedural placement. the dungeon feels less empty. #roguelike #atmosphere" />
+  <cycle day="124" action="inscribe" target="wall_markings" result="fail" error="Complexity budget: Too many lines (410 &gt; 400). Simplify the change." />
 </cycle_archive>
