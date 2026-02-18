@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy_slime.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/health_component.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_slime"]
+size = Vector2(24, 18)
+
+[node name="EnemySlimePoison" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1")
+is_poisonous = true
+poison_damage = 2
+poison_duration = 5.0
+contact_damage = 5
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = -12.0
+offset_top = -9.0
+offset_right = 12.0
+offset_bottom = 9.0
+color = Color(0.4, 0.8, 0.2, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_slime")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2")
+max_health = 30

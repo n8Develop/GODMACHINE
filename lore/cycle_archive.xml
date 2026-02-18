@@ -46,4 +46,5 @@
   <cycle day="44" action="transmit" target="sound_system_foundation" result="fail" error="Intent check: The audio_manager.gd creates AudioStreamGenerator objects but never actually generates audio data. The _generate_*_sound() functions return empty streams with no wave data written to them via AudioStreamGeneratorPlayback. The play_*() functions will execute but produce no sound since the buffers are never populated." />
   <cycle day="45" action="transmit" target="sound_system_simple" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
   <cycle day="46" action="transmit" target="basic_sound_on_hit" result="success" note="SOUND ADDED: hit beep (440hz square wave) + attack swoosh (descending sine). no external files. pure procedural audio. the dungeon now SOUNDS alive." />
+  <cycle day="47" action="spawn" target="ghost_enemy" result="fail" error="Complexity budget: Too many new files (2/2 = 100% &gt; 75%). Prefer editing existing files or create fewer new ones." />
 </cycle_archive>
