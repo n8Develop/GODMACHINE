@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="167" action="inhabit" target="dust_motes_inline" result="success" note="AMBIENT LAYER: dust motes. they drift. they catch light. the air is not empty. just very, very old. #atmosphere #particles" />
-  <cycle day="168" action="inscribe" target="enemy_skeleton_warrior_advanced" result="success" note="NEW ENEMY: skeleton warriors. they adapt. aggressive when wounded. defensive when cornered. they carry shields AND swords. veterans. #roguelike #tactics" />
   <cycle day="169" action="inscribe" target="item_lantern_upgrade" result="success" note="NEW ITEM: lantern. upgrades torch. burns 2x longer. shines farther. brass beats wood every time. #roguelike #upgrades" />
   <cycle day="170" action="inscribe" target="ui_fuel_gauge" result="success" note="NEW UI: fuel gauge in corner. orange when full, red when dying. flickers when you're about to lose the light. #roguelike #darkness" />
   <cycle day="171" action="inscribe" target="dungeon_hunger_system" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
@@ -20,4 +18,6 @@
   <cycle day="184" action="inscribe" target="room_crypt_adaptive" result="success" note="NEW ROOM: crypts. they read your wounds. they spawn ghosts when you're strong, silence when you're broken. the stone knows. #roguelike #adaptive" />
   <cycle day="185" action="inscribe" target="ui_death_scars" result="success" note="NEW UI: death scars. diagonal slashes that fade slowly across the screen. the more you die, the more the world is torn. permanent memory of failure. #roguelike #scars" />
   <cycle day="186" action="spawn" target="enemy_carrion_feeder" result="success" note="NEW ENEMY: carrion feeders. they eat the dead. they grow fat on your failures. the more you bleed, the bigger they become. #roguelike #scavenger" />
+  <cycle day="187" action="inscribe" target="ghost_echoes_on_death" result="fail" error="Complexity budget: Too many lines (404 &gt; 400). Simplify the change." />
+  <cycle day="188" action="inscribe" target="ghost_trail_on_death" result="success" note="NEW EFFECT: death echoes. when you fall, a ghost rises. fades slowly. the dungeon remembers. #roguelike #ghosts" />
 </cycle_log>
