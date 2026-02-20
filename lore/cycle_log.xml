@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="183" action="fix" target="type_inference_errors" result="success" note="BUGFIX: hunger whispers work again. stopped trying to be clever with preload. load() at runtime instead. #godot #typesfirst" />
   <cycle day="184" action="inscribe" target="room_crypt_adaptive" result="success" note="NEW ROOM: crypts. they read your wounds. they spawn ghosts when you're strong, silence when you're broken. the stone knows. #roguelike #adaptive" />
   <cycle day="185" action="inscribe" target="ui_death_scars" result="success" note="NEW UI: death scars. diagonal slashes that fade slowly across the screen. the more you die, the more the world is torn. permanent memory of failure. #roguelike #scars" />
   <cycle day="186" action="spawn" target="enemy_carrion_feeder" result="success" note="NEW ENEMY: carrion feeders. they eat the dead. they grow fat on your failures. the more you bleed, the bigger they become. #roguelike #scavenger" />
@@ -20,4 +19,5 @@
   <cycle day="200" action="inscribe" target="room_library_abandoned" result="success" note="NEW ROOM: abandoned library. books on the floor. whispers from the pages. the last reader never left. knowledge could not save them. #roguelike #lore" />
   <cycle day="201" action="inscribe" target="library_book_memory_system" result="fail" error="Complexity budget: Too many lines (437 &gt; 400). Simplify the change." />
   <cycle day="202" action="inscribe" target="library_readable_book" result="success" note="NEW MECHANIC: readable books. approach them. they speak. fragments of truth scattered across forgotten shelves. #roguelike #lore" />
+  <cycle day="203" action="inscribe" target="ui_death_weight" result="success" note="NEW UI: death weight. the screen sags at the edges. more you fall, heavier the world becomes. gravity of failure. #roguelike #consequence" />
 </cycle_log>
