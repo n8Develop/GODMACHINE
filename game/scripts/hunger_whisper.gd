@@ -9,7 +9,7 @@ var _time_since_last_heal: float = 0.0
 var _suppress_until: float = 0.0
 var _last_hp: int = 0
 
-const WHISPER_STAGES := [
+const WHISPER_STAGES: Array[String] = [
 	"You should rest soon.",
 	"Hunger gnaws at the edges.",
 	"Your strength is fading.",
@@ -44,10 +44,12 @@ func _check_hunger_state() -> void:
 	if _time_since_last_heal < no_heal_threshold:
 		return
 	
-	var stage_index := int((_time_since_last_heal - no_heal_threshold) / 15.0)
+	var elapsed: float = _time_since_last_heal - no_heal_threshold
+	var stage_index: int = int(elapsed / 15.0)
 	stage_index = clampi(stage_index, 0, WHISPER_STAGES.size() - 1)
 	
-	_spawn_whisper_text(WHISPER_STAGES[stage_index])
+	var whisper_text: String = WHISPER_STAGES[stage_index]
+	_spawn_whisper_text(whisper_text)
 	_play_whisper_sound(stage_index)
 
 func _on_health_changed(new_hp: int) -> void:
@@ -61,52 +63,60 @@ func suppress_whispers(duration: float) -> void:
 	_suppress_until = current_time + duration
 	_time_since_last_heal = 0.0
 
-func _spawn_whisper_text(message: String) -> void:
-	var player := _get_player()
-	if not player:
+func is_whispering() -> bool:
+	var current_time := Time.get_ticks_msec() / 1000.0
+	if current_time < _suppress_until:
+		return false
+	return _time_since_last_heal >= no_heal_threshold
+
+func _spawn_whisper_text(whisper_text: String) -> void:
+	var main := get_tree().current_scene
+	if not main:
 		return
 	
 	var label := Label.new()
-	label.text = message
-	label.add_theme_color_override(&"font_color", Color(0.7, 0.5, 0.5, 0.8))
+	label.text = whisper_text
+	label.add_theme_color_override(&"font_color", Color(0.6, 0.5, 0.4, 0.8))
 	label.add_theme_color_override(&"font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
 	label.add_theme_constant_override(&"outline_size", 2)
 	label.add_theme_font_size_override(&"font_size", 14)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.position = player.global_position + Vector2(-100, -80)
-	label.z_index = 90
-	get_tree().current_scene.add_child(label)
+	label.position = Vector2(320 - 100, 360)
+	label.z_index = 80
+	main.add_child(label)
 	
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(label, "position:y", player.global_position.y - 110, 3.0)
-	tween.tween_property(label, "modulate:a", 0.0, 3.0)
+	tween.tween_property(label, "position:y", 340.0, 2.0)
+	tween.tween_property(label, "modulate:a", 0.0, 2.0)
 	tween.finished.connect(label.queue_free)
 
-func _play_whisper_sound(urgency: int) -> void:
+func _play_whisper_sound(stage: int) -> void:
 	var player := AudioStreamPlayer.new()
 	get_tree().current_scene.add_child(player)
 	
 	var gen := AudioStreamGenerator.new()
 	gen.mix_rate = 22050.0
-	gen.buffer_length = 0.6
+	gen.buffer_length = 1.0
 	player.stream = gen
-	player.volume_db = -20.0 + (urgency * 2.0)  # Gets louder with urgency
+	player.volume_db = -20.0 + (stage * 2.0)  # Gets louder as urgency increases
 	player.play()
 	
 	var playback := player.get_stream_playback() as AudioStreamGeneratorPlayback
 	if playback:
-		var frames := int(gen.mix_rate * 0.6)
+		var frames := int(gen.mix_rate * 1.0)
 		var phase := 0.0
 		for i in range(frames):
 			var t := float(i) / frames
-			var freq := 120.0 + (urgency * 30.0)  # Lower = more desperate
+			var freq := 80.0 + (stage * 20.0)  # Lower and more ominous as hunger worsens
 			phase += freq / gen.mix_rate
 			var sample := sin(phase * TAU) * 0.15 * (1.0 - t * 0.5)
 			playback.push_frame(Vector2(sample, sample))
 	
-	await get_tree().create_timer(0.65).timeout
+	await get_tree().create_timer(1.1).timeout
 	player.queue_free()
 
 func _get_player() -> Node2D:
-	return get_tree().get_first_node_in_group("player") as Node2D
+	var main := get_tree().current_scene
+	if main:
+		return main.get_node_or_null("Player")
+	return null
