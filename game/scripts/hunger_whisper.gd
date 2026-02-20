@@ -1,69 +1,112 @@
 extends Node
 class_name HungerWhisper
 
-## The dungeon whispers when the mortal starves — subtle text warnings that grow more desperate
+@export var check_interval: float = 8.0
+@export var no_heal_threshold: float = 25.0  # Seconds without healing
 
-@export var whisper_interval: float = 15.0  # How often to check/whisper
-@export var hunger_threshold: float = 30.0  # Seconds without healing triggers hunger
+var _check_timer: float = 0.0
+var _time_since_last_heal: float = 0.0
+var _suppress_until: float = 0.0
+var _last_hp: int = 0
 
-var _time_since_heal: float = 0.0
-var _whisper_timer: float = 0.0
-var _last_whisper_level: int = 0
-
-const WHISPERS := [
-	"You feel weak.",
-	"Hunger gnaws.",
-	"Your vision blurs.",
-	"Flesh demands sustenance.",
-	"The void beckons."
+const WHISPER_STAGES := [
+	"You should rest soon.",
+	"Hunger gnaws at the edges.",
+	"Your strength is fading.",
+	"The dungeon smells weakness.",
+	"Starving. Desperate. Dying."
 ]
 
 func _ready() -> void:
-	var main := get_tree().current_scene
-	if main:
-		var memory := main.get_node_or_null("DungeonMemory")
-		if memory:
-			memory.memory_updated.connect(_on_memory_updated)
+	var player := _get_player()
+	if player:
+		var health := player.get_node_or_null("HealthComponent")
+		if health:
+			_last_hp = health.current_health
+			if health.has_signal("health_changed"):
+				health.health_changed.connect(_on_health_changed)
 
-func _process(delta: float) -> void:
-	_time_since_heal += delta
-	_whisper_timer += delta
+func _physics_process(delta: float) -> void:
+	_check_timer += delta
+	_time_since_last_heal += delta
 	
-	if _whisper_timer >= whisper_interval:
-		_whisper_timer = 0.0
-		_check_hunger()
+	if _check_timer >= check_interval:
+		_check_timer = 0.0
+		_check_hunger_state()
 
-func _check_hunger() -> void:
-	if _time_since_heal < hunger_threshold:
-		_last_whisper_level = 0
+func _check_hunger_state() -> void:
+	var current_time := Time.get_ticks_msec() / 1000.0
+	
+	# Suppress whispers if recently fed
+	if current_time < _suppress_until:
 		return
 	
-	var hunger_level := int((_time_since_heal - hunger_threshold) / 20.0)
-	hunger_level = clamp(hunger_level, 0, WHISPERS.size() - 1)
+	if _time_since_last_heal < no_heal_threshold:
+		return
 	
-	if hunger_level > _last_whisper_level:
-		_spawn_whisper(WHISPERS[hunger_level])
-		_last_whisper_level = hunger_level
+	var stage_index := int((_time_since_last_heal - no_heal_threshold) / 15.0)
+	stage_index = clampi(stage_index, 0, WHISPER_STAGES.size() - 1)
+	
+	_spawn_whisper_text(WHISPER_STAGES[stage_index])
+	_play_whisper_sound(stage_index)
 
-func _spawn_whisper(text: String) -> void:
+func _on_health_changed(new_hp: int) -> void:
+	if new_hp > _last_hp:
+		# Healing detected
+		_time_since_last_heal = 0.0
+	_last_hp = new_hp
+
+func suppress_whispers(duration: float) -> void:
+	var current_time := Time.get_ticks_msec() / 1000.0
+	_suppress_until = current_time + duration
+	_time_since_last_heal = 0.0
+
+func _spawn_whisper_text(message: String) -> void:
+	var player := _get_player()
+	if not player:
+		return
+	
 	var label := Label.new()
-	label.text = text
-	label.add_theme_color_override(&"font_color", Color(0.6, 0.3, 0.3, 1.0))
+	label.text = message
+	label.add_theme_color_override(&"font_color", Color(0.7, 0.5, 0.5, 0.8))
 	label.add_theme_color_override(&"font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
 	label.add_theme_constant_override(&"outline_size", 2)
-	label.add_theme_font_size_override(&"font_size", 16)
+	label.add_theme_font_size_override(&"font_size", 14)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.position = Vector2(220, 360)
-	label.z_index = 100
+	label.position = player.global_position + Vector2(-100, -80)
+	label.z_index = 90
 	get_tree().current_scene.add_child(label)
 	
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(label, "position:y", 340.0, 2.0)
-	tween.tween_property(label, "modulate:a", 0.0, 2.0)
+	tween.tween_property(label, "position:y", player.global_position.y - 110, 3.0)
+	tween.tween_property(label, "modulate:a", 0.0, 3.0)
 	tween.finished.connect(label.queue_free)
 
-func _on_memory_updated(key: String, _value: Variant) -> void:
-	if key == "healing":
-		_time_since_heal = 0.0
-		_last_whisper_level = 0
+func _play_whisper_sound(urgency: int) -> void:
+	var player := AudioStreamPlayer.new()
+	get_tree().current_scene.add_child(player)
+	
+	var gen := AudioStreamGenerator.new()
+	gen.mix_rate = 22050.0
+	gen.buffer_length = 0.6
+	player.stream = gen
+	player.volume_db = -20.0 + (urgency * 2.0)  # Gets louder with urgency
+	player.play()
+	
+	var playback := player.get_stream_playback() as AudioStreamGeneratorPlayback
+	if playback:
+		var frames := int(gen.mix_rate * 0.6)
+		var phase := 0.0
+		for i in range(frames):
+			var t := float(i) / frames
+			var freq := 120.0 + (urgency * 30.0)  # Lower = more desperate
+			phase += freq / gen.mix_rate
+			var sample := sin(phase * TAU) * 0.15 * (1.0 - t * 0.5)
+			playback.push_frame(Vector2(sample, sample))
+	
+	await get_tree().create_timer(0.65).timeout
+	player.queue_free()
+
+func _get_player() -> Node2D:
+	return get_tree().get_first_node_in_group("player") as Node2D
