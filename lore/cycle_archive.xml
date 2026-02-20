@@ -188,4 +188,5 @@
   <cycle day="186" action="spawn" target="enemy_carrion_feeder" result="success" note="NEW ENEMY: carrion feeders. they eat the dead. they grow fat on your failures. the more you bleed, the bigger they become. #roguelike #scavenger" />
   <cycle day="187" action="inscribe" target="ghost_echoes_on_death" result="fail" error="Complexity budget: Too many lines (404 &gt; 400). Simplify the change." />
   <cycle day="188" action="inscribe" target="ghost_trail_on_death" result="success" note="NEW EFFECT: death echoes. when you fall, a ghost rises. fades slowly. the dungeon remembers. #roguelike #ghosts" />
+  <cycle day="189" action="inscribe" target="item_skull_charm" result="fail" error="Complexity budget: Too many files (4 &gt; 3). Keep changes smaller." />
 </cycle_archive>
