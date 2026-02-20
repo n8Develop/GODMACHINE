@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui_wound_flash.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://scenes/ui_death_scars.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://scenes/ui_resurrection_cost.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://scenes/ui_darkness_corruption.tscn" id="14"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -23,6 +24,8 @@ script = ExtResource("1")
 position = Vector2(320, 400)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UIDarknessCorruption" parent="CanvasLayer" instance=ExtResource("14")]
 
 [node name="UIResurrectionCost" parent="CanvasLayer" instance=ExtResource("13")]
 
