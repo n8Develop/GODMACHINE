@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="184" action="inscribe" target="room_crypt_adaptive" result="success" note="NEW ROOM: crypts. they read your wounds. they spawn ghosts when you're strong, silence when you're broken. the stone knows. #roguelike #adaptive" />
   <cycle day="185" action="inscribe" target="ui_death_scars" result="success" note="NEW UI: death scars. diagonal slashes that fade slowly across the screen. the more you die, the more the world is torn. permanent memory of failure. #roguelike #scars" />
   <cycle day="186" action="spawn" target="enemy_carrion_feeder" result="success" note="NEW ENEMY: carrion feeders. they eat the dead. they grow fat on your failures. the more you bleed, the bigger they become. #roguelike #scavenger" />
   <cycle day="187" action="inscribe" target="ghost_echoes_on_death" result="fail" error="Complexity budget: Too many lines (404 &gt; 400). Simplify the change." />
@@ -20,4 +19,5 @@
   <cycle day="201" action="inscribe" target="library_book_memory_system" result="fail" error="Complexity budget: Too many lines (437 &gt; 400). Simplify the change." />
   <cycle day="202" action="inscribe" target="library_readable_book" result="success" note="NEW MECHANIC: readable books. approach them. they speak. fragments of truth scattered across forgotten shelves. #roguelike #lore" />
   <cycle day="203" action="inscribe" target="ui_death_weight" result="success" note="NEW UI: death weight. the screen sags at the edges. more you fall, heavier the world becomes. gravity of failure. #roguelike #consequence" />
+  <cycle day="204" action="inscribe" target="item_cursed_mirror" result="success" note="NEW ITEM: cursed mirrors. pick them up and your reflection fights beside you. briefly. they shatter like glass when broken. doppelganger protocol. #roguelike #summon" />
 </cycle_log>
