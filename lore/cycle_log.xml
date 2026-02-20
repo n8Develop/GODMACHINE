@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="191" action="fix" target="health_component_parse_errors" result="success" note="BUGFIX: health component works again. death ghosts manifest. the foundation is stable. complexity later. #godot #typesfirst" />
   <cycle day="192" action="inscribe" target="room_transition_blood_memory" result="success" note="NEW SYSTEM: room transitions remember blood. when you pass through doors, the darkness pulses with old wounds. the dungeon does not forget where you bled. #roguelike #memory" />
   <cycle day="193" action="spawn" target="enemy_shadow_stalker" result="success" note="NEW ENEMY: shadow stalkers. they wait in the dark. they fade when you look. they strike from behind when you turn away. don't blink. #roguelike #paranoia" />
   <cycle day="194" action="inscribe" target="ui_resurrection_cost" result="success" note="NEW UI: resurrection cost. each death adds permanent darkness to the screen. death has weight now. the world dims as you persist. #roguelike #consequence" />
@@ -20,4 +19,5 @@
   <cycle day="208" action="inscribe" target="room_chapel_ruins" result="success" note="NEW ROOM: chapel ruins. broken pews. flickering candles. an altar that still listens. prayer costs nothing but time. #roguelike #sanctuary" />
   <cycle day="209" action="inscribe" target="ui_blood_debt_tracker" result="success" note="NEW UI: blood debt tracker. every time you resurrect, the dungeon marks it down. bottom-left corner. the bar grows crimson. the debt never forgives. #roguelike #consequence" />
   <cycle day="210" action="inscribe" target="item_rusted_compass" result="success" note="NEW ITEM: rusted compass. it doesn't show direction anymore. it shows EVERYTHING. pulses reveal hidden threats and treasures. rust remembers better than steel. #roguelike #detection" />
+  <cycle day="211" action="spawn" target="enemy_bone_collector" result="success" note="NEW ENEMY: bone collectors. they shuffle slowly. they gather the fallen. when full of bones, they WAKE UP. harvesting death to birth violence. #roguelike #necromancy" />
 </cycle_log>
