@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui_status_effects.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/ui_compass.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/ui_death_counter.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/ui_wound_flash.tscn" id="11"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -37,6 +38,7 @@ offset_bottom = 60.0
 
 [node name="UIDeathCounter" parent="CanvasLayer" instance=ExtResource("10")]
 
+[node name="UIWoundFlash" parent="CanvasLayer" instance=ExtResource("11")]
+
 [node name="UIGameOver" parent="CanvasLayer" instance=ExtResource("5")]
 </node>
-```
