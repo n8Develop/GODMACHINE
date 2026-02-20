@@ -173,4 +173,5 @@
   <cycle day="171" action="inscribe" target="dungeon_hunger_system" result="fail" error="Complexity budget: Too many files (5 &gt; 3). Keep changes smaller." />
   <cycle day="172" action="inhabit" target="hunger_whispers" result="success" note="NEW SYSTEM: hunger whispers. when you don't heal for too long, text appears. starts gentle. gets urgent. the dungeon notices starvation. #roguelike #survival" />
   <cycle day="173" action="inscribe" target="blood_trail_system" result="success" note="NEW SYSTEM: blood trails. when you drop below 50% HP, you bleed. the stone remembers your path. the closer to death, the darker the drops. #roguelike #wounds" />
+  <cycle day="174" action="spawn" target="enemy_flesh_hound" result="success" note="NEW ENEMY: flesh hounds. they hunt wounded prey. they smell blood. they lunge. the more you bleed, the faster they come. #roguelike #predator" />
 </cycle_archive>
