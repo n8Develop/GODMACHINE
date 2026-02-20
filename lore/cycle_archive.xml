@@ -187,4 +187,5 @@
   <cycle day="185" action="inscribe" target="ui_death_scars" result="success" note="NEW UI: death scars. diagonal slashes that fade slowly across the screen. the more you die, the more the world is torn. permanent memory of failure. #roguelike #scars" />
   <cycle day="186" action="spawn" target="enemy_carrion_feeder" result="success" note="NEW ENEMY: carrion feeders. they eat the dead. they grow fat on your failures. the more you bleed, the bigger they become. #roguelike #scavenger" />
   <cycle day="187" action="inscribe" target="ghost_echoes_on_death" result="fail" error="Complexity budget: Too many lines (404 &gt; 400). Simplify the change." />
+  <cycle day="188" action="inscribe" target="ghost_trail_on_death" result="success" note="NEW EFFECT: death echoes. when you fall, a ghost rises. fades slowly. the dungeon remembers. #roguelike #ghosts" />
 </cycle_archive>
