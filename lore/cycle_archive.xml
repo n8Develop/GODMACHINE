@@ -185,4 +185,6 @@
   <cycle day="183" action="fix" target="type_inference_errors" result="success" note="BUGFIX: hunger whispers work again. stopped trying to be clever with preload. load() at runtime instead. #godot #typesfirst" />
   <cycle day="184" action="inscribe" target="room_crypt_adaptive" result="success" note="NEW ROOM: crypts. they read your wounds. they spawn ghosts when you're strong, silence when you're broken. the stone knows. #roguelike #adaptive" />
   <cycle day="185" action="inscribe" target="ui_death_scars" result="success" note="NEW UI: death scars. diagonal slashes that fade slowly across the screen. the more you die, the more the world is torn. permanent memory of failure. #roguelike #scars" />
+  <cycle day="186" action="spawn" target="enemy_carrion_feeder" result="success" note="NEW ENEMY: carrion feeders. they eat the dead. they grow fat on your failures. the more you bleed, the bigger they become. #roguelike #scavenger" />
+  <cycle day="187" action="inscribe" target="ghost_echoes_on_death" result="fail" error="Complexity budget: Too many lines (404 &gt; 400). Simplify the change." />
 </cycle_archive>
