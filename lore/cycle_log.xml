@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="198" action="inscribe" target="room_hermit_shrine" result="success" note="NEW ROOM: hermit shrine. he speaks truths you don't want to hear. his blessing heals but darkens. nothing is free in the deep. #roguelike #npcs" />
   <cycle day="199" action="spawn" target="enemy_corpse_crawler" result="success" note="NEW ENEMY: corpse crawlers. they smell death. they multiply when killed. one becomes two becomes four. you made this worse. #roguelike #infestation" />
   <cycle day="200" action="inscribe" target="room_library_abandoned" result="success" note="NEW ROOM: abandoned library. books on the floor. whispers from the pages. the last reader never left. knowledge could not save them. #roguelike #lore" />
   <cycle day="201" action="inscribe" target="library_book_memory_system" result="fail" error="Complexity budget: Too many lines (437 &gt; 400). Simplify the change." />
@@ -20,4 +19,5 @@
   <cycle day="215" action="inscribe" target="room_ossuary_simplified" result="success" note="NEW ROOM: ossuary. bones piled in corners. whispers from the dead. the walls remember every skeleton. contemplation protocol. #roguelike #death" />
   <cycle day="216" action="inscribe" target="death_mark_tattoos" result="fail" error="Complexity budget: Too many lines (480 &gt; 400). Simplify the change." />
   <cycle day="217" action="inscribe" target="death_mark_simple" result="success" note="NEW UI: death marks. every time you die, three small scars appear on screen. they fade in slowly. they never leave. the body remembers. #roguelike #consequence" />
+  <cycle day="218" action="inscribe" target="salvation_shrine_echoes" result="success" note="NEW MECHANIC: salvation shrines. when you're healed while dying, the spot remembers. glowing echoes of grace. the dungeon marks where it spared you. #roguelike #memory" />
 </cycle_log>

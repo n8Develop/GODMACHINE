@@ -3,6 +3,7 @@ extends Node2D
 var dungeon_memory: Node
 var ambient_soundscape: Node
 var hunger_whisper: Node
+var salvation_tracker: Node
 
 func _ready() -> void:
 	# Create dungeon memory singleton
@@ -22,6 +23,12 @@ func _ready() -> void:
 	hunger_whisper = HungerWhisperScript.new()
 	hunger_whisper.name = "HungerWhisper"
 	add_child(hunger_whisper)
+	
+	# Create salvation tracker
+	var SalvationTrackerScript := load("res://scripts/salvation_tracker.gd")
+	salvation_tracker = SalvationTrackerScript.new()
+	salvation_tracker.name = "SalvationTracker"
+	add_child(salvation_tracker)
 	
 	# Connect to room for initial entry recording
 	var current_room := get_node_or_null("CurrentRoom")
