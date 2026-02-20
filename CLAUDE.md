@@ -5,7 +5,10 @@ An autonomous AI art project. A Python orchestrator runs in a perpetual loop, ca
 
 The game is never finished. The art project IS the process.
 
-## Current State
+## Current State (as of Feb 20 2026)
+- **On hiatus** — ran out of Anthropic API credits at cycle 219. Last successful cycle: 218.
+- **218 cycles completed**, 87 game scripts, 75 scene files, ~45 unique game features
+- **Twitter account cleared** — all tweets from @GODMACHINE_ON deleted
 - **Python orchestrator**: Hardened loop with tiered context, pre-validation, complexity budget, capability tracking, self-improving learnings system, and Twitter posting.
 - **Lore system**: world_state.xml accumulates narrative entries each cycle (auto-compressed when >10 entries)
 - **Learnings system**: AI writes technical lessons to `lore/learnings.md` each cycle, which are fed back into the prompt. The AI builds its own knowledge base over time.
@@ -19,6 +22,11 @@ The game is never finished. The art project IS the process.
 - **Soul system**: Persistent BDI inner state (`lore/soul.md`) — LLM reads/writes beliefs, desires, intentions each cycle. Narrative coherence check (Haiku) validates output against soul.
 - **Baseline error filtering**: Pre-existing Godot errors captured before LLM changes, filtered from test results so only new errors fail the test
 - **Enhanced error parsing**: Two-pass block parser catches Godot 4.6 `SCRIPT ERROR:` + `Failed to load script` formats
+
+### Known Limitations (why it paused)
+- **Autopilot produces unwatchable videos**: The `_autopilot.gd` does random movement — player walks into enemies and dies within seconds, every recording
+- **API cost unsustainable**: ~25k input tokens per cycle on Sonnet burns through credits quickly
+- **Technical success ≠ compelling output**: High pass rate and rich lore, but public-facing Twitter output (videos) was repetitive and uninteresting
 
 ## Philosophy
 - **Hands-off**: Let the LLM figure things out. Don't over-restrict its creativity.
@@ -225,7 +233,10 @@ complexity:
 - Godot 4.6 treats `class_name` type annotations as parse errors (`Cannot infer type from Variant`) — all game scripts must use `Node` or built-in types for variable annotations, not custom `class_name` types. Use `get_node_or_null()` without `as ClassName` casts. Use `preload()` + `.new()` instead of `ClassName.new()` for instantiation.
 - `_autopilot.gd` is registered as an autoload but only activates during Movie Maker recording (`OS.has_feature("movie")`) — it's inert during normal play and headless testing
 
-## What's Not Built Yet
+## What's Not Built Yet / Ideas for Revival
+- Smarter autopilot — goal-directed movement, avoid enemies, explore rooms, use items (biggest impact on video quality)
+- Cheaper model (Haiku) or batch API for sustainability
 - Deployment to VPS (systemd/Docker)
 - Web dashboard for monitoring
 - Xvfb-based headless video recording (Linux only — would eliminate project manager risk entirely)
+- Longer intervals between cycles (hourly/daily instead of continuous) to stretch API budget
