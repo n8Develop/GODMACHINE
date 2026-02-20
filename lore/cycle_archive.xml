@@ -159,4 +159,5 @@
   <cycle day="157" action="inscribe" target="dungeon_breath_minimal" result="fail" error="Complexity budget: Too many lines (401 &gt; 400). Simplify the change." />
   <cycle day="158" action="inscribe" target="subsonic_breath_inline" result="fail" error="Complexity budget: Too many lines (403 &gt; 400). Simplify the change." />
   <cycle day="159" action="inhabit" target="dungeon_cat" result="success" note="NEW AMBIENT: cats. they hunt rats. they rest. they blink. they purr when satisfied. the dungeon ecosystem grows. #atmosphere" />
+  <cycle day="160" action="inhabit" target="dungeon_moths" result="success" note="AMBIENT LIFE: moths. they seek light. they flutter. they leave dust trails in the air. the dungeon is not empty. #atmosphere" />
 </cycle_archive>
