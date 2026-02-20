@@ -4,13 +4,24 @@ extends RoomBase
 @export var book_count: int = 12
 
 var _whisper_timer: float = 0.0
-var _whispers: Array[String] = [
-	"The ink remembers what the flesh forgot.",
-	"Each page a tomb. Each word a ghost.",
-	"They wrote their names here. Then they stopped writing.",
-	"The silence between sentences grows longer.",
-	"Dust settles on unfinished thoughts.",
-	"The last reader never left.",
+var _whisper_label: Label = null
+
+const WHISPERS := [
+	"...forgotten...",
+	"...the reader never left...",
+	"...these pages remember...",
+	"...silence is knowledge...",
+	"...dust settles on truth...",
+]
+
+const BOOK_TEXTS := [
+	"'On the nature of the dungeon: It breathes, it remembers, it hungers.'",
+	"'The hermit speaks truth. Listen when you can bear it.'",
+	"'Light is finite. Darkness is patient.'",
+	"'Each death leaves a mark. The world accumulates scars.'",
+	"'The deeper you go, the more it knows you.'",
+	"'Blood is just paint on stone. But it tells your story.'",
+	"'The machine does not sleep. It only waits.'",
 ]
 
 func _ready() -> void:
@@ -19,81 +30,60 @@ func _ready() -> void:
 	_create_reading_desk()
 	_create_scattered_books()
 	_create_library_ambience()
-	_spawn_memory_pickups()
+	_spawn_readable_books()
 
 func _create_bookshelves() -> void:
-	# Four tall shelves along the walls
-	for i in range(4):
+	# Left wall
+	for i in range(3):
 		var shelf := ColorRect.new()
-		shelf.size = Vector2(80, 140)
-		shelf.color = Color(0.25, 0.2, 0.18, 1.0)
-		
-		match i:
-			0: shelf.position = Vector2(50, 100)
-			1: shelf.position = Vector2(510, 100)
-			2: shelf.position = Vector2(50, 300)
-			3: shelf.position = Vector2(510, 300)
-		
+		shelf.size = Vector2(100, 8)
+		shelf.position = Vector2(60, 120 + i * 60)
+		shelf.color = Color(0.3, 0.25, 0.2, 1.0)
 		add_child(shelf)
-		
-		# Book spines on shelves
-		for j in range(5):
-			var book := ColorRect.new()
-			book.size = Vector2(12, 18)
-			book.position = Vector2(8 + (j * 14), 30 + (randf() * 80))
-			book.color = Color(
-				0.3 + randf() * 0.4,
-				0.2 + randf() * 0.3,
-				0.15 + randf() * 0.25,
-				1.0
-			)
-			shelf.add_child(book)
+	
+	# Right wall
+	for i in range(3):
+		var shelf := ColorRect.new()
+		shelf.size = Vector2(100, 8)
+		shelf.position = Vector2(480, 120 + i * 60)
+		shelf.color = Color(0.3, 0.25, 0.2, 1.0)
+		add_child(shelf)
 
 func _create_reading_desk() -> void:
-	# Desk in center
 	var desk := ColorRect.new()
-	desk.size = Vector2(100, 60)
-	desk.position = Vector2(270, 220)
-	desk.color = Color(0.3, 0.25, 0.2, 1.0)
+	desk.size = Vector2(80, 40)
+	desk.position = Vector2(280, 200)
+	desk.color = Color(0.35, 0.3, 0.25, 1.0)
 	add_child(desk)
 	
-	# Open book on desk
-	var book := ColorRect.new()
-	book.size = Vector2(40, 30)
-	book.position = Vector2(30, 15)
-	book.color = Color(0.85, 0.82, 0.75, 1.0)
-	desk.add_child(book)
-	
-	# Faint text lines
-	for i in range(6):
-		var line := ColorRect.new()
-		line.size = Vector2(30, 2)
-		line.position = Vector2(5, 5 + (i * 4))
-		line.color = Color(0.2, 0.2, 0.2, 0.3)
-		book.add_child(line)
+	# Chair
+	var chair := ColorRect.new()
+	chair.size = Vector2(24, 24)
+	chair.position = Vector2(308, 250)
+	chair.color = Color(0.4, 0.35, 0.3, 1.0)
+	add_child(chair)
 
 func _create_scattered_books() -> void:
-	# Books on floor - evidence of abandonment
 	for i in range(book_count):
 		var book := ColorRect.new()
-		book.size = Vector2(20, 14)
+		book.size = Vector2(12, 16)
 		book.position = Vector2(
-			100 + randf() * 440,
-			120 + randf() * 280
+			randf_range(100, 540),
+			randf_range(100, 380)
 		)
-		book.rotation = randf() * TAU
+		book.rotation = randf_range(-0.3, 0.3)
 		book.color = Color(
-			0.4 + randf() * 0.3,
-			0.3 + randf() * 0.2,
-			0.2 + randf() * 0.2,
+			randf_range(0.4, 0.7),
+			randf_range(0.3, 0.6),
+			randf_range(0.2, 0.5),
 			1.0
 		)
-		book.z_index = -5
+		book.z_index = -2
 		add_child(book)
 
 func _create_library_ambience() -> void:
 	var audio := AudioStreamPlayer.new()
-	audio.name = "LibraryAmbience"
+	audio.name = "LibraryDrone"
 	add_child(audio)
 	
 	var gen := AudioStreamGenerator.new()
@@ -107,70 +97,75 @@ func _create_library_ambience() -> void:
 
 func _generate_library_drone(player: AudioStreamPlayer) -> void:
 	await get_tree().process_frame
+	if not is_instance_valid(player):
+		return
+	
 	var playback := player.get_stream_playback() as AudioStreamGeneratorPlayback
 	if not playback:
 		return
 	
-	var gen := player.stream as AudioStreamGenerator
-	var frames := int(gen.mix_rate * 2.0)
-	var phase1 := randf() * TAU
-	var phase2 := randf() * TAU
-	
-	for i in range(frames):
-		# Very low drone suggesting old knowledge
-		var sample1 := sin(phase1) * 0.15
-		var sample2 := sin(phase2) * 0.12
-		var combined := (sample1 + sample2) * 0.5
-		
-		playback.push_frame(Vector2(combined, combined))
-		
-		phase1 += (52.0 / gen.mix_rate) * TAU  # Low hum
-		phase2 += (78.0 / gen.mix_rate) * TAU  # Harmonic
+	var phase := randf() * TAU
+	while is_instance_valid(player):
+		for i in range(128):
+			var freq := 50.0 + sin(Time.get_ticks_msec() * 0.0002) * 15.0
+			phase += freq / 22050.0
+			var sample := sin(phase * TAU) * 0.25
+			playback.push_frame(Vector2(sample, sample))
+		await get_tree().create_timer(0.05).timeout
 
-func _spawn_memory_pickups() -> void:
-	# Spawn 2-3 echo memories in the library
-	var memory_scene := load("res://scenes/pickup_echo_memory.tscn")
-	var memory_texts := [
-		"The last librarian locked the doors from inside.",
-		"They tried to write their way out.",
-		"Knowledge could not save them.",
+func _spawn_readable_books() -> void:
+	var BookScene := load("res://scenes/library_book.tscn")
+	
+	var positions := [
+		Vector2(290, 215),  # On desk
+		Vector2(150, 140),  # Left shelf
+		Vector2(520, 200),  # Right shelf
+		Vector2(200, 320),  # Floor
+		Vector2(450, 350),  # Floor
 	]
 	
-	var spawn_count := 2 + randi() % 2
-	for i in range(spawn_count):
-		var memory := memory_scene.instantiate()
-		memory.position = Vector2(
-			150 + randf() * 340,
-			160 + randf() * 240
+	for i in range(min(5, BOOK_TEXTS.size())):
+		var book := BookScene.instantiate()
+		book.position = positions[i]
+		book.book_text = BOOK_TEXTS[i]
+		book.book_color = Color(
+			randf_range(0.5, 0.7),
+			randf_range(0.4, 0.6),
+			randf_range(0.3, 0.5),
+			1.0
 		)
-		memory.memory_text = memory_texts[i % memory_texts.size()]
-		memory.echo_color = Color(0.7, 0.6, 0.8, 0.8)
-		call_deferred("add_child", memory)
+		add_child(book)
 
 func _physics_process(delta: float) -> void:
 	_whisper_timer += delta
-	
 	if _whisper_timer >= whisper_interval:
 		_whisper_timer = 0.0
 		_show_whisper()
 
 func _show_whisper() -> void:
-	var player := get_tree().get_first_node_in_group("player") as Node2D
-	if not player:
+	if _whisper_label:
 		return
 	
-	var label := Label.new()
-	label.text = _whispers.pick_random()
-	label.add_theme_color_override(&"font_color", Color(0.6, 0.5, 0.7, 0.9))
-	label.add_theme_font_size_override(&"font_size", 14)
-	label.position = Vector2(320 - 100, 100)
-	label.z_index = 100
-	add_child(label)
+	_whisper_label = Label.new()
+	_whisper_label.text = WHISPERS.pick_random()
+	_whisper_label.add_theme_color_override(&"font_color", Color(0.6, 0.5, 0.7, 0.8))
+	_whisper_label.add_theme_color_override(&"font_outline_color", Color(0.0, 0.0, 0.0, 0.6))
+	_whisper_label.add_theme_constant_override(&"outline_size", 2)
+	_whisper_label.add_theme_font_size_override(&"font_size", 16)
+	_whisper_label.position = Vector2(
+		randf_range(200, 400),
+		randf_range(50, 100)
+	)
+	_whisper_label.z_index = 50
+	_whisper_label.modulate.a = 0.0
+	add_child(_whisper_label)
 	
-	# Fade out
 	var tween := create_tween()
-	tween.tween_property(label, "modulate:a", 0.0, 4.0)
-	tween.finished.connect(label.queue_free)
+	tween.tween_property(_whisper_label, "modulate:a", 0.8, 1.0)
+	tween.tween_interval(2.0)
+	tween.tween_property(_whisper_label, "modulate:a", 0.0, 1.5)
+	tween.finished.connect(_whisper_label.queue_free)
+	tween.finished.connect(func(): _whisper_label = null)
 	
 	_play_whisper_sound()
 
@@ -180,24 +175,21 @@ func _play_whisper_sound() -> void:
 	
 	var gen := AudioStreamGenerator.new()
 	gen.mix_rate = 22050.0
-	gen.buffer_length = 0.8
+	gen.buffer_length = 0.5
 	player.stream = gen
 	player.volume_db = -22.0
 	player.play()
 	
 	var playback := player.get_stream_playback() as AudioStreamGeneratorPlayback
 	if playback:
-		var frames := int(gen.mix_rate * 0.8)
+		var frames := int(gen.mix_rate * 0.5)
 		var phase := randf() * TAU
 		for i in range(frames):
 			var t := float(i) / frames
-			# High frequency whisper
-			var freq := 3200.0 + (sin(t * TAU * 3.0) * 400.0)
-			phase += (freq / gen.mix_rate) * TAU
-			var sample := sin(phase) * 0.15 * (1.0 - t)
-			# Add noise texture
-			var noise := (randf() - 0.5) * 0.08
-			playback.push_frame(Vector2(sample + noise, sample + noise))
+			var freq := 300.0 + sin(t * TAU * 3.0) * 100.0
+			phase += freq / gen.mix_rate
+			var sample := sin(phase * TAU) * 0.2 * (1.0 - t * 0.3)
+			playback.push_frame(Vector2(sample, sample))
 	
-	await get_tree().create_timer(0.85).timeout
+	await get_tree().create_timer(0.55).timeout
 	player.queue_free()
