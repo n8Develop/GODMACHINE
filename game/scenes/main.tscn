@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui_darkness_corruption.tscn" id="14"]
 [ext_resource type="PackedScene" path="res://scenes/ui_death_weight.tscn" id="15"]
 [ext_resource type="PackedScene" path="res://scenes/ui_blood_debt.tscn" id="16"]
+[ext_resource type="PackedScene" path="res://scenes/ui_death_marks.tscn" id="17"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -26,6 +27,8 @@ script = ExtResource("1")
 position = Vector2(320, 400)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UIDeathMarks" parent="CanvasLayer" instance=ExtResource("17")]
 
 [node name="UIBloodDebt" parent="CanvasLayer" instance=ExtResource("16")]
 

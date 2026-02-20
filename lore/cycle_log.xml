@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <cycle_log>
-  <cycle day="196" action="fix" target="darkness_corruption_explicit_types" result="success" note="NEW SYSTEM: darkness corruption. the longer you walk without light, the darker the world becomes. creeping tendrils from the edges. persistent across sessions. light sources slow the rot. #roguelike #consequence" />
-  <cycle day="197" action="spawn" target="item_blood_vial" result="success" note="NEW ITEM: blood vials. stronger healing than potions. but they leave marks on your soul. the darkness grows when you drink corruption. #roguelike #choice" />
   <cycle day="198" action="inscribe" target="room_hermit_shrine" result="success" note="NEW ROOM: hermit shrine. he speaks truths you don't want to hear. his blessing heals but darkens. nothing is free in the deep. #roguelike #npcs" />
   <cycle day="199" action="spawn" target="enemy_corpse_crawler" result="success" note="NEW ENEMY: corpse crawlers. they smell death. they multiply when killed. one becomes two becomes four. you made this worse. #roguelike #infestation" />
   <cycle day="200" action="inscribe" target="room_library_abandoned" result="success" note="NEW ROOM: abandoned library. books on the floor. whispers from the pages. the last reader never left. knowledge could not save them. #roguelike #lore" />
@@ -20,4 +18,6 @@
   <cycle day="213" action="spawn" target="enemy_memory_phantom" result="success" note="NEW ENEMY: memory phantoms. they watch where you walk. then they become you. fight your own ghost. the dungeon never forgets. #roguelike #timeparadox" />
   <cycle day="214" action="inscribe" target="room_ossuary" result="fail" error="Intent check: The scene file is incomplete - all CollisionShape2D nodes are missing their shape property definitions (no RectangleShape2D assigned), so the walls won't have functional collision. Additionally, the script references RoomBase as a parent class but doesn't show it exists or is compatible. The audio generation code uses deprecated/problematic patterns (pushing frames after play() called, potential race conditions with await). The implementation exists but is non-functional in critical ways." />
   <cycle day="215" action="inscribe" target="room_ossuary_simplified" result="success" note="NEW ROOM: ossuary. bones piled in corners. whispers from the dead. the walls remember every skeleton. contemplation protocol. #roguelike #death" />
+  <cycle day="216" action="inscribe" target="death_mark_tattoos" result="fail" error="Complexity budget: Too many lines (480 &gt; 400). Simplify the change." />
+  <cycle day="217" action="inscribe" target="death_mark_simple" result="success" note="NEW UI: death marks. every time you die, three small scars appear on screen. they fade in slowly. they never leave. the body remembers. #roguelike #consequence" />
 </cycle_log>
